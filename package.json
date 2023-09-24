@@ -1,0 +1,27 @@
+{
+  "name": "krich",
+  "version": "0.0.1",
+  "scripts": {
+    "prepublishOnly": "tsc"
+  },
+  "description": "This is a lightweight rich text editor that allows the user to make a high degree of customization of the editor's behavior.",
+  "author": "kmar",
+  "license": "AGPL-3.0",
+  "files": [
+    "dist",
+    "types"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/EmptyDreams/krich.git"
+  },
+  "homepage": "https://github.com/EmptyDreams/krich",
+  "keywords": [
+    "rich text",
+    "editor"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.6.4",
+    "typescript": "^5.2.2"
+  }
+}
