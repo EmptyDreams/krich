@@ -1,6 +1,7 @@
 {
   "name": "krich",
   "version": "0.0.1",
+  "main": "src/index.js",
   "scripts": {
     "prepublishOnly": "tsc"
   },
@@ -19,9 +20,5 @@
   "keywords": [
     "rich text",
     "editor"
-  ],
-  "devDependencies": {
-    "@types/node": "^20.6.4",
-    "typescript": "^5.2.2"
-  }
+  ]
 }
