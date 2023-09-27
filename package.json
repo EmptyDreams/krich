@@ -8,7 +8,9 @@
   "description": "This is a lightweight rich text editor that allows the user to make a high degree of customization of the editor's behavior.",
   "author": "kmar",
   "license": "AGPL-3.0",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/EmptyDreams/krich.git"
@@ -20,7 +22,6 @@
   ],
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.2.1",
-    "postcss-import": "^15.1.0",
     "rollup-plugin-html": "^0.2.1",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-serve": "^2.0.2"
