@@ -38,11 +38,11 @@ export function initEditor(selector, elements) {
     container.addEventListener('click', event => {
         let target = event.target
         if (target.classList.contains('krich-tools')) return
-        let type
+        let type, dataKey
         while (true) {
-            const key = target.getAttribute('data-key')
-            if (key) {
-                type = key
+            dataKey = target.getAttribute('data-key')
+            if (dataKey) {
+                type = dataKey
                 break
             }
             target = target.parentNode
@@ -56,7 +56,7 @@ export function initEditor(selector, elements) {
             }
             target.onblur = () => classList.remove('show')
         } else {
-            buttonBehavior[target.getAttribute('data-key')].onclick?.(event, target)
+            buttonBehavior[dataKey].onclick?.(event, target)
         }
     })
 }
