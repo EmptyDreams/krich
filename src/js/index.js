@@ -1,5 +1,4 @@
-import mainStyle from '../resources/css/main.css'
-import varStyle from '../resources/css/color.css'
+import krichStyle from '../resources/css/main.styl'
 
 import buttonBehavior from './behavior'
 import translator from './translator'
@@ -34,7 +33,7 @@ export {buttonBehavior, translator}
  */
 export function initEditor(selector, elements) {
     const container = document.querySelector(selector)
-    container.insertAdjacentHTML('beforebegin', `<style>${varStyle}${mainStyle}</style>`)
+    container.insertAdjacentHTML('beforebegin', `<style>${krichStyle}</style>`)
     container.innerHTML = `<div class="krich-tools">${
         Object.getOwnPropertyNames(elements)
             .map(it => buttonBehavior[it].render())

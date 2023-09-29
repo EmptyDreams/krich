@@ -1,0 +1,23 @@
+.krich-tools
+  display flex
+  box-sizing border-box
+
+  & > *
+    display flex
+    align-items center
+    position relative
+    margin 5px 0
+    border unset
+    height 40px
+    background none
+    border-radius 3px
+    transition all .3s
+    padding 5px 10px
+    font-weight bold
+
+    &:hover
+      background var(--krich-tools-hover) !important
+      cursor pointer
+
+  button
+    cursor pointer

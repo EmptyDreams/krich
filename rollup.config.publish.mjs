@@ -17,8 +17,7 @@ export default {
             include: './src/resources/**/*.html'
         }),
         postcss({
-            extensions: ['.css'],
-            inject: true,
+            inject: false,
             minimize: true,
             plugins: [postcssImport()]
         })
