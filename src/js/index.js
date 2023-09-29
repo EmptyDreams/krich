@@ -1,5 +1,5 @@
-import mainStyle from './resources/css/main.css'
-import varStyle from './resources/css/color.css'
+import mainStyle from '../resources/css/main.css'
+import varStyle from '../resources/css/color.css'
 
 import buttonBehavior from './behavior'
 import translator from './translator'
@@ -41,7 +41,8 @@ export function initEditor(selector, elements) {
             .join('')
     }</div><div class="krich-editor" contenteditable></div>`
     container.addEventListener('click', event => {
-        let target = event.target
+        const original = event.target
+        let target = original
         if (target.classList.contains('krich-tools')) return
         let type, dataKey
         while (true) {
@@ -55,7 +56,6 @@ export function initEditor(selector, elements) {
         const classList = target.classList
         if (classList.contains('select')) {
             classList.toggle('show')
-            const original = event.target
             if (original.classList.contains('item')) {
                 target.getElementsByTagName('span')[0].innerText = original.innerText
             }

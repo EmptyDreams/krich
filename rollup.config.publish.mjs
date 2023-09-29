@@ -5,7 +5,7 @@ import postcssImport from 'postcss-import'
 
 // noinspection JSUnusedGlobalSymbols
 export default {
-    input: 'src/index.js',
+    input: 'src/js/index.js',
     output: {
         file: 'dist/krich.js',
         format: 'iife',
