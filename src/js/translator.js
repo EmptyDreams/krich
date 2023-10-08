@@ -1,7 +1,25 @@
-/** 转译器，用于将文本转换为指定的样式 */
+/**
+ * 转译器，用于将文本转换为指定的样式
+ * @type {{[string]: {
+ *     convert: function(string, string): any,
+ *     append: function(string, any, string): any
+ * }}}
+ */
 export default {
-    headerSelector: (text, level) => {
-        if (level === 0) return text
-        else return `<h${level}>${text}</h${level}>`
+    headerSelector: {
+        convert: (text, level) => {
+            return {
+                level: parseInt(level),
+                text,
+                toString: () => {
+                    const symbol = this.level === 0 ? 'p' : `h$${this.level}`
+                    return `<${symbol}>${text}</${symbol}>`
+                }
+            }
+        },
+        append: (text, prev) => {
+            prev.text += text
+            return prev
+        }
     }
 }
