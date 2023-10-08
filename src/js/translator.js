@@ -42,19 +42,25 @@ const registry = {
  * 向指定位置插入一个新的元素
  * @param index {number} 插入的坐标
  * @param text {string} 要插入的文本
+ * @param start {number} 文本在编辑器中的起始位置（包括）
+ * @param end {number} 文本在编辑器中的终止位置（不包括）
  * @param optionals {[string, selected?:*]} 文本附带的选项，每个数组第一个元素是类型名称，第二个元素为下拉菜单选中的值
  */
-export function insertElement(index, text, ...optionals) {
+export function insertElement(index, text, start, end, ...optionals) {
     const translators = optionals.map(it => registry[it[0]])
         .sort((a, b) => a.mode[1] - b.mode[1])
     const record = new Set()
-    const node = []
+    const node = {
+        types: [],
+        start, end,
+        element: []
+    }
     for (let i = 0; i < translators.length; i++) {
         const translator = translators[i]
         const {convert, clash} = translator
         if (clash?.find(it => record.has(it))) continue
-        node.push(convert(text, optionals[i][1]))
+        node.types.push(optionals[i][0])
+        node.element.push(convert(text, optionals[i][1]))
     }
-    // noinspection JSCheckFunctionSignatures
     list.splice(index, 0, node)
 }
