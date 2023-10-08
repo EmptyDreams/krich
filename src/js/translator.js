@@ -46,7 +46,7 @@ const registry = {
  * @param end {number} 文本在编辑器中的终止位置（不包括）
  * @param optionals {[string, selected?:*]} 文本附带的选项，每个数组第一个元素是类型名称，第二个元素为下拉菜单选中的值
  */
-export function insertElement(index, text, start, end, ...optionals) {
+export function insert(index, text, start, end, ...optionals) {
     const translators = optionals.map(it => registry[it[0]])
         .sort((a, b) => a.mode[1] - b.mode[1])
     const record = new Set()
