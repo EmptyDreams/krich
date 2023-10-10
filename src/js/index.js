@@ -1,7 +1,7 @@
 import krichStyle from '../resources/css/main.styl'
 
 import buttonBehavior from './behavior'
-import translator from './translator'
+import * as translator from './translator'
 
 export {buttonBehavior, translator}
 
