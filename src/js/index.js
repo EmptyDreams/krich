@@ -1,7 +1,7 @@
 import krichStyle from '../resources/css/main.styl'
 
 import buttonBehavior from './behavior'
-import * as translator from './translator'
+import translator from './translator'
 
 export {buttonBehavior, translator}
 
@@ -38,7 +38,7 @@ export function initEditor(selector, elements) {
         Object.getOwnPropertyNames(elements)
             .map(it => buttonBehavior[it].render())
             .join('')
-    }</div><div class="krich-editor" spellcheck contenteditable></div>`
+    }</div><div class="krich-editor" spellcheck contenteditable><p></p></div>`
     container.addEventListener('click', event => {
         const original = event.target
         let target = original
