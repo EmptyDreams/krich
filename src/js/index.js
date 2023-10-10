@@ -38,7 +38,7 @@ export function initEditor(selector, elements) {
         Object.getOwnPropertyNames(elements)
             .map(it => buttonBehavior[it].render())
             .join('')
-    }</div><div class="krich-editor" contenteditable></div>`
+    }</div><div class="krich-editor" spellcheck contenteditable></div>`
     container.addEventListener('click', event => {
         const original = event.target
         let target = original
