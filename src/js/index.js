@@ -1,9 +1,8 @@
 import krichStyle from '../resources/css/main.styl'
 
 import buttonBehavior from './behavior'
-import translator from './translator'
 
-export {buttonBehavior, translator}
+export {buttonBehavior}
 
 /**
  * 在指定元素内初始化编辑器
@@ -39,7 +38,7 @@ export function initEditor(selector, elements) {
             .map(it => buttonBehavior[it].render())
             .join('')
     }</div><div class="krich-editor" spellcheck contenteditable><p></p></div>`
-    container.addEventListener('click', event => {
+    container.getElementsByClassName('krich-tools')[0].addEventListener('click', event => {
         const original = event.target
         let target = original
         if (target.classList.contains('krich-tools')) return
@@ -55,12 +54,12 @@ export function initEditor(selector, elements) {
         const classList = target.classList
         if (classList.contains('select')) {
             classList.toggle('show')
-            if (original.classList.contains('item')) {
-                target.getElementsByTagName('span')[0].innerText = original.innerText
+            if (!original.classList.contains('item')) {
+                target.onblur = () => classList.remove('show')
+                return
             }
-            target.onblur = () => classList.remove('show')
-        } else {
-            buttonBehavior[dataKey].onclick?.(event, target)
+            target.getElementsByTagName('span')[0].innerText = original.innerText
         }
+        buttonBehavior[dataKey].onclick?.(event, target)
     })
 }
