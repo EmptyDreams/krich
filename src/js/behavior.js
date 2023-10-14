@@ -41,12 +41,18 @@ export default {
                     if (isFullInclusion(range, boldNode)) {
                         removeNodeReserveChild(boldNode)
                     } else {
-                        const onlyNode = findParentNodeIsOnlyContain(anchor, 'B')
-                        //const split = splitTextNodeAccordingRange(range, isFirst)
-                        const parent = boldNode.parentNode
-                        parent.insertBefore(onlyNode, boldNode.nextSibling)
-                        if (boldNode.childNodes.length === 0)
-                            parent.removeChild(boldNode)
+                        const split = splitTextNodeAccordingRange(range, isFirst)
+                        anchor.textContent = split[0]
+                        const oldAnchor = anchor
+                        const insertNode = (index, breaker) => {
+                            const array = cloneDomTree(oldAnchor, split[index], breaker)
+                            boldNode.parentNode.insertBefore(array[0], boldNode.nextSibling)
+                            if (index === split.length - 1)
+                                anchor = array[1]
+                        }
+                        if (split.length === 3)
+                            insertNode(2, it => it === boldNode.parentNode)
+                        insertNode(1, it => it.nodeName === 'B')
                     }
                 } else addBold = true
                 anchor = nextSibling(anchor)
@@ -134,17 +140,25 @@ function removeNodeReserveChild(node) {
 }
 
 /**
- * 查找仅持有一个子元素的最远父元素，如果没有父节点满足要求则返回 node 本身
- * @param node {Node} 起始节点
- * @param filter {string} 节点名称过滤器，在查询到该节点时会停止查询
+ * 复制 DOM 树
+ * @param node {Node} #text 节点
+ * @param text {string} 文本节点的内容
+ * @param breaker {function(Node):boolean} 断路器，判断是否终止复制
+ * @return {[Node, Text]} 克隆出来的文本节点
  */
-function findParentNodeIsOnlyContain(node, filter) {
-    let parent = node.parentNode
-    while (parent.childNodes.length === 1 && parent.nodeName !== filter) {
-        node = parent
-        parent = node.parentNode
+function cloneDomTree(node, text, breaker) {
+    const textNode = document.createTextNode(text)
+    let tree = textNode
+    let pos = node
+    node = node.parentNode
+    while (!breaker(node)) {
+        const item = node.cloneNode(false)
+        item.appendChild(tree)
+        tree = item
+        pos = node
+        node = node.parentNode
     }
-    return node
+    return [tree, textNode]
 }
 
 /**
@@ -189,7 +203,7 @@ function getLastTextNode(node) {
  * 通过 Range 将一个文本节点切分为多个节点
  * @param range {Range} 选择的范围
  * @param isFirst {boolean} 是否为开头
- * @return {Node[]} 返回切分后的节点
+ * @return {string[]} 返回切分后的节点
  */
 function splitTextNodeAccordingRange(range, isFirst) {
     /**
@@ -207,10 +221,10 @@ function splitTextNodeAccordingRange(range, isFirst) {
     const {endContainer, endOffset, startContainer, startOffset} = range
     if (startContainer === endContainer) {
         const content = endContainer.textContent
-        if (startOffset === 0 || endOffset === 0) {
-            const splitIndex = startOffset || content.length - endOffset
-            return splitText(content, 0, splitIndex)
-        }
+        if (startOffset === 0)
+            return splitText(content, 0, endOffset)
+        if (endOffset === content.length)
+            return splitText(content, 0, startOffset)
         return splitText(content, 0, startOffset, endOffset)
     }
     let node, offset
@@ -222,6 +236,5 @@ function splitTextNodeAccordingRange(range, isFirst) {
         offset = endOffset
     }
     const content = node.textContent
-    const splitIndex = isFirst ? offset : content.length - offset
-    return splitText(content, 0, splitIndex)
+    return splitText(content, 0, offset)
 }
