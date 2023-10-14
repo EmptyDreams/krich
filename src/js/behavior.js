@@ -245,5 +245,5 @@ function splitTextNodeAccordingRange(range, isFirst) {
         offset = endOffset
     }
     const content = node.textContent
-    return [splitText(content, 0, offset), isFirst]
+    return [splitText(content, 0, offset), offset !== 0]
 }
