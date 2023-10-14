@@ -41,18 +41,27 @@ export default {
                     if (isFullInclusion(range, boldNode)) {
                         removeNodeReserveChild(boldNode)
                     } else {
-                        const split = splitTextNodeAccordingRange(range, isFirst)
-                        anchor.textContent = split[0]
+                        const [split, mode] = splitTextNodeAccordingRange(range, isFirst)
                         const oldAnchor = anchor
-                        const insertNode = (index, breaker) => {
-                            const array = cloneDomTree(oldAnchor, split[index], breaker)
-                            boldNode.parentNode.insertBefore(array[0], boldNode.nextSibling)
-                            if (index === split.length - 1)
-                                anchor = array[1]
+                        if (mode) {
+                            anchor.textContent = split[0]
+                            const insertNode = (index, breaker) => {
+                                const array = cloneDomTree(oldAnchor, split[index], breaker)
+                                boldNode.parentNode.insertBefore(array[0], boldNode.nextSibling)
+                                if (index === split.length - 1)
+                                    anchor = array[1]
+                            }
+                            if (split.length === 3)
+                                insertNode(2, it => it === boldNode.parentNode)
+                            insertNode(1, it => it.nodeName === 'B')
+                        } else {
+                            anchor.textContent = split[1]
+                            const insertNode = (index, breaker) => {
+                                const array = cloneDomTree(oldAnchor, split[index], breaker)
+                                boldNode.parentNode.insertBefore(array[0], boldNode)
+                            }
+                            insertNode(0, it => it.nodeName === 'B')
                         }
-                        if (split.length === 3)
-                            insertNode(2, it => it === boldNode.parentNode)
-                        insertNode(1, it => it.nodeName === 'B')
                     }
                 } else addBold = true
                 anchor = nextSibling(anchor)
@@ -203,7 +212,7 @@ function getLastTextNode(node) {
  * 通过 Range 将一个文本节点切分为多个节点
  * @param range {Range} 选择的范围
  * @param isFirst {boolean} 是否为开头
- * @return {string[]} 返回切分后的节点
+ * @return {[string[], boolean]} 返回切分后的节点和填充模式，true 表示第一个元素保留原有效果
  */
 function splitTextNodeAccordingRange(range, isFirst) {
     /**
@@ -222,10 +231,10 @@ function splitTextNodeAccordingRange(range, isFirst) {
     if (startContainer === endContainer) {
         const content = endContainer.textContent
         if (startOffset === 0)
-            return splitText(content, 0, endOffset)
+            return [splitText(content, 0, endOffset), false]
         if (endOffset === content.length)
-            return splitText(content, 0, startOffset)
-        return splitText(content, 0, startOffset, endOffset)
+            return [splitText(content, 0, startOffset), true]
+        return [splitText(content, 0, startOffset, endOffset), true]
     }
     let node, offset
     if (isFirst) {
@@ -236,5 +245,5 @@ function splitTextNodeAccordingRange(range, isFirst) {
         offset = endOffset
     }
     const content = node.textContent
-    return splitText(content, 0, offset)
+    return [splitText(content, 0, offset), isFirst]
 }
