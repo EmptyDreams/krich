@@ -16,12 +16,13 @@ import multiStyle from '../resources/html/tools/multi.html'
 
 /**
  * 工具栏上的按钮的样式
- * @type {{[string]: {
+ * @type {{[p:string]: {
  *     render: function(): string,
- *     onclick: function(Event, HTMLElement)
+ *     onclick: function(Event, HTMLElement),
+ *     hash?: function(HTMLElement): string
  * }}}
  */
-export default {
+const behaviors = {
     headerSelect: {
         render: () => headerSelectStyle
     },
@@ -67,6 +68,7 @@ export default {
                 anchor = nextSiblingText(anchor)
                 isFirst = false
             } while (range.intersectsNode(anchor))
+            if (!addBold) optimizeTree(range)
         }
     },
     underline: {
@@ -247,3 +249,33 @@ function splitTextNodeAccordingRange(range, isFirst) {
     const content = node.textContent
     return [splitText(content, 0, offset), offset !== 0]
 }
+
+/**
+ * 优化选中的节点结构
+ * @param range {Range}
+ */
+function optimizeTree(range) {
+
+}
+
+/**
+ * 获取指定文本节点的样式
+ * @param node {Node}
+ * @return {string[]} 样式列表
+ */
+function getTextStyle(node) {
+    const result = []
+    let item = node.parentElement
+    while (!item.classList.contains('krich-editor')) {
+        const id = item.getAttribute('data-id')
+        if (id) {
+            const behavior = behaviors[id]
+            if (behavior.hash) result.push(behavior.hash(item))
+        }
+        item = item.parentElement
+    }
+    result.sort()
+    return result
+}
+
+export default behaviors
