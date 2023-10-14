@@ -64,7 +64,7 @@ export default {
                         }
                     }
                 } else addBold = true
-                anchor = nextSibling(anchor)
+                anchor = nextSiblingText(anchor)
                 isFirst = false
             } while (range.intersectsNode(anchor))
         }
@@ -174,7 +174,7 @@ function cloneDomTree(node, text, breaker) {
  * 查找最邻近的文本节点
  * @param node {Node}
  */
-function nextSibling(node) {
+function nextSiblingText(node) {
     let dist = node
     while (true) {
         const next = dist.nextSibling
