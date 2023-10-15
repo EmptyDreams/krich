@@ -13,6 +13,8 @@ import backgroundStyle from '../resources/html/tools/background.html'
 import ulStyle from '../resources/html/tools/ul.html'
 import olStyle from '../resources/html/tools/ol.html'
 import multiStyle from '../resources/html/tools/multi.html'
+import {getFirstTextNode, getLastTextNode} from './utils'
+import * as RangeUtils from './range'
 
 /**
  * 工具栏上的按钮的样式
@@ -37,53 +39,55 @@ const behaviors = {
             let anchor = range.startContainer
             let addBold = false
             let isFirst = true
-            const newRange = document.createRange()
+            let newRange = RangeUtils.create()
             do {
                 const boldNode = findParentTag(anchor, 'B')
                 if (boldNode) {
                     if (isFullInclusion(range, boldNode)) {
                         removeNodeReserveChild(boldNode)
-                        if (isFirst) {
-                            newRange.setStartBefore(anchor)
-                            newRange.setEndAfter(anchor)
-                        } else newRange.setEndAfter(anchor)
+                        if (isFirst) RangeUtils.setStartBefore(anchor)
+                        RangeUtils.setEndAfter(anchor)
                     } else {
                         const [split, mode] = splitTextNodeAccordingRange(range, isFirst)
                         const oldAnchor = anchor
                         if (mode) {
                             anchor.textContent = split[0]
-                            if (isFirst) newRange.setStartAfter(anchor)
                             const insertNode = (index, breaker) => {
                                 const array = cloneDomTree(oldAnchor, split[index], breaker)
                                 boldNode.parentNode.insertBefore(array[0], boldNode.nextSibling)
-                                if (index === split.length - 1) {
-                                    anchor = array[1]
-                                    if (index === 1) newRange.setEndAfter(array[1])
-                                    else newRange.setEndBefore(array[1])
-                                }
+                                if (index === split.length - 1) anchor = array[1]
+                                return array[1]
                             }
                             if (split.length === 3)
                                 insertNode(2, it => it === boldNode.parentNode)
-                            insertNode(1, it => it.nodeName === 'B')
+                            const mid = insertNode(1, it => it.nodeName === 'B')
+                            if (isFirst) RangeUtils.setStartBefore(mid)
+                            RangeUtils.setEndAfter(mid)
                         } else {
                             anchor.textContent = split[1]
                             const array = cloneDomTree(oldAnchor, split[0], it => it.nodeName === 'B')
                             boldNode.parentNode.insertBefore(array[0], boldNode)
-                            if (isFirst)
-                                newRange.setStartBefore(array[1])
-                            newRange.setEndBefore(anchor)
+                            if (isFirst) RangeUtils.setStartBefore(array[1])
+                            RangeUtils.setEndAfter(array[1])
                         }
                     }
                 } else addBold = true
                 anchor = nextSiblingText(anchor)
                 isFirst = false
             } while (range.intersectsNode(anchor))
-            if (addBold) range.surroundContents(document.createElement('b'))
-            else {
+            let updateRange = !newRange.collapsed
+            if (addBold) {
+                const bold = document.createElement('b');
+                (updateRange ? newRange : range).surroundContents(bold)
+                RangeUtils.selectNodeContents(bold)
+                updateRange = true
+            }
+            if (updateRange) {
                 selection.removeAllRanges()
                 selection.addRange(newRange)
+                console.log(newRange)
             }
-            optimizeTree(newRange)
+            //optimizeTree(newRange)
         }
     },
     underline: {
@@ -205,27 +209,6 @@ function nextSiblingText(node) {
 }
 
 /**
- * 获取指定节点的第一个文本子节点
- * @param node {Node}
- */
-function getFirstTextNode(node) {
-    while (node.nodeType !== Node.TEXT_NODE) {
-        node = node.firstChild
-    }
-    return node
-}
-
-/**
- * 获取指定节点的最后一个文本子结点
- * @param node {Node}
- */
-function getLastTextNode(node) {
-    while (node.nodeType !== Node.TEXT_NODE)
-        node = node.lastChild
-    return node
-}
-
-/**
  * 通过 Range 将一个文本节点切分为多个节点
  * @param range {Range} 选择的范围
  * @param isFirst {boolean} 是否为开头
@@ -270,7 +253,8 @@ function splitTextNodeAccordingRange(range, isFirst) {
  * @param range {Range}
  */
 function optimizeTree(range) {
-
+    let node = range.startContainer
+    console.log(node)
 }
 
 /**
