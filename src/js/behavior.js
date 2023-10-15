@@ -74,29 +74,28 @@ const behaviors = {
                     }
                 } else {
                     addBold = true
-                    if (!isFirst) {
-                        if (isFullInclusion(range, anchor)) RangeUtils.setEndAfter(anchor)
-                        else {
-                            RangeUtils.setEndAt(anchor, anchor.textContent.length - range.endOffset)
-                            break
-                        }
+                    if (isFullInclusion(range, anchor)) {
+                        if (isFirst)
+                            RangeUtils.setStartBefore(anchor)
+                        RangeUtils.setEndAfter(anchor)
+                    } else {
+                        if (isFirst)
+                            RangeUtils.setStartAt(anchor, range.startOffset)
+                        RangeUtils.setEndAt(anchor, anchor.textContent.length - range.endOffset)
+                        break
                     }
                 }
                 anchor = nextSiblingText(anchor)
                 isFirst = false
             } while (range.intersectsNode(anchor))
-            let updateRange = !newRange.collapsed
+            newRange = newRange.collapsed ? range : newRange
             if (addBold) {
                 const bold = document.createElement('b');
-                (updateRange ? newRange : range).surroundContents(bold)
+                newRange.surroundContents(bold)
                 RangeUtils.selectNodeContents(bold)
-                updateRange = true
             }
-            if (updateRange) {
-                selection.removeAllRanges()
-                selection.addRange(newRange)
-                console.log(newRange)
-            }
+            selection.removeAllRanges()
+            selection.addRange(newRange)
             //optimizeTree(newRange)
         }
     },
