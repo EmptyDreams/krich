@@ -68,7 +68,8 @@ const behaviors = {
                 anchor = nextSiblingText(anchor)
                 isFirst = false
             } while (range.intersectsNode(anchor))
-            if (!addBold) optimizeTree(range)
+            if (addBold) range.surroundContents(document.createElement('b'))
+            optimizeTree(range)
         }
     },
     underline: {
