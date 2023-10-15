@@ -32,36 +32,46 @@ const behaviors = {
     bold: {
         render: () => boldStyle,
         onclick: () => {
-            const range = getSelection().getRangeAt(0)
+            const selection = getSelection()
+            const range = selection.getRangeAt(0)
             let anchor = range.startContainer
             let addBold = false
             let isFirst = true
+            const newRange = document.createRange()
             do {
                 const boldNode = findParentTag(anchor, 'B')
                 if (boldNode) {
                     if (isFullInclusion(range, boldNode)) {
                         removeNodeReserveChild(boldNode)
+                        if (isFirst) {
+                            newRange.setStartBefore(anchor)
+                            newRange.setEndAfter(anchor)
+                        } else newRange.setEndAfter(anchor)
                     } else {
                         const [split, mode] = splitTextNodeAccordingRange(range, isFirst)
                         const oldAnchor = anchor
                         if (mode) {
                             anchor.textContent = split[0]
+                            if (isFirst) newRange.setStartAfter(anchor)
                             const insertNode = (index, breaker) => {
                                 const array = cloneDomTree(oldAnchor, split[index], breaker)
                                 boldNode.parentNode.insertBefore(array[0], boldNode.nextSibling)
-                                if (index === split.length - 1)
+                                if (index === split.length - 1) {
                                     anchor = array[1]
+                                    if (index === 1) newRange.setEndAfter(array[1])
+                                    else newRange.setEndBefore(array[1])
+                                }
                             }
                             if (split.length === 3)
                                 insertNode(2, it => it === boldNode.parentNode)
                             insertNode(1, it => it.nodeName === 'B')
                         } else {
                             anchor.textContent = split[1]
-                            const insertNode = (index, breaker) => {
-                                const array = cloneDomTree(oldAnchor, split[index], breaker)
-                                boldNode.parentNode.insertBefore(array[0], boldNode)
-                            }
-                            insertNode(0, it => it.nodeName === 'B')
+                            const array = cloneDomTree(oldAnchor, split[0], it => it.nodeName === 'B')
+                            boldNode.parentNode.insertBefore(array[0], boldNode)
+                            if (isFirst)
+                                newRange.setStartBefore(array[1])
+                            newRange.setEndBefore(anchor)
                         }
                     }
                 } else addBold = true
@@ -69,7 +79,11 @@ const behaviors = {
                 isFirst = false
             } while (range.intersectsNode(anchor))
             if (addBold) range.surroundContents(document.createElement('b'))
-            optimizeTree(range)
+            else {
+                selection.removeAllRanges()
+                selection.addRange(newRange)
+            }
+            optimizeTree(newRange)
         }
     },
     underline: {
