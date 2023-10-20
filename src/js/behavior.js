@@ -96,7 +96,7 @@ const behaviors = {
             }
             selection.removeAllRanges()
             selection.addRange(newRange)
-            //optimizeTree(newRange)
+            optimizeTree(newRange)
         }
     },
     underline: {
@@ -263,7 +263,15 @@ function splitTextNodeAccordingRange(range, isFirst) {
  */
 function optimizeTree(range) {
     let node = range.startContainer
-    console.log(node)
+    do {
+        let sibling = node.nextSibling
+        while (sibling?.nodeType === node.nodeType) {
+            node.textContent += sibling.textContent
+            sibling.remove()
+            sibling = node.nextSibling
+        }
+        node = nextSiblingText(node)
+    } while (range.intersectsNode(node))
 }
 
 /**
