@@ -22,9 +22,10 @@ initBehaviors({
         render: () => headerSelectStyle,
         onclick: event => {
             const value = event.target.getAttribute(SELECT_VALUE)
+            RangeUtils.create()
             removeStylesInRange(
                 getSelection().getRangeAt(0),
-                'h1', 'h2', 'h3', 'h4', 'h5', 'h6'
+                'H1', 'H2', 'H3', 'H4', 'H5', 'H6'
             )
             if (value !== '0')
                 execCommonCommand('headerSelect', `H${value}`, true)
@@ -84,7 +85,7 @@ initBehaviors({
 function execCommonCommand(name, tagName, removed = false) {
     const selection = getSelection()
     const range = selection.getRangeAt(0)
-    let newRange = RangeUtils.create()
+    let newRange = removed ? RangeUtils.exportRange : RangeUtils.create()
     const doEdit = removed || removeStylesInRange(range, tagName)
     newRange = newRange.collapsed ? range : newRange
     if (doEdit) {
@@ -109,11 +110,11 @@ function execCommonCommand(name, tagName, removed = false) {
  * 删除选择范围内的指定样式
  * @param range {Range} 选择范围
  * @param tagNames {string} 要删除的标签名
- * @return {boolean} 是否进行修改
+ * @return {boolean} 是否存在元素没有修改
  */
 function removeStylesInRange(range, ...tagNames) {
     let anchor = range.startContainer
-    let doEdit = false
+    let nonAllEdit = false
     let isFirst = true
     do {
         const topNode = findParentTag(anchor, ...tagNames)
@@ -147,7 +148,7 @@ function removeStylesInRange(range, ...tagNames) {
                 }
             }
         } else {
-            doEdit = true
+            nonAllEdit = true
             if (isFullInclusion(range, anchor)) {
                 if (isFirst)
                     RangeUtils.setStartBefore(anchor)
@@ -162,7 +163,7 @@ function removeStylesInRange(range, ...tagNames) {
         anchor = nextSiblingText(anchor)
         isFirst = false
     } while (range.intersectsNode(anchor))
-    return doEdit
+    return nonAllEdit
 }
 
 /**

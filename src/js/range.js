@@ -1,7 +1,7 @@
 import {getFirstTextNode, getLastTextNode} from './utils'
 
 /** @type {Range} */
-let exportRange
+export let exportRange
 
 export function create() {
     return exportRange = document.createRange()
