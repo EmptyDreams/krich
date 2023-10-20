@@ -30,7 +30,7 @@ export function setStartBefore(node) {
  * @param index {number}
  */
 export function setStartAt(node, index) {
-    console.assert(node.nodeType === Node.TEXT_NODE, 'node 类型必须为 #text')
+    console.assert(node.nodeType === Node.TEXT_NODE, 'node 类型必须为 #text', node)
     exportRange.setStart(node, index)
 }
 
@@ -40,7 +40,7 @@ export function setStartAt(node, index) {
  * @param index {number} 终止点在 node 中的位置，下标反转，0 为 node 结尾
  */
 export function setEndAt(node, index) {
-    console.assert(node.nodeType === Node.TEXT_NODE, 'node 类型必须为 #text')
+    console.assert(node.nodeType === Node.TEXT_NODE, 'node 类型必须为 #text', node)
     exportRange.setEnd(node, node.textContent.length - index)
 }
 
