@@ -1,6 +1,6 @@
 import serve from 'rollup-plugin-serve'
 
-import config from './rollup.config.publish.mjs'
+import config from './rollup.config.common.mjs'
 
 config.plugins.push(
     serve({
