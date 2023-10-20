@@ -13,8 +13,9 @@ import backgroundStyle from '../resources/html/tools/background.html'
 import ulStyle from '../resources/html/tools/ul.html'
 import olStyle from '../resources/html/tools/ol.html'
 import multiStyle from '../resources/html/tools/multi.html'
-import {getFirstTextNode, getLastTextNode} from './utils'
+import {equalsKrichNode, getElementBehavior, getFirstTextNode, getLastTextNode} from './utils'
 import * as RangeUtils from './range'
+import {DATA_ID} from './constant'
 
 /**
  * 工具栏上的按钮的样式
@@ -49,7 +50,6 @@ const behaviors = {
                         RangeUtils.setEndAfter(anchor)
                     } else {
                         const [split, mode] = splitTextNodeAccordingRange(range, isFirst)
-                        console.log(mode)
                         const oldAnchor = anchor
                         if (mode) {
                             anchor.textContent = split[0]
@@ -90,9 +90,17 @@ const behaviors = {
             } while (range.intersectsNode(anchor))
             newRange = newRange.collapsed ? range : newRange
             if (addBold) {
-                const bold = document.createElement('b');
+                const bold = document.createElement('b')
+                bold.setAttribute(DATA_ID, 'bold')
                 newRange.surroundContents(bold)
                 RangeUtils.selectNodeContents(bold)
+                /** @param node {Node} */
+                const removeIfEmpty = node => {
+                    if (node && node.nodeType === Node.TEXT_NODE && !node.textContent)
+                        node.remove()
+                }
+                removeIfEmpty(bold.nextSibling)
+                removeIfEmpty(bold.previousSibling)
             }
             selection.removeAllRanges()
             selection.addRange(newRange)
@@ -262,7 +270,58 @@ function splitTextNodeAccordingRange(range, isFirst) {
  * @param range {Range}
  */
 function optimizeTree(range) {
-    let node = range.startContainer
+    /** @param element {HTMLElement} */
+    const nextElementSibling  = element => {
+        const sibling1 = element.nextSibling
+        const sibling2 = element.nextElementSibling
+        return sibling1 === sibling2 ? sibling2 : null
+    }
+    /**
+     * 将 `that` 合并到 `dist` 中并移除 `that`
+     * @param dist {HTMLElement}
+     * @param that {HTMLElement}
+     * @param onHead {boolean} 是否合并到 `dist` 的开头
+     */
+    const mergeElement = (dist, that, onHead) => {
+        dist.insertAdjacentHTML(onHead ? 'afterbegin' : 'beforeend', that.innerHTML)
+        that.remove()
+    }
+    /**
+     * @param element {HTMLElement}
+     * @param recursion {boolean} 是否递归判断子结点
+     * @return {boolean} 是否合并了传入的 `element` 和其下一个兄弟节点
+     */
+    const optimizeNodes = (element, recursion) => {
+        let result = false
+        const sibling = nextElementSibling(element)
+        const eleBehavior = getElementBehavior(element)
+        console.assert(!!eleBehavior, `指定元素没有包含 ${DATA_ID} 字段：`, element)
+        if (sibling && equalsKrichNode(element, sibling)) {
+            mergeElement(element, sibling, false)
+            result = true
+        }
+        if (recursion) {
+            let item = element.firstElementChild
+            while (item) {
+                let subResult = optimizeNodes(item, true)
+                while (subResult)
+                    subResult = optimizeNodes(item, false)
+                item = item.nextElementSibling
+            }
+        }
+        return result
+    }
+    const common = range.commonAncestorContainer
+    let item = range.commonAncestorContainer.parentElement
+    if (common.nodeType !== Node.TEXT_NODE) item = item.firstElementChild
+    const prev = item.previousSibling
+    if (prev && prev.nodeType !== Node.TEXT_NODE)
+        mergeElement(item, item.previousElementSibling, true)
+    while (item) {
+        optimizeNodes(item, true)
+        item = item.nextElementSibling
+    }
+    let node = getFirstTextNode( range.startContainer.parentNode)
     do {
         let sibling = node.nextSibling
         while (sibling?.nodeType === node.nodeType) {
@@ -272,26 +331,6 @@ function optimizeTree(range) {
         }
         node = nextSiblingText(node)
     } while (range.intersectsNode(node))
-}
-
-/**
- * 获取指定文本节点的样式
- * @param node {Node}
- * @return {string[]} 样式列表
- */
-function getTextStyle(node) {
-    const result = []
-    let item = node.parentElement
-    while (!item.classList.contains('krich-editor')) {
-        const id = item.getAttribute('data-id')
-        if (id) {
-            const behavior = behaviors[id]
-            if (behavior.hash) result.push(behavior.hash(item))
-        }
-        item = item.parentElement
-    }
-    result.sort()
-    return result
 }
 
 export default behaviors
