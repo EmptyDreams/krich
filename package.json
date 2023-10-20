@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "main": "dist/krich.js",
   "scripts": {
+    "build": "npx rollup -c -w",
     "prepublishOnly": "npx rollup -c rollup.config.publish.mjs"
   },
   "description": "This is a lightweight rich text editor that allows the user to make a high degree of customization of the editor's behavior.",
