@@ -15,89 +15,27 @@ import olStyle from '../resources/html/tools/ol.html'
 import multiStyle from '../resources/html/tools/multi.html'
 import {equalsKrichNode, getElementBehavior, getFirstTextNode, getLastTextNode} from './utils'
 import * as RangeUtils from './range'
-import {DATA_ID, initBehaviors} from './constant'
+import {DATA_ID, initBehaviors, SELECT_VALUE} from './constant'
 
 initBehaviors({
     headerSelect: {
-        render: () => headerSelectStyle
+        render: () => headerSelectStyle,
+        onclick: event => {
+            const value = event.target.getAttribute(SELECT_VALUE)
+            removeStylesInRange(
+                getSelection().getRangeAt(0),
+                'h1', 'h2', 'h3', 'h4', 'h5', 'h6'
+            )
+            if (value !== '0')
+                execCommonCommand('headerSelect', `H${value}`, true)
+        }
     },
     blockquote: {
         render: () => blockquoteStyle
     },
     bold: {
         render: () => boldStyle,
-        onclick: () => {
-            const selection = getSelection()
-            const range = selection.getRangeAt(0)
-            let anchor = range.startContainer
-            let addBold = false
-            let isFirst = true
-            let newRange = RangeUtils.create()
-            do {
-                const boldNode = findParentTag(anchor, 'B')
-                if (boldNode) {
-                    if (isFullInclusion(range, boldNode)) {
-                        removeNodeReserveChild(boldNode)
-                        if (isFirst) RangeUtils.setStartBefore(anchor)
-                        RangeUtils.setEndAfter(anchor)
-                    } else {
-                        const [split, mode] = splitTextNodeAccordingRange(range, isFirst)
-                        const oldAnchor = anchor
-                        if (mode) {
-                            anchor.textContent = split[0]
-                            const insertNode = (index, breaker) => {
-                                const array = cloneDomTree(oldAnchor, split[index], breaker)
-                                boldNode.parentNode.insertBefore(array[0], boldNode.nextSibling)
-                                if (index === split.length - 1) anchor = array[1]
-                                return array[1]
-                            }
-                            if (split.length === 3)
-                                insertNode(2, it => it === boldNode.parentNode)
-                            const mid = insertNode(1, it => it.nodeName === 'B')
-                            if (isFirst) RangeUtils.setStartBefore(mid)
-                            RangeUtils.setEndAfter(mid)
-                        } else {
-                            anchor.textContent = split[1]
-                            const array = cloneDomTree(oldAnchor, split[0], it => it.nodeName === 'B')
-                            boldNode.parentNode.insertBefore(array[0], boldNode)
-                            if (isFirst) RangeUtils.setStartBefore(array[1])
-                            RangeUtils.setEndAfter(array[1])
-                        }
-                    }
-                } else {
-                    addBold = true
-                    if (isFullInclusion(range, anchor)) {
-                        if (isFirst)
-                            RangeUtils.setStartBefore(anchor)
-                        RangeUtils.setEndAfter(anchor)
-                    } else {
-                        if (isFirst)
-                            RangeUtils.setStartAt(anchor, range.startOffset)
-                        RangeUtils.setEndAt(anchor, anchor.textContent.length - range.endOffset)
-                        break
-                    }
-                }
-                anchor = nextSiblingText(anchor)
-                isFirst = false
-            } while (range.intersectsNode(anchor))
-            newRange = newRange.collapsed ? range : newRange
-            if (addBold) {
-                const bold = document.createElement('b')
-                bold.setAttribute(DATA_ID, 'bold')
-                newRange.surroundContents(bold)
-                RangeUtils.selectNodeContents(bold)
-                /** @param node {Node} */
-                const removeIfEmpty = node => {
-                    if (node && node.nodeType === Node.TEXT_NODE && !node.textContent)
-                        node.remove()
-                }
-                removeIfEmpty(bold.nextSibling)
-                removeIfEmpty(bold.previousSibling)
-            }
-            selection.removeAllRanges()
-            selection.addRange(newRange)
-            optimizeTree(newRange)
-        }
+        onclick: () => execCommonCommand('bold', 'B')
     },
     underline: {
         render: () => underlineStyle
@@ -138,14 +76,104 @@ initBehaviors({
 })
 
 /**
+ * 执行一次通用修改指令
+ * @param name {string} 指令名称
+ * @param tagName {string} 标签名称
+ * @param removed {boolean} 是否已经移除过元素
+ */
+function execCommonCommand(name, tagName, removed = false) {
+    const selection = getSelection()
+    const range = selection.getRangeAt(0)
+    let newRange = RangeUtils.create()
+    const doEdit = removed || removeStylesInRange(range, tagName)
+    newRange = newRange.collapsed ? range : newRange
+    if (doEdit) {
+        const bold = document.createElement(tagName)
+        bold.setAttribute(DATA_ID, name)
+        newRange.surroundContents(bold)
+        RangeUtils.selectNodeContents(bold)
+        /** @param node {Node} */
+        const removeIfEmpty = node => {
+            if (node && node.nodeType === Node.TEXT_NODE && !node.textContent)
+                node.remove()
+        }
+        removeIfEmpty(bold.nextSibling)
+        removeIfEmpty(bold.previousSibling)
+    }
+    selection.removeAllRanges()
+    selection.addRange(newRange)
+    optimizeTree(newRange)
+}
+
+/**
+ * 删除选择范围内的指定样式
+ * @param range {Range} 选择范围
+ * @param tagNames {string} 要删除的标签名
+ * @return {boolean} 是否进行修改
+ */
+function removeStylesInRange(range, ...tagNames) {
+    let anchor = range.startContainer
+    let doEdit = false
+    let isFirst = true
+    do {
+        const topNode = findParentTag(anchor, ...tagNames)
+        if (topNode) {
+            if (isFullInclusion(range, topNode)) {
+                removeNodeReserveChild(topNode)
+                if (isFirst) RangeUtils.setStartBefore(anchor)
+                RangeUtils.setEndAfter(anchor)
+            } else {
+                const [split, mode] = splitTextNodeAccordingRange(range, isFirst)
+                const oldAnchor = anchor
+                if (mode) {
+                    anchor.textContent = split[0]
+                    const insertNode = (index, breaker) => {
+                        const array = cloneDomTree(oldAnchor, split[index], breaker)
+                        topNode.parentNode.insertBefore(array[0], topNode.nextSibling)
+                        if (index === split.length - 1) anchor = array[1]
+                        return array[1]
+                    }
+                    if (split.length === 3)
+                        insertNode(2, it => it === topNode.parentNode)
+                    const mid = insertNode(1, it => tagNames.includes(it.nodeName))
+                    if (isFirst) RangeUtils.setStartBefore(mid)
+                    RangeUtils.setEndAfter(mid)
+                } else {
+                    anchor.textContent = split[1]
+                    const array = cloneDomTree(oldAnchor, split[0], it => tagNames.includes(it.nodeName))
+                    topNode.parentNode.insertBefore(array[0], topNode)
+                    if (isFirst) RangeUtils.setStartBefore(array[1])
+                    RangeUtils.setEndAfter(array[1])
+                }
+            }
+        } else {
+            doEdit = true
+            if (isFullInclusion(range, anchor)) {
+                if (isFirst)
+                    RangeUtils.setStartBefore(anchor)
+                RangeUtils.setEndAfter(anchor)
+            } else {
+                if (isFirst)
+                    RangeUtils.setStartAt(anchor, range.startOffset)
+                RangeUtils.setEndAt(anchor, anchor.textContent.length - range.endOffset)
+                break
+            }
+        }
+        anchor = nextSiblingText(anchor)
+        isFirst = false
+    } while (range.intersectsNode(anchor))
+    return doEdit
+}
+
+/**
  * 判断指定节点是否被某个类型的标签包裹
  * @param node {Node} 指定的节点
- * @param name {string} 标签名称
+ * @param names {string} 标签名称
  */
-function findParentTag(node, name) {
+function findParentTag(node, ...names) {
     let item = node.parentElement
     while (!item.classList.contains('krich-editor')) {
-        if (item.nodeName === name) return item
+        if (names.includes(item.nodeName)) return item
         item = item.parentElement
     }
 }

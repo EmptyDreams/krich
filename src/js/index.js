@@ -36,7 +36,7 @@ export function initEditor(selector, elements) {
     container.insertAdjacentHTML('beforebegin', `<style>${krichStyle}</style>`)
     container.innerHTML = `<div class="krich-tools">${
         Object.getOwnPropertyNames(elements)
-            .map(it => buttonBehavior[it].render())
+            .map(it => behaviors[it].render())
             .join('')
     }</div><div class="krich-editor" spellcheck contenteditable><p></p></div>`
     container.getElementsByClassName('krich-tools')[0].addEventListener('click', event => {
@@ -61,6 +61,6 @@ export function initEditor(selector, elements) {
             }
             target.getElementsByTagName('span')[0].innerText = original.innerText
         }
-        buttonBehavior[dataKey].onclick?.(event, target)
+        behaviors[dataKey].onclick?.(event, target)
     })
 }
