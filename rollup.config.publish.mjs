@@ -12,7 +12,9 @@ export default {
         name: 'krich'
     },
     plugins: [
-        resolve(),
+        resolve({
+            browser: true
+        }),
         html({
             include: './src/resources/**/*.html',
             htmlMinifierOptions: {

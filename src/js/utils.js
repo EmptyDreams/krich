@@ -1,5 +1,4 @@
-import behaviors from './behavior'
-import {DATA_ID} from './constant'
+import {DATA_ID, behaviors} from './constant'
 
 /**
  * 获取指定节点的第一个文本子节点

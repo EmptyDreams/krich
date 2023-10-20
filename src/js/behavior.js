@@ -15,17 +15,9 @@ import olStyle from '../resources/html/tools/ol.html'
 import multiStyle from '../resources/html/tools/multi.html'
 import {equalsKrichNode, getElementBehavior, getFirstTextNode, getLastTextNode} from './utils'
 import * as RangeUtils from './range'
-import {DATA_ID} from './constant'
+import {DATA_ID, initBehaviors} from './constant'
 
-/**
- * 工具栏上的按钮的样式
- * @type {{[p:string]: {
- *     render: function(): string,
- *     onclick: function(Event, HTMLElement),
- *     hash?: function(HTMLElement): string
- * }}}
- */
-const behaviors = {
+initBehaviors({
     headerSelect: {
         render: () => headerSelectStyle
     },
@@ -143,7 +135,7 @@ const behaviors = {
     multi: {
         render: () => multiStyle
     }
-}
+})
 
 /**
  * 判断指定节点是否被某个类型的标签包裹
@@ -332,5 +324,3 @@ function optimizeTree(range) {
         node = nextSiblingText(node)
     } while (range.intersectsNode(node))
 }
-
-export default behaviors

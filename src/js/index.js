@@ -1,8 +1,9 @@
 import krichStyle from '../resources/css/main.styl'
 
-import buttonBehavior from './behavior'
+import './behavior'
+import {behaviors} from './constant'
 
-export {buttonBehavior}
+export {behaviors}
 
 /**
  * 在指定元素内初始化编辑器
