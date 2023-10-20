@@ -2,6 +2,7 @@ import html from 'rollup-plugin-html'
 import resolve from '@rollup/plugin-node-resolve'
 import postcss from 'rollup-plugin-postcss'
 import postcssImport from 'postcss-import'
+import terser from '@rollup/plugin-terser'
 
 // noinspection JSUnusedGlobalSymbols
 export default {
@@ -35,6 +36,15 @@ export default {
             inject: false,
             minimize: true,
             plugins: [postcssImport()]
+        }),
+        terser({
+            compress: {
+                sequences: 50,
+                unsafe: true,
+                unsafe_math: true,
+                pure_getters: true,
+                ecma: 2015
+            }
         })
     ]
 }
