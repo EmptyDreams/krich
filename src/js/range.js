@@ -1,10 +1,10 @@
 import {getFirstTextNode, getLastTextNode} from './utils'
 
 /** @type {Range} */
-let range
+let exportRange
 
 export function create() {
-    return range = document.createRange()
+    return exportRange = document.createRange()
 }
 
 /**
@@ -31,7 +31,7 @@ export function setStartBefore(node) {
  */
 export function setStartAt(node, index) {
     console.assert(node.nodeType === Node.TEXT_NODE, 'node 类型必须为 #text')
-    range.setStart(node, index)
+    exportRange.setStart(node, index)
 }
 
 /**
@@ -41,7 +41,7 @@ export function setStartAt(node, index) {
  */
 export function setEndAt(node, index) {
     console.assert(node.nodeType === Node.TEXT_NODE, 'node 类型必须为 #text')
-    range.setEnd(node, node.textContent.length - index)
+    exportRange.setEnd(node, node.textContent.length - index)
 }
 
 /**
