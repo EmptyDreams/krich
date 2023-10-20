@@ -334,12 +334,14 @@ function optimizeTree(range) {
     const common = range.commonAncestorContainer
     let item = range.commonAncestorContainer.parentElement
     if (common.nodeType !== Node.TEXT_NODE) item = item.firstElementChild
-    const prev = item.previousSibling
-    if (prev && prev.nodeType !== Node.TEXT_NODE)
-        mergeElement(item, item.previousElementSibling, true)
-    while (item) {
-        optimizeNodes(item, true)
-        item = item.nextElementSibling
+    if (item.tagName !== 'P') {
+        const prev = item.previousSibling
+        if (prev && prev.nodeType !== Node.TEXT_NODE)
+            mergeElement(item, item.previousElementSibling, true)
+        while (item) {
+            optimizeNodes(item, true)
+            item = item.nextElementSibling
+        }
     }
     let node = getFirstTextNode( range.startContainer.parentNode)
     do {
