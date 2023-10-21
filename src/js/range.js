@@ -57,11 +57,7 @@ export function setEndAfter(range, node) {
  */
 export function getLineRange(range) {
     const result = document.createRange()
-    if (range.collapsed) {
-        console.log(range)
-    } else {
-        setStartBefore(result, findParentTag(result.startContainer, 'P'))
-        setEndAfter(result, findParentTag(result.endContainer, 'P'))
-    }
+    setStartBefore(result, findParentTag(range.startContainer, 'P'))
+    setEndAfter(result, findParentTag(range.endContainer, 'P'))
     return result
 }
