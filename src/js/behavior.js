@@ -22,9 +22,9 @@ initBehaviors({
         render: () => headerSelectStyle,
         onclick: event => {
             const value = event.target.getAttribute(SELECT_VALUE)
-            RangeUtils.create()
+            const newRange = document.createRange()
             removeStylesInRange(
-                getSelection().getRangeAt(0),
+                getSelection().getRangeAt(0), newRange,
                 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'
             )
             if (value !== '0')
@@ -81,18 +81,21 @@ initBehaviors({
  * @param name {string} 指令名称
  * @param tagName {string} 标签名称
  * @param removed {boolean} 是否已经移除过元素
+ * @param realRange {Range} 真实使用的 Range
  */
-function execCommonCommand(name, tagName, removed = false) {
+function execCommonCommand(name, tagName, removed = false, realRange = null) {
     const selection = getSelection()
-    const range = selection.getRangeAt(0)
-    let newRange = removed ? RangeUtils.exportRange : RangeUtils.create()
-    const doEdit = removed || removeStylesInRange(range, tagName)
-    newRange = newRange.collapsed ? range : newRange
-    if (doEdit) {
+    let range = realRange || selection.getRangeAt(0)
+    if (!removed) {
+        const newRange = document.createRange()
+        removed = removeStylesInRange(range, newRange, tagName)
+        if (!newRange.collapsed) range = newRange
+    }
+    if (removed) {
         const bold = document.createElement(tagName)
         bold.setAttribute(DATA_ID, name)
-        newRange.surroundContents(bold)
-        RangeUtils.selectNodeContents(bold)
+        range.surroundContents(bold)
+        RangeUtils.selectNodeContents(range, bold)
         /** @param node {Node} */
         const removeIfEmpty = node => {
             if (node && node.nodeType === Node.TEXT_NODE && !node.textContent)
@@ -102,17 +105,18 @@ function execCommonCommand(name, tagName, removed = false) {
         removeIfEmpty(bold.previousSibling)
     }
     selection.removeAllRanges()
-    selection.addRange(newRange)
-    optimizeTree(newRange)
+    selection.addRange(range)
+    optimizeTree(range)
 }
 
 /**
  * 删除选择范围内的指定样式
  * @param range {Range} 选择范围
+ * @param newRange {Range} 新创建的选择范围
  * @param tagNames {string} 要删除的标签名
  * @return {boolean} 是否存在元素没有修改
  */
-function removeStylesInRange(range, ...tagNames) {
+function removeStylesInRange(range, newRange, ...tagNames) {
     let anchor = range.startContainer
     let nonAllEdit = false
     let isFirst = true
@@ -121,8 +125,8 @@ function removeStylesInRange(range, ...tagNames) {
         if (topNode) {
             if (isFullInclusion(range, topNode)) {
                 removeNodeReserveChild(topNode)
-                if (isFirst) RangeUtils.setStartBefore(anchor)
-                RangeUtils.setEndAfter(anchor)
+                if (isFirst) RangeUtils.setStartBefore(newRange, anchor)
+                RangeUtils.setEndAfter(newRange, anchor)
             } else {
                 const [split, mode] = splitTextNodeAccordingRange(range, isFirst)
                 const oldAnchor = anchor
@@ -137,26 +141,26 @@ function removeStylesInRange(range, ...tagNames) {
                     if (split.length === 3)
                         insertNode(2, it => it === topNode.parentNode)
                     const mid = insertNode(1, it => tagNames.includes(it.nodeName))
-                    if (isFirst) RangeUtils.setStartBefore(mid)
-                    RangeUtils.setEndAfter(mid)
+                    if (isFirst) RangeUtils.setStartBefore(newRange, mid)
+                    RangeUtils.setEndAfter(newRange, mid)
                 } else {
                     anchor.textContent = split[1]
                     const array = cloneDomTree(oldAnchor, split[0], it => tagNames.includes(it.nodeName))
                     topNode.parentNode.insertBefore(array[0], topNode)
-                    if (isFirst) RangeUtils.setStartBefore(array[1])
-                    RangeUtils.setEndAfter(array[1])
+                    if (isFirst) RangeUtils.setStartBefore(newRange, array[1])
+                    RangeUtils.setEndAfter(newRange, array[1])
                 }
             }
         } else {
             nonAllEdit = true
             if (isFullInclusion(range, anchor)) {
                 if (isFirst)
-                    RangeUtils.setStartBefore(anchor)
-                RangeUtils.setEndAfter(anchor)
+                    RangeUtils.setStartBefore(newRange, anchor)
+                RangeUtils.setEndAfter(newRange, anchor)
             } else {
                 if (isFirst)
-                    RangeUtils.setStartAt(anchor, range.startOffset)
-                RangeUtils.setEndAt(anchor, anchor.textContent.length - range.endOffset)
+                    RangeUtils.setStartAt(newRange, anchor, range.startOffset)
+                RangeUtils.setEndAt(newRange, anchor, anchor.textContent.length - range.endOffset)
                 break
             }
         }
