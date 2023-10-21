@@ -13,22 +13,24 @@ import backgroundStyle from '../resources/html/tools/background.html'
 import ulStyle from '../resources/html/tools/ul.html'
 import olStyle from '../resources/html/tools/ol.html'
 import multiStyle from '../resources/html/tools/multi.html'
-import {equalsKrichNode, getElementBehavior, getFirstTextNode, getLastTextNode} from './utils'
+import {equalsKrichNode, findParentTag, getElementBehavior, getFirstTextNode, getLastTextNode} from './utils'
 import * as RangeUtils from './range'
 import {DATA_ID, initBehaviors, SELECT_VALUE} from './constant'
+import {getLineRange} from './range'
 
 initBehaviors({
     headerSelect: {
         render: () => headerSelectStyle,
         onclick: event => {
             const value = event.target.getAttribute(SELECT_VALUE)
+            const lineRange = getLineRange(getSelection().getRangeAt(0))
             const newRange = document.createRange()
             removeStylesInRange(
-                getSelection().getRangeAt(0), newRange,
+                lineRange, newRange,
                 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'
             )
             if (value !== '0')
-                execCommonCommand('headerSelect', `H${value}`, true)
+                execCommonCommand('headerSelect', `H${value}`, true, newRange)
         }
     },
     blockquote: {
@@ -168,19 +170,6 @@ function removeStylesInRange(range, newRange, ...tagNames) {
         isFirst = false
     } while (range.intersectsNode(anchor))
     return nonAllEdit
-}
-
-/**
- * 判断指定节点是否被某个类型的标签包裹
- * @param node {Node} 指定的节点
- * @param names {string} 标签名称
- */
-function findParentTag(node, ...names) {
-    let item = node.parentElement
-    while (!item.classList.contains('krich-editor')) {
-        if (names.includes(item.nodeName)) return item
-        item = item.parentElement
-    }
 }
 
 /**

@@ -1,4 +1,4 @@
-import {getFirstTextNode, getLastTextNode} from './utils'
+import {findParentTag, getFirstTextNode, getLastTextNode} from './utils'
 
 /**
  * 设置选择范围在指定的 node
@@ -27,7 +27,7 @@ export function setStartBefore(range, node) {
  */
 export function setStartAt(range, node, index) {
     console.assert(node.nodeType === Node.TEXT_NODE, 'node 类型必须为 #text', node)
-    exportRange.setStart(range, node, index)
+    range.setStart(node, index)
 }
 
 /**
@@ -48,4 +48,20 @@ export function setEndAt(range, node, index) {
  */
 export function setEndAfter(range, node) {
     setEndAt(range, getLastTextNode(node), 0)
+}
+
+/**
+ * 获取 Range 所在行的 Range
+ * @param range {Range}
+ * @return {Range}
+ */
+export function getLineRange(range) {
+    const result = document.createRange()
+    if (range.collapsed) {
+        console.log(range)
+    } else {
+        setStartBefore(result, findParentTag(result.startContainer, 'P'))
+        setEndAfter(result, findParentTag(result.endContainer, 'P'))
+    }
+    return result
 }

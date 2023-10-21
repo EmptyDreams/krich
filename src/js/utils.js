@@ -40,3 +40,17 @@ export function equalsKrichNode(arg0, arg1) {
     console.assert(!!h0 && h1, `两个节点有一个不包含 ${DATA_ID} 属性或属性值错误`, arg0, arg1)
     return h0 === h1 && h0.hash?.(arg0) === h1.hash?.(arg1)
 }
+
+/**
+ * 判断指定节点是否被某个类型的标签包裹
+ * @param node {Node} 指定的节点
+ * @param names {string} 标签名称
+ */
+export function findParentTag(node, ...names) {
+    console.assert(names && names.length !== 0, 'names 不应当为空')
+    let item = node.parentElement
+    while (!item.classList.contains('krich-editor')) {
+        if (names.includes(item.nodeName)) return item
+        item = item.parentElement
+    }
+}
