@@ -18,6 +18,9 @@ import * as RangeUtils from './range'
 import {DATA_ID, initBehaviors, SELECT_VALUE} from './constant'
 import {getLineRange} from './range'
 
+const TITLE_LIST = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6']
+export const TOP_LIST = ['P', ...TITLE_LIST]
+
 initBehaviors({
     headerSelect: {
         render: () => headerSelectStyle,
@@ -25,10 +28,7 @@ initBehaviors({
             const value = event.target.getAttribute(SELECT_VALUE)
             const lineRange = getLineRange(getSelection().getRangeAt(0))
             const newRange = document.createRange()
-            removeStylesInRange(
-                lineRange, newRange,
-                'H1', 'H2', 'H3', 'H4', 'H5', 'H6'
-            )
+            removeStylesInRange(lineRange, newRange, ...TITLE_LIST)
             if (value !== '0')
                 execCommonCommand('headerSelect', `H${value}`, true, newRange)
         }
@@ -122,6 +122,7 @@ function removeStylesInRange(range, newRange, ...tagNames) {
     let anchor = range.startContainer
     let nonAllEdit = false
     let isFirst = true
+    const breaker = it => tagNames.includes(it.nodeName) || TOP_LIST.includes(it.nodeName)
     do {
         const topNode = findParentTag(anchor, ...tagNames)
         if (topNode) {
@@ -142,12 +143,12 @@ function removeStylesInRange(range, newRange, ...tagNames) {
                     }
                     if (split.length === 3)
                         insertNode(2, it => it === topNode.parentNode)
-                    const mid = insertNode(1, it => tagNames.includes(it.nodeName))
+                    const mid = insertNode(1, breaker)
                     if (isFirst) RangeUtils.setStartBefore(newRange, mid)
                     RangeUtils.setEndAfter(newRange, mid)
                 } else {
                     anchor.textContent = split[1]
-                    const array = cloneDomTree(oldAnchor, split[0], it => tagNames.includes(it.nodeName))
+                    const array = cloneDomTree(oldAnchor, split[0], breaker)
                     topNode.parentNode.insertBefore(array[0], topNode)
                     if (isFirst) RangeUtils.setStartBefore(newRange, array[1])
                     RangeUtils.setEndAfter(newRange, array[1])
