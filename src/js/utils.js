@@ -54,3 +54,13 @@ export function findParentTag(node, ...names) {
         item = item.parentElement
     }
 }
+
+/**
+ * 将指定的元素替换为指定元素，同时保留子元素
+ * @param src {HTMLElement} 要被替换的元素
+ * @param novel {HTMLElement} 新的元素
+ */
+export function replaceElement(src, novel) {
+    novel.innerHTML = src.innerHTML
+    src.replaceWith(novel)
+}

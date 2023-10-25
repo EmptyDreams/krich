@@ -13,7 +13,14 @@ import backgroundStyle from '../resources/html/tools/background.html'
 import ulStyle from '../resources/html/tools/ul.html'
 import olStyle from '../resources/html/tools/ol.html'
 import multiStyle from '../resources/html/tools/multi.html'
-import {equalsKrichNode, findParentTag, getElementBehavior, getFirstTextNode, getLastTextNode} from './utils'
+import {
+    equalsKrichNode,
+    findParentTag,
+    getElementBehavior,
+    getFirstTextNode,
+    getLastTextNode,
+    replaceElement
+} from './utils'
 import * as RangeUtils from './range'
 import {DATA_ID, initBehaviors, SELECT_VALUE} from './constant'
 import {getLineRange} from './range'
@@ -26,11 +33,17 @@ initBehaviors({
         render: () => headerSelectStyle,
         onclick: event => {
             const value = event.target.getAttribute(SELECT_VALUE)
+            const replacer = item => {
+                const novel = document.createElement(value === '0' ? 'p' : 'h' + value)
+                novel.setAttribute('data-id', 'headerSelect')
+                replaceElement(item, novel)
+            }
             const lineRange = getLineRange(getSelection().getRangeAt(0))
-            const newRange = document.createRange()
-            removeStylesInRange(lineRange, newRange, ...TITLE_LIST)
-            if (value !== '0')
-                execCommonCommand('headerSelect', `H${value}`, true, newRange)
+            let item = findParentTag(lineRange.startContainer, ...TOP_LIST)
+            do {
+                item.innerHTML = item.textContent
+                replacer(item)
+            } while (lineRange.intersectsNode(item))
         }
     },
     blockquote: {
