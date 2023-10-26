@@ -173,9 +173,11 @@ function removeStylesInRange(range, newRange, ...tagNames) {
                 RangeUtils.setEndAfter(newRange, anchor)
                 break
             } else {
+                console.log(range.startOffset, range.endOffset, anchor.textContent)
                 if (isFirst)
                     RangeUtils.setStartAt(newRange, anchor, range.startOffset)
-                RangeUtils.setEndAt(newRange, anchor, anchor.textContent.length - range.endOffset)
+                if (range.endContainer === anchor)
+                    RangeUtils.setEndAt(newRange, anchor, anchor.textContent.length - range.endOffset)
             }
         }
         anchor = nextSiblingText(anchor)
