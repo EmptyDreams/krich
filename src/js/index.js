@@ -2,9 +2,11 @@ import krichStyle from '../resources/css/main.styl'
 
 import './behavior'
 import {behaviors} from './constant'
+import {replaceElement} from './utils'
 
 export {behaviors}
 
+// noinspection JSUnusedGlobalSymbols
 /**
  * 在指定元素内初始化编辑器
  *
@@ -39,7 +41,9 @@ export function initEditor(selector, elements) {
             .map(it => behaviors[it].render())
             .join('')
     }</div><div class="krich-editor" spellcheck contenteditable><p></p></div>`
-    container.getElementsByClassName('krich-tools')[0].addEventListener('click', event => {
+    const editorTools = container.getElementsByClassName('krich-tools')[0]
+    const editorContent = container.getElementsByClassName('krich-editor')[0]
+    editorTools.addEventListener('click', event => {
         const original = event.target
         let target = original
         if (target.classList.contains('krich-tools')) return
@@ -62,5 +66,13 @@ export function initEditor(selector, elements) {
             target.getElementsByTagName('span')[0].innerText = original.innerText
         }
         behaviors[dataKey].onclick?.(event, target)
+    })
+    editorContent.addEventListener('keypress', event => {
+        if (event.key === 'Enter') {
+            setTimeout(() => {
+                editorContent.querySelectorAll('&>div:not([data-id])')
+                    .forEach(it => replaceElement(it, document.createElement('p')))
+            }, 0)
+        }
     })
 }
