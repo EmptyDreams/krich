@@ -18,12 +18,10 @@ import {
     findParentTag,
     getElementBehavior,
     getFirstTextNode,
-    getLastTextNode,
     replaceElement
 } from './utils'
 import * as RangeUtils from './range'
 import {DATA_ID, initBehaviors, SELECT_VALUE} from './constant'
-import {getLineRange} from './range'
 
 const TITLE_LIST = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6']
 export const TOP_LIST = ['P', ...TITLE_LIST]
@@ -173,11 +171,11 @@ function removeStylesInRange(range, newRange, ...tagNames) {
                 if (isFirst)
                     RangeUtils.setStartBefore(newRange, anchor)
                 RangeUtils.setEndAfter(newRange, anchor)
+                break
             } else {
                 if (isFirst)
                     RangeUtils.setStartAt(newRange, anchor, range.startOffset)
                 RangeUtils.setEndAt(newRange, anchor, anchor.textContent.length - range.endOffset)
-                break
             }
         }
         anchor = nextSiblingText(anchor)
@@ -192,12 +190,10 @@ function removeStylesInRange(range, newRange, ...tagNames) {
  * @param childNode {Node} 子元素
  */
 function isFullInclusion(range, childNode) {
-    let childRange = document.createRange()
-    childRange.selectNodeContents(getFirstTextNode(childNode))
+    const childRange = document.createRange()
+    RangeUtils.selectNodeContents(childRange, childNode)
     const startPoint = range.compareBoundaryPoints(Range.START_TO_START, childRange)
     if (startPoint > 0) return false
-    childRange = document.createRange()
-    childRange.selectNodeContents(getLastTextNode(childNode))
     const endPoint = range.compareBoundaryPoints(Range.END_TO_END, childRange)
     return endPoint >= 0
 }
