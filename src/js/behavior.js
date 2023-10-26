@@ -38,12 +38,12 @@ initBehaviors({
                 novel.setAttribute('data-id', 'headerSelect')
                 replaceElement(item, novel)
             }
-            const lineRange = getLineRange(getSelection().getRangeAt(0))
-            let item = findParentTag(lineRange.startContainer, ...TOP_LIST)
+            const range = getSelection().getRangeAt(0)
+            let item = findParentTag(range.startContainer, ...TOP_LIST)
             do {
                 item.innerHTML = item.textContent
                 replacer(item)
-            } while (lineRange.intersectsNode(item))
+            } while (range.intersectsNode(item))
         }
     },
     blockquote: {
