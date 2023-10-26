@@ -67,12 +67,20 @@ export function initEditor(selector, elements) {
         }
         behaviors[dataKey].onclick?.(event, target)
     })
-    editorContent.addEventListener('keypress', event => {
-        if (event.key === 'Enter') {
-            setTimeout(() => {
-                editorContent.querySelectorAll('&>div:not([data-id])')
+    const switchTask = key => {
+        switch (key) {
+            case 'Enter':
+                return () => editorContent.querySelectorAll('&>div:not([data-id])')
                     .forEach(it => replaceElement(it, document.createElement('p')))
-            }, 0)
+            case 'Backspace':
+                return () => {
+                    if (editorContent.childElementCount === 0)
+                        editorContent.append(document.createElement('p'))
+                }
         }
+    }
+    editorContent.addEventListener('keyup', event => {
+        const task = switchTask(event.key)
+        if (task) setTimeout(task, 0)
     })
 }
