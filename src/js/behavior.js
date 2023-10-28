@@ -247,6 +247,7 @@ function nextSiblingText(node) {
             break
         }
         dist = dist.parentNode
+        if (!dist) return null
     }
     return getFirstTextNode(dist)
 }
@@ -352,11 +353,11 @@ function optimizeTree(range) {
     let node = getFirstTextNode( range.startContainer.parentNode)
     do {
         let sibling = node.nextSibling
-        while (sibling?.nodeType === node.nodeType) {
+        while (sibling?.nodeType === Node.TEXT_NODE) {
             node.textContent += sibling.textContent
             sibling.remove()
             sibling = node.nextSibling
         }
         node = nextSiblingText(node)
-    } while (range.intersectsNode(node))
+    } while (node)
 }
