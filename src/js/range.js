@@ -69,7 +69,7 @@ export function splitRangeByLine(range) {
             setEndAfter(childRange, item)
         } else if (item.contains(endContainer)) {
             setStartBefore(childRange, item)
-            range.setEnd(endContainer, range.endOffset)
+            childRange.setEnd(endContainer, range.endOffset)
         } else {
             selectNodeContents(childRange, item)
         }
@@ -86,9 +86,6 @@ export function splitRangeByLine(range) {
  * @return {void}
  */
 export function surroundContents(range, container) {
-    const common = range.commonAncestorContainer
-    if (common.nodeType === Node.TEXT_NODE)
-        return range.surroundContents(container)
     const fragment = range.extractContents()
     container.appendChild(fragment)
     range.insertNode(container)
