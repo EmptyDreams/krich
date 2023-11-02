@@ -28,21 +28,28 @@ initBehaviors({
         render: () => headerSelectStyle,
         onclick: event => {
             const value = event.target.getAttribute(SELECT_VALUE)
-            const replacer = item => {
+            console.assert(value?.length === 1, `${value} 值异常`)
+            const range = getSelection().getRangeAt(0)
+            RangeUtils.getTopLines(range).forEach(item => {
                 const novel = document.createElement(value === '0' ? 'p' : 'h' + value)
                 novel.setAttribute('data-id', 'headerSelect')
-                replaceElement(item, novel)
-            }
-            const range = getSelection().getRangeAt(0)
-            let item = findParentTag(range.startContainer, ...TOP_LIST)
-            do {
-                item.innerHTML = item.textContent
-                replacer(item)
-            } while (range.intersectsNode(item))
+                novel.innerHTML = item.textContent
+                item.replaceWith(novel)
+            })
         }
     },
     blockquote: {
-        render: () => blockquoteStyle
+        render: () => blockquoteStyle,
+        onclick: () => {
+            const range = getSelection().getRangeAt(0)
+            const lines = RangeUtils.getTopLines(range)
+            const blockquote = document.createElement('blockquote')
+            blockquote.setAttribute('data-id', 'blockquote')
+            blockquote.setAttribute('data-stamp', Date.now().toString(16))
+            blockquote.textContent = lines.map(it => it.textContent).join('\n')
+            lines[0].parentNode.insertBefore(blockquote, lines[0])
+            lines.forEach(it => it.remove())
+        }
     },
     bold: {
         render: () => boldStyle,

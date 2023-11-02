@@ -104,3 +104,32 @@ export function mergeRanges(ranges) {
     result.setEnd(last.endContainer, last.endOffset)
     return result
 }
+
+/**
+ * 遍历 Range 包含的所有顶层节点
+ * @param range {Range}
+ * @return {HTMLElement[]}
+ */
+export function getTopLines(range) {
+    const result = []
+    let item = findParentTag(range.startContainer, ...TOP_LIST)
+    do {
+        result.push(item)
+        item = item.nextElementSibling
+    } while (item && range.intersectsNode(item))
+    return result
+}
+
+/**
+ * 将鼠标光标移动到指定位置
+ * @param node {Node}
+ * @param index {number}
+ */
+export function setCursorPosition(node, index) {
+    const range = document.createRange()
+    range.setStart(node, index)
+    range.collapse(true)
+    const selection = getSelection()
+    selection.removeAllRanges()
+    selection.addRange(range)
+}

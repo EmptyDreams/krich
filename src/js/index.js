@@ -3,6 +3,7 @@ import krichStyle from '../resources/css/main.styl'
 import './behavior'
 import {behaviors} from './constant'
 import {replaceElement} from './utils'
+import {setCursorPosition} from './range'
 
 export {behaviors}
 
@@ -70,8 +71,39 @@ export function initEditor(selector, elements) {
     const switchTask = key => {
         switch (key) {
             case 'Enter':
-                return () => editorContent.querySelectorAll('&>div:not([data-id])')
-                    .forEach(it => replaceElement(it, document.createElement('p')))
+                return () => {
+                    editorContent.querySelectorAll('&>div:not([data-id])')
+                        .forEach(it => replaceElement(it, document.createElement('p')))
+                    // 在引用中换行时合并引用，并纠正光标位置
+                    const range = getSelection().getRangeAt(0)
+                    const name = 'BLOCKQUOTE'
+                    let node = range.startContainer
+                    if (node.nodeType === Node.TEXT_NODE)
+                        node = node.parentNode
+                    if (range.collapsed && node.nodeName === name) {
+                        let index = 0
+                        const stamp = node.getAttribute('data-stamp')
+                        const check = item => item && item.nodeName === name && item.getAttribute('data-stamp') === stamp
+                        let prev = node.previousSibling
+                        while (check(prev)) {
+                            index += prev.textContent.length + 1
+                            prev.textContent += '\n' + node.textContent
+                            node.remove()
+                            node = prev
+                            prev = prev.previousSibling
+                        }
+                        let next = node.nextSibling
+                        while (check(next)) {
+                            node.textContent += '\n' + next.textContent
+                            next.remove()
+                            next = node.nextSibling
+                        }
+                        if (index) {
+                            console.log(index, node.firstChild)
+                            setCursorPosition(node.firstChild, index)
+                        }
+                    }
+                }
             case 'Backspace':
                 return () => {
                     if (editorContent.childElementCount === 0)
