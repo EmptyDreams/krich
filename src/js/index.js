@@ -98,10 +98,7 @@ export function initEditor(selector, elements) {
                             next.remove()
                             next = node.nextSibling
                         }
-                        if (index) {
-                            console.log(index, node.firstChild)
-                            setCursorPosition(node.firstChild, index)
-                        }
+                        if (index) setCursorPosition(node.firstChild, index)
                     }
                 }
             case 'Backspace':
