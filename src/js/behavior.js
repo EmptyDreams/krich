@@ -112,7 +112,8 @@ function execCommonCommand(name, tagName, removed = false, realRange = null) {
         }
     }
     if (removed) {
-        rangeArray.forEach(it => {
+        for (let i = 0; i < rangeArray.length; i++) {
+            const it = rangeArray[i]
             const bold = document.createElement(tagName)
             bold.setAttribute(DATA_ID, name)
             RangeUtils.surroundContents(it, bold)
@@ -123,7 +124,9 @@ function execCommonCommand(name, tagName, removed = false, realRange = null) {
             }
             removeIfEmpty(bold.nextSibling)
             removeIfEmpty(bold.previousSibling)
-        })
+            rangeArray[i] = document.createRange()
+            RangeUtils.selectNodeContents(rangeArray[i], bold)
+        }
     }
     selection.removeAllRanges()
     selection.addRange(RangeUtils.mergeRanges(rangeArray))
