@@ -17,8 +17,7 @@ import {
     equalsKrichNode,
     findParentTag,
     getElementBehavior,
-    getFirstTextNode,
-    replaceElement
+    getFirstTextNode
 } from './utils'
 import * as RangeUtils from './range'
 import {DATA_ID, initBehaviors, SELECT_VALUE, TOP_LIST} from './constant'
@@ -40,6 +39,7 @@ initBehaviors({
     },
     blockquote: {
         render: () => blockquoteStyle,
+        hash: item => item.getAttribute('data-stamp'),
         onclick: () => {
             const range = getSelection().getRangeAt(0)
             const lines = RangeUtils.getTopLines(range)
