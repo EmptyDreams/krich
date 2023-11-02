@@ -84,19 +84,26 @@ export function initEditor(selector, elements) {
                         let index = 0
                         const stamp = node.getAttribute('data-stamp')
                         const check = item => item && item.nodeName === name && item.getAttribute('data-stamp') === stamp
+                        let isLast = true
+                        let next = node.nextSibling
+                        while (check(next)) {
+                            isLast = false
+                            node.textContent += '\n' + next.textContent
+                            next.remove()
+                            next = node.nextSibling
+                        }
                         let prev = node.previousSibling
                         while (check(prev)) {
                             index += prev.textContent.length + 1
+                            if (isLast) {
+                                isLast = false
+                                if (!prev.textContent.endsWith('\n'))
+                                    prev.textContent += '\n'
+                            }
                             prev.textContent += '\n' + node.textContent
                             node.remove()
                             node = prev
                             prev = prev.previousSibling
-                        }
-                        let next = node.nextSibling
-                        while (check(next)) {
-                            node.textContent += '\n' + next.textContent
-                            next.remove()
-                            next = node.nextSibling
                         }
                         if (index) setCursorPosition(node.firstChild, index)
                     }
