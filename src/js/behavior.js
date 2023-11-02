@@ -21,10 +21,7 @@ import {
     replaceElement
 } from './utils'
 import * as RangeUtils from './range'
-import {DATA_ID, initBehaviors, SELECT_VALUE} from './constant'
-
-const TITLE_LIST = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6']
-export const TOP_LIST = ['P', ...TITLE_LIST]
+import {DATA_ID, initBehaviors, SELECT_VALUE, TOP_LIST} from './constant'
 
 initBehaviors({
     headerSelect: {
@@ -107,8 +104,7 @@ function execCommonCommand(name, tagName, removed = false, realRange = null) {
     if (removed) {
         const bold = document.createElement(tagName)
         bold.setAttribute(DATA_ID, name)
-        range.surroundContents(bold)
-        RangeUtils.selectNodeContents(range, bold)
+        RangeUtils.surroundContents(range, bold)
         /** @param node {Node} */
         const removeIfEmpty = node => {
             if (node && node.nodeType === Node.TEXT_NODE && !node.textContent)

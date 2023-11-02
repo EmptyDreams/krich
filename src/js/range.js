@@ -1,4 +1,5 @@
-import {findParentTag, getFirstTextNode, getLastTextNode} from './utils'
+import {findParentTag, getFirstTextNode, getLastTextNode, getLca, splitElementFrom} from './utils'
+import {TOP_LIST} from './constant'
 
 /**
  * 设置选择范围在指定的 node
@@ -51,13 +52,42 @@ export function setEndAfter(range, node) {
 }
 
 /**
- * 获取 Range 所在行的 Range
- * @param range {Range}
- * @return {Range}
+ * 使用指定的容器包裹范围内选中的节点
+ * @param range {Range} 选择范围
+ * @param container {HTMLElement} 容器
+ * @return {void}
  */
-export function getLineRange(range) {
-    const result = document.createRange()
-    setStartBefore(result, findParentTag(range.startContainer, 'P'))
-    setEndAfter(result, findParentTag(range.endContainer, 'P'))
-    return result
+export function surroundContents(range, container) {
+    const common = range.commonAncestorContainer
+    console.log(range.startContainer.textContent, range.endContainer.textContent, common)
+    if (common.nodeType === Node.TEXT_NODE)
+        return range.surroundContents(container)
+    /** @param range {Range} */
+    const surroundLine = range => {
+        const fragment = range.extractContents()
+        const root = container.cloneNode(false)
+        root.appendChild(fragment)
+        range.insertNode(root)
+    }
+    const {startContainer, endContainer} = range
+    if (common.classList.contains('krich-editor')) {    // 跨行
+        let line = findParentTag(startContainer, ...TOP_LIST)
+        do {
+            const childRange = document.createRange()
+            if (line.contains(startContainer)) {
+                setStartAt(childRange, startContainer, range.startOffset)
+                setEndAfter(childRange, line)
+            } else if (line.contains(endContainer)) {
+                setStartBefore(childRange, line)
+                childRange.setEnd(endContainer, range.endOffset)
+            } else {
+                setStartBefore(childRange, line)
+                setEndAfter(childRange, line)
+            }
+            surroundLine(childRange)
+            line = line.nextSibling
+        } while (line && range.intersectsNode(line))
+    } else {    // 单行
+        surroundLine(range)
+    }
 }
