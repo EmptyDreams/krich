@@ -52,42 +52,58 @@ export function setEndAfter(range, node) {
 }
 
 /**
- * 使用指定的容器包裹范围内选中的节点
+ * 通过行切分 Range
+ * @param range {Range}
+ * @return {Range[]}
+ */
+export function splitRangeByLine(range) {
+    if (!range.commonAncestorContainer.classList?.contains('krich-editor'))
+        return [range]
+    const {startContainer, endContainer} = range
+    const result = []
+    let item = findParentTag(startContainer, ...TOP_LIST)
+    do {
+        const childRange = document.createRange()
+        if (result.length === 0 && item.contains(startContainer)) {
+            setStartAt(childRange, startContainer, range.startOffset)
+            setEndAfter(childRange, item)
+        } else if (item.contains(endContainer)) {
+            setStartBefore(childRange, item)
+            range.setEnd(endContainer, range.endOffset)
+        } else {
+            selectNodeContents(childRange, item)
+        }
+        result.push(childRange)
+        item = item.nextSibling
+    } while (item && range.intersectsNode(item))
+    return result
+}
+
+/**
+ * 使用指定的容器包裹范围内选中的节点（不能跨行）
  * @param range {Range} 选择范围
  * @param container {HTMLElement} 容器
  * @return {void}
  */
 export function surroundContents(range, container) {
     const common = range.commonAncestorContainer
-    console.log(range.startContainer.textContent, range.endContainer.textContent, common)
     if (common.nodeType === Node.TEXT_NODE)
         return range.surroundContents(container)
-    /** @param range {Range} */
-    const surroundLine = range => {
-        const fragment = range.extractContents()
-        const root = container.cloneNode(false)
-        root.appendChild(fragment)
-        range.insertNode(root)
-    }
-    const {startContainer, endContainer} = range
-    if (common.classList.contains('krich-editor')) {    // 跨行
-        let line = findParentTag(startContainer, ...TOP_LIST)
-        do {
-            const childRange = document.createRange()
-            if (line.contains(startContainer)) {
-                setStartAt(childRange, startContainer, range.startOffset)
-                setEndAfter(childRange, line)
-            } else if (line.contains(endContainer)) {
-                setStartBefore(childRange, line)
-                childRange.setEnd(endContainer, range.endOffset)
-            } else {
-                setStartBefore(childRange, line)
-                setEndAfter(childRange, line)
-            }
-            surroundLine(childRange)
-            line = line.nextSibling
-        } while (line && range.intersectsNode(line))
-    } else {    // 单行
-        surroundLine(range)
-    }
+    const fragment = range.extractContents()
+    container.appendChild(fragment)
+    range.insertNode(container)
+}
+
+/**
+ * 合并相邻的 Range
+ * @param ranges {Range[]}
+ * @return {Range}
+ */
+export function mergeRanges(ranges) {
+    const first = ranges[0]
+    const last = ranges[ranges.length - 1]
+    const result = document.createRange()
+    result.setStart(first.startContainer, first.startOffset)
+    result.setEnd(last.endContainer, last.endOffset)
+    return result
 }

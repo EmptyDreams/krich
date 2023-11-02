@@ -95,33 +95,45 @@ initBehaviors({
  */
 function execCommonCommand(name, tagName, removed = false, realRange = null) {
     const selection = getSelection()
-    let range = realRange || selection.getRangeAt(0)
+    const range = realRange || selection.getRangeAt(0)
+    const rangeArray = RangeUtils.splitRangeByLine(range)
     if (!removed) {
-        const newRange = document.createRange()
-        removed = removeStylesInRange(range, newRange, tagName)
-        if (!newRange.collapsed) range = newRange
+        const firstRange = document.createRange()
+        removed = removeStylesInRange(rangeArray[0], firstRange, tagName) || removed
+        rangeArray[0] = firstRange
+        if (rangeArray.length > 1) {
+            const last = rangeArray.length - 1
+            for (let i = 1; i < last; ++i) {
+                removed = removeStylesInRange(rangeArray[i], null, tagName) || removed
+            }
+            const lastRange = document.createRange()
+            removed = removeStylesInRange(rangeArray[last], lastRange, tagName) || removed
+            rangeArray[last] = lastRange
+        }
     }
     if (removed) {
-        const bold = document.createElement(tagName)
-        bold.setAttribute(DATA_ID, name)
-        RangeUtils.surroundContents(range, bold)
-        /** @param node {Node} */
-        const removeIfEmpty = node => {
-            if (node && node.nodeType === Node.TEXT_NODE && !node.textContent)
-                node.remove()
-        }
-        removeIfEmpty(bold.nextSibling)
-        removeIfEmpty(bold.previousSibling)
+        rangeArray.forEach(it => {
+            const bold = document.createElement(tagName)
+            bold.setAttribute(DATA_ID, name)
+            RangeUtils.surroundContents(it, bold)
+            /** @param node {Node} */
+            const removeIfEmpty = node => {
+                if (node && node.nodeType === Node.TEXT_NODE && !node.textContent)
+                    node.remove()
+            }
+            removeIfEmpty(bold.nextSibling)
+            removeIfEmpty(bold.previousSibling)
+        })
     }
     selection.removeAllRanges()
-    selection.addRange(range)
-    optimizeTree(range)
+    selection.addRange(RangeUtils.mergeRanges(rangeArray))
+    optimizeTree(rangeArray)
 }
 
 /**
  * 删除选择范围内的指定样式
  * @param range {Range} 选择范围
- * @param newRange {Range} 新创建的选择范围
+ * @param newRange {?Range} 新创建的选择范围
  * @param tagNames {string} 要删除的标签名
  * @return {boolean} 是否存在元素没有修改
  */
@@ -135,8 +147,10 @@ function removeStylesInRange(range, newRange, ...tagNames) {
         if (topNode) {
             if (isFullInclusion(range, topNode)) {
                 removeNodeReserveChild(topNode)
-                if (isFirst) RangeUtils.setStartBefore(newRange, anchor)
-                RangeUtils.setEndAfter(newRange, anchor)
+                if (newRange) {
+                    if (isFirst) RangeUtils.setStartBefore(newRange, anchor)
+                    RangeUtils.setEndAfter(newRange, anchor)
+                }
             } else {
                 const [split, mode] = splitTextNodeAccordingRange(range, isFirst)
                 const oldAnchor = anchor
@@ -151,29 +165,34 @@ function removeStylesInRange(range, newRange, ...tagNames) {
                     if (split.length === 3)
                         insertNode(2, it => it === topNode.parentNode)
                     const mid = insertNode(1, breaker)
-                    if (isFirst) RangeUtils.setStartBefore(newRange, mid)
-                    RangeUtils.setEndAfter(newRange, mid)
+                    if (newRange) {
+                        if (isFirst) RangeUtils.setStartBefore(newRange, mid)
+                        RangeUtils.setEndAfter(newRange, mid)
+                    }
                 } else {
                     anchor.textContent = split[1]
                     const array = cloneDomTree(oldAnchor, split[0], breaker)
                     topNode.parentNode.insertBefore(array[0], topNode)
-                    if (isFirst) RangeUtils.setStartBefore(newRange, array[1])
-                    RangeUtils.setEndAfter(newRange, array[1])
+                    if (newRange) {
+                        if (isFirst) RangeUtils.setStartBefore(newRange, array[1])
+                        RangeUtils.setEndAfter(newRange, array[1])
+                    }
                 }
             }
         } else {
             nonAllEdit = true
-            if (isFullInclusion(range, anchor)) {
-                if (isFirst)
-                    RangeUtils.setStartBefore(newRange, anchor)
-                RangeUtils.setEndAfter(newRange, anchor)
-                break
-            } else {
-                console.log(range.startOffset, range.endOffset, anchor.textContent)
-                if (isFirst)
-                    RangeUtils.setStartAt(newRange, anchor, range.startOffset)
-                if (range.endContainer === anchor)
-                    RangeUtils.setEndAt(newRange, anchor, anchor.textContent.length - range.endOffset)
+            if (newRange) {
+                if (isFullInclusion(range, anchor)) {
+                    if (isFirst)
+                        RangeUtils.setStartBefore(newRange, anchor)
+                    RangeUtils.setEndAfter(newRange, anchor)
+                    break
+                } else {
+                    if (isFirst)
+                        RangeUtils.setStartAt(newRange, anchor, range.startOffset)
+                    if (range.endContainer === anchor)
+                        newRange.setEnd(anchor, range.endOffset)
+                }
             }
         }
         anchor = nextSiblingText(anchor)
@@ -290,9 +309,9 @@ function splitTextNodeAccordingRange(range, isFirst) {
 
 /**
  * 优化选中的节点结构
- * @param range {Range}
+ * @param ranges {Range[]}
  */
-function optimizeTree(range) {
+function optimizeTree(ranges) {
     /** @param element {HTMLElement} */
     const nextElementSibling  = element => {
         const sibling1 = element.nextSibling
@@ -334,26 +353,28 @@ function optimizeTree(range) {
         }
         return result
     }
-    const common = range.commonAncestorContainer
-    let item = range.commonAncestorContainer.parentElement
-    if (common.nodeType !== Node.TEXT_NODE) item = item.firstElementChild
-    if (item.tagName !== 'P') {
-        const prev = item.previousSibling
-        if (prev && prev.nodeType !== Node.TEXT_NODE)
-            mergeElement(item, item.previousElementSibling, true)
-        while (item) {
-            optimizeNodes(item, true)
-            item = item.nextElementSibling
+    for (let range of ranges) {
+        const common = range.commonAncestorContainer
+        let item = range.commonAncestorContainer.parentElement
+        if (common.nodeType !== Node.TEXT_NODE) item = item.firstElementChild
+        if (item.tagName !== 'P') {
+            const prev = item.previousSibling
+            if (prev && prev.nodeType !== Node.TEXT_NODE)
+                mergeElement(item, item.previousElementSibling, true)
+            while (item) {
+                optimizeNodes(item, true)
+                item = item.nextElementSibling
+            }
         }
+        let node = getFirstTextNode(range.startContainer.parentNode)
+        do {
+            let sibling = node.nextSibling
+            while (sibling?.nodeType === Node.TEXT_NODE) {
+                node.textContent += sibling.textContent
+                sibling.remove()
+                sibling = node.nextSibling
+            }
+            node = nextSiblingText(node)
+        } while (node)
     }
-    let node = getFirstTextNode( range.startContainer.parentNode)
-    do {
-        let sibling = node.nextSibling
-        while (sibling?.nodeType === Node.TEXT_NODE) {
-            node.textContent += sibling.textContent
-            sibling.remove()
-            sibling = node.nextSibling
-        }
-        node = nextSiblingText(node)
-    } while (node)
 }
