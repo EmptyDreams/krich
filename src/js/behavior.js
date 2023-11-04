@@ -21,6 +21,7 @@ import {
 } from './utils'
 import * as RangeUtils from './range'
 import {DATA_ID, initBehaviors, SELECT_VALUE, TOP_LIST} from './constant'
+import {correctStartContainer} from './range'
 
 initBehaviors({
     headerSelect: {
@@ -67,7 +68,8 @@ initBehaviors({
                 return blockquote
             }
             const range = getSelection().getRangeAt(0)
-            const {startContainer, endContainer, startOffset, endOffset} = range
+            let {startContainer, endContainer, startOffset, endOffset} = range
+            if (range.collapsed) endContainer = startContainer = correctStartContainer(range)
             if (isBlockquote(startContainer) && startContainer.parentNode === endContainer.parentNode) {
                 /* 如果选择范围在一个引用中，则取消选择的区域的引用 */
                 const blockquote = startContainer.parentElement
@@ -79,7 +81,6 @@ initBehaviors({
                     .join('')
                 /** 清除整个引用 */
                 const removeAll = () => {
-                    console.log(selectedContents(0))
                     blockquote.insertAdjacentHTML('afterend', selectedContents(0))
                     blockquote.remove()
                 }

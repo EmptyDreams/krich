@@ -133,3 +133,15 @@ export function setCursorPosition(node, index) {
     selection.removeAllRanges()
     selection.addRange(range)
 }
+
+/**
+ * 获取矫正后的起始容器
+ * @param range {Range}
+ * @return {Node}
+ */
+export function correctStartContainer(range) {
+    console.assert(range.collapsed, '该函数仅在 Range 为 collapsed 时可用')
+    const {startContainer} = range
+    return startContainer?.classList?.contains('krich-editor') ?
+        getFirstTextNode(startContainer.childNodes[range.startOffset - 1]) : startContainer
+}
