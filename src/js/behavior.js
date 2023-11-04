@@ -41,7 +41,8 @@ initBehaviors({
         render: () => blockquoteStyle,
         hash: item => item.getAttribute('data-stamp'),
         onclick: () => {
-            const isBlockquote = container => 'BLOCKQUOTE' === container.parentNode.nodeName
+            const isBlockquote = container =>
+                container && [container.nodeName, container.parentNode.nodeName].includes('BLOCKQUOTE')
             /**
              * 查找最近的一行的起点
              * @param blockquote {HTMLQuoteElement}
@@ -104,13 +105,30 @@ initBehaviors({
                 return
             }
             const lines = RangeUtils.getTopLines(range)
-            const existing = lines.find(it => it.nodeName === 'BLOCKQUOTE')
+            let mode = 0, existing
+            if (isBlockquote(lines[0].previousSibling)) {
+                mode = -1
+                existing = lines[0].previousSibling
+            } else if (isBlockquote(lines[lines.length - 1].nextSibling)) {
+                mode = 1
+                existing = lines[lines.length - 1].nextSibling
+            } else existing = lines.find(it => it.nodeName === 'BLOCKQUOTE')
             const newContent = lines.map(it => {
                 const content = it.textContent
                 return content.endsWith('\n') ? content.substring(0, content.length - 1) : content
             }).join('\n')
             if (existing) { // 如果已经存在一个引用，则将所有内容合并到这个引用中
-                existing.textContent = newContent
+                switch (mode) {
+                    case 0:
+                        existing.textContent = newContent
+                        break
+                    case -1:
+                        existing.textContent += '\n' + newContent
+                        break
+                    case 1:
+                        existing.textContent = newContent + '\n' + existing.textContent
+                        break
+                }
             } else {    // 否则新建一个引用
                 const blockquote = buildBlockquote(newContent)
                 lines[0].parentNode.insertBefore(blockquote, lines[0])
