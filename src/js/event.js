@@ -28,6 +28,6 @@ export function addBeforeInputEvent(element, consumer) {
     initGlobalEvent()
     element.addEventListener('beforeinput', event => {
         if (event.isComposing) event.preventDefault()
-        consumer(event)
+        else consumer(event)
     })
 }
