@@ -4,7 +4,6 @@ import './behavior'
 import {behaviors} from './constant'
 import {replaceElement} from './utils'
 import {getTopLines, setCursorPosition} from './range'
-import {addBeforeInputEvent} from './event'
 
 export {behaviors}
 
