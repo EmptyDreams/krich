@@ -48,6 +48,7 @@ export function equalsKrichNode(arg0, arg1) {
  */
 export function findParentTag(node, ...names) {
     console.assert(names && names.length !== 0, 'names 不应当为空')
+    if (names.includes(node.nodeName)) return node
     let item = node.parentElement
     while (!item.classList.contains('krich-editor')) {
         if (names.includes(item.nodeName)) return item

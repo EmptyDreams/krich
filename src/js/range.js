@@ -112,7 +112,7 @@ export function mergeRanges(ranges) {
  */
 export function getTopLines(range) {
     const result = []
-    let item = findParentTag(range.startContainer, ...TOP_LIST)
+    let item = findParentTag(correctStartContainer(range), ...TOP_LIST)
     do {
         result.push(item)
         item = item.nextElementSibling
@@ -140,8 +140,7 @@ export function setCursorPosition(node, index) {
  * @return {Node}
  */
 export function correctStartContainer(range) {
-    console.assert(range.collapsed, '该函数仅在 Range 为 collapsed 时可用')
     const {startContainer} = range
-    return startContainer?.classList?.contains('krich-editor') ?
-        getFirstTextNode(startContainer.childNodes[range.startOffset - 1]) : startContainer
+    return getFirstTextNode(startContainer?.classList?.contains('krich-editor') ?
+        startContainer.childNodes[range.startOffset - 1] : startContainer)
 }

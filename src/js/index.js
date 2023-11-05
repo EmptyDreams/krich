@@ -3,7 +3,8 @@ import krichStyle from '../resources/css/main.styl'
 import './behavior'
 import {behaviors} from './constant'
 import {replaceElement} from './utils'
-import {setCursorPosition} from './range'
+import {getTopLines, setCursorPosition} from './range'
+import {addBeforeInputEvent} from './event'
 
 export {behaviors}
 
@@ -84,40 +85,54 @@ export function initEditor(selector, elements) {
         const task = switchTask(event.key)
         if (task) setTimeout(task, 0)
     })
-    editorContent.addEventListener('keydown', event => {
-        if (event.key !== 'Enter') return
-        // 在引用中换行时合并引用，并纠正光标位置
+    // 在引用中换行时合并引用，并纠正光标位置
+    addBeforeInputEvent(editorContent, event => {
+        let {data} = event
+        if (!data && event.inputType === 'insertParagraph') data = '\n'
+        if (!data) return
         const range = getSelection().getRangeAt(0)
         const name = 'BLOCKQUOTE'
-        let node = range.startContainer
-        if (node.nodeType === Node.TEXT_NODE)
-            node = node.parentNode
-        if (range.collapsed && node.nodeName === name) {
-            let index = 0
-            const stamp = node.getAttribute('data-stamp')
-            const check = item => item && item.nodeName === name && item.getAttribute('data-stamp') === stamp
-            let isLast = true
-            let next = node.nextSibling
-            while (check(next)) {
-                isLast = false
-                node.textContent += '\n' + next.textContent
-                next.remove()
-                next = node.nextSibling
-            }
-            let prev = node.previousSibling
-            while (check(prev)) {
-                index += prev.textContent.length + 1
-                if (isLast) {
-                    isLast = false
-                    if (!prev.textContent.endsWith('\n'))
-                        prev.textContent += '\n'
+        const lines = getTopLines(range)
+        if (!lines.find(it => it.nodeName === name)) return
+        if (range.collapsed) {  // 如果没有选中任何内容，则直接键入换行
+            if (data !== '\n') return
+            const blockquote = lines[0]
+            let textContent = blockquote.textContent
+            let interval = ''
+            if (!textContent.endsWith('\n')) interval = data
+            const index = range.startContainer.nodeType === Node.TEXT_NODE ? range.startOffset : textContent.length
+            blockquote.textContent = textContent.substring(0, index) + data + textContent.substring(index) + interval
+            setCursorPosition(blockquote.firstChild, index + 1)
+        } else if (lines.length === 1) {    // 如果是范围选择并且限制在一个引用内，则删除选中的部分并替换为换行符
+            const blockquote = lines[0]
+            const textContent = blockquote.textContent
+            const {startOffset} = range
+            blockquote.textContent = textContent.substring(0, startOffset) + data + textContent.substring(range.endOffset)
+            setCursorPosition(blockquote.firstChild, startOffset + data.length)
+        } else {    // 如果是范围选择并且跨越了多个标签
+            const first = lines[0]
+            if (first.nodeName === name) {
+                range.deleteContents()
+                first.textContent += data
+                setCursorPosition(first.firstChild, first.textContent.length)
+            } else if (range.startOffset === 0) {
+                const p = document.createElement('p')
+                if (data !== '\n') p.textContent = data
+                first.insertAdjacentElement('beforebegin', p)
+                range.deleteContents()
+                setCursorPosition(p.firstChild ?? p, p.textContent.length)
+            } else {
+                range.deleteContents()
+                if (data === '\n') {
+                    const p = document.createElement('p')
+                    first.insertAdjacentElement('afterend', p)
+                    setCursorPosition(p, 0)
+                } else {
+                    lines[0].textContent += data
+                    setCursorPosition(lines[0].firstChild, lines[0].textContent.length)
                 }
-                prev.textContent += '\n' + node.textContent
-                node.remove()
-                node = prev
-                prev = prev.previousSibling
             }
-            if (index) setCursorPosition(node.firstChild, index)
         }
+        event.preventDefault()
     })
 }
