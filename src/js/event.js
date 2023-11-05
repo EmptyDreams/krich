@@ -1,3 +1,5 @@
+import {correctStartContainer} from './range'
+
 let _init = false
 
 /** 初始化全局事件 */
@@ -9,13 +11,25 @@ function initGlobalEvent() {
 
 function onCompositionEnd(event) {
     const target = event.target
-    console.log(event)
     if (target.classList.contains('krich-editor')) {
-        target.dispatchEvent(new InputEvent('beforeinput', {
+        const subEvent = new InputEvent('beforeinput', {
             cancelable: true,
             inputType: 'insertText',
             data: event.data
-        }))
+        })
+        target.dispatchEvent(subEvent)
+        if (!subEvent.defaultPrevented) {
+            const range = getSelection().getRangeAt(0)
+            if (!range.collapsed) return
+            const node = correctStartContainer(range)
+            const {startOffset} = range
+            const textContent = node.textContent
+            if (range.startContainer === node) {
+                node.textContent = textContent.substring(0, startOffset) + event.data + textContent.substring(startOffset)
+            } else {
+                node.textContent += event.data
+            }
+        }
     }
 }
 
