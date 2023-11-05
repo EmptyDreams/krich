@@ -86,53 +86,44 @@ export function initEditor(selector, elements) {
         if (task) setTimeout(task, 0)
     })
     // 在引用中换行时合并引用，并纠正光标位置
-    addBeforeInputEvent(editorContent, event => {
-        let {data} = event
-        if (!data && event.inputType === 'insertParagraph') data = '\n'
-        if (!data) return
+    editorContent.addEventListener('keydown', event => {
+        const {key} = event
+        if (key !== 'Enter') return
         const range = getSelection().getRangeAt(0)
         const name = 'BLOCKQUOTE'
         const lines = getTopLines(range)
-        if (!lines.find(it => it.nodeName === name)) return
+        const firstBlockquote = lines.find(it => it.nodeName === name)
+        if (!firstBlockquote) return
+        event.preventDefault()
         if (range.collapsed) {  // 如果没有选中任何内容，则直接键入换行
-            if (data !== '\n') return
-            const blockquote = lines[0]
-            let textContent = blockquote.textContent
+            let textContent = firstBlockquote.textContent
             let interval = ''
-            if (!textContent.endsWith('\n')) interval = data
+            if (!textContent.endsWith('\n')) interval = '\n'
             const index = range.startContainer.nodeType === Node.TEXT_NODE ? range.startOffset : textContent.length
-            blockquote.textContent = textContent.substring(0, index) + data + textContent.substring(index) + interval
-            setCursorPosition(blockquote.firstChild, index + 1)
+            firstBlockquote.textContent = textContent.substring(0, index) + '\n' + textContent.substring(index) + interval
+            setCursorPosition(firstBlockquote.firstChild, index + 1)
         } else if (lines.length === 1) {    // 如果是范围选择并且限制在一个引用内，则删除选中的部分并替换为换行符
-            const blockquote = lines[0]
-            const textContent = blockquote.textContent
+            const textContent = firstBlockquote.textContent
             const {startOffset} = range
-            blockquote.textContent = textContent.substring(0, startOffset) + data + textContent.substring(range.endOffset)
-            setCursorPosition(blockquote.firstChild, startOffset + data.length)
+            firstBlockquote.textContent = textContent.substring(0, startOffset) + '\n' + textContent.substring(range.endOffset)
+            setCursorPosition(firstBlockquote.firstChild, startOffset + 1)
         } else {    // 如果是范围选择并且跨越了多个标签
             const first = lines[0]
+            const startOffset = range.startOffset
+            range.deleteContents()
             if (first.nodeName === name) {
-                range.deleteContents()
-                first.textContent += data
+                first.textContent += first.textContent.endsWith('\n') ? '\n' : '\n\n'
+                for (let i = 1; i < lines.length; i++)
+                    lines[i].remove()
                 setCursorPosition(first.firstChild, first.textContent.length)
-            } else if (range.startOffset === 0) {
-                const p = document.createElement('p')
-                if (data !== '\n') p.textContent = data
-                first.insertAdjacentElement('beforebegin', p)
-                range.deleteContents()
-                setCursorPosition(p.firstChild ?? p, p.textContent.length)
+            } else if (startOffset === 0) {
+                first.insertAdjacentHTML('beforebegin', '<p><br/></p>')
+                first.innerHTML = '<br/>'
+                setCursorPosition(first.firstChild, 0)
             } else {
-                range.deleteContents()
-                if (data === '\n') {
-                    const p = document.createElement('p')
-                    first.insertAdjacentElement('afterend', p)
-                    setCursorPosition(p, 0)
-                } else {
-                    lines[0].textContent += data
-                    setCursorPosition(lines[0].firstChild, lines[0].textContent.length)
-                }
+                first.insertAdjacentHTML('afterend', '<p><br/></p>')
+                setCursorPosition(first.nextSibling.firstChild, 0)
             }
         }
-        event.preventDefault()
     })
 }

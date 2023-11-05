@@ -17,19 +17,7 @@ function onCompositionEnd(event) {
             inputType: 'insertText',
             data: event.data
         })
-        target.dispatchEvent(subEvent)
-        if (!subEvent.defaultPrevented) {
-            const range = getSelection().getRangeAt(0)
-            if (!range.collapsed) return
-            const node = correctStartContainer(range)
-            const {startOffset} = range
-            const textContent = node.textContent
-            if (range.startContainer === node) {
-                node.textContent = textContent.substring(0, startOffset) + event.data + textContent.substring(startOffset)
-            } else {
-                node.textContent += event.data
-            }
-        }
+        //target.dispatchEvent(subEvent)
     }
 }
 
