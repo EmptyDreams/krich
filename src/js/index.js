@@ -88,7 +88,6 @@ export function initEditor(selector, elements) {
     // 在引用中换行时合并引用，并纠正光标位置
     addBeforeInputEvent(editorContent, event => {
         let {data} = event
-        console.log(event)
         if (!data && event.inputType === 'insertParagraph') data = '\n'
         if (!data) return
         const range = getSelection().getRangeAt(0)
