@@ -4,7 +4,7 @@ import * as RangeUtils from '../range'
 /**
  * 引用按钮的点击事件
  */
-export default function () {
+export function behaviorBlockquote() {
     const isBlockquote = container =>
         container && [container.nodeName, container.parentNode.nodeName].includes('BLOCKQUOTE')
     /**
@@ -71,12 +71,15 @@ export default function () {
     const lines = RangeUtils.getTopLines(range)
     let mode = 0, existing
     if (isBlockquote(lines[0].previousSibling)) {
-        mode = -1
+        mode = 0b10
         existing = lines[0].previousSibling
-    } else if (isBlockquote(lines[lines.length - 1].nextSibling)) {
-        mode = 1
+    }
+    if (isBlockquote(lines[lines.length - 1].nextSibling)) {
+        mode |= 0b01
         existing = lines[lines.length - 1].nextSibling
-    } else existing = lines.find(it => it.nodeName === 'BLOCKQUOTE')
+    } else if (!existing) {
+        existing = lines.find(it => it.nodeName === 'BLOCKQUOTE')
+    }
     const newContent = lines.map(it => {
         const content = it.textContent
         return content.endsWith('\n') ? content.substring(0, content.length - 1) : content
@@ -86,11 +89,15 @@ export default function () {
             case 0:
                 existing.textContent = newContent
                 break
-            case -1:
+            case 1: // 0b01
+                existing.textContent = newContent + '\n' + existing.textContent
+                break
+            case 2: // 0b10
                 existing.textContent += '\n' + newContent
                 break
-            case 1:
-                existing.textContent = newContent + '\n' + existing.textContent
+            case 3: // 0b11
+                lines[0].previousSibling.textContent += '\n' + newContent + '\n' + existing.textContent
+                existing.remove()
                 break
         }
     } else {    // 否则新建一个引用

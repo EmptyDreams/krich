@@ -5,7 +5,7 @@ import * as RangeUtils from '../range'
  * 标题按钮的点击事件
  * @param event {Event}
  */
-export default function (event) {
+export function behaviorHeader(event) {
     const value = event.target.getAttribute(SELECT_VALUE)
     console.assert(value?.length === 1, `${value} 值异常`)
     const range = getSelection().getRangeAt(0)

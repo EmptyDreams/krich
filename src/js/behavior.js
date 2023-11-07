@@ -21,16 +21,18 @@ import {
 } from './utils'
 import * as RangeUtils from './range'
 import {DATA_ID, initBehaviors} from './constant'
+import {behaviorHeader} from './behaviors/header'
+import {behaviorBlockquote} from './behaviors/blockquote'
 
 initBehaviors({
     headerSelect: {
         render: () => headerSelectStyle,
-        onclick: import('./behaviors/header')
+        onclick: behaviorHeader
     },
     blockquote: {
         render: () => blockquoteStyle,
         hash: item => item.getAttribute('data-stamp'),
-        onclick: import('./behaviors/blockquote')
+        onclick: behaviorBlockquote
     },
     bold: {
         render: () => boldStyle,
