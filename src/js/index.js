@@ -41,7 +41,7 @@ export function initEditor(selector, elements) {
         Object.getOwnPropertyNames(elements)
             .map(it => behaviors[it].render())
             .join('')
-    }</div><div class="krich-editor" spellcheck contenteditable><p></p></div>`
+    }</div><div class="krich-editor" spellcheck contenteditable><p><br/></p></div>`
     const editorTools = container.getElementsByClassName('krich-tools')[0]
     const editorContent = container.getElementsByClassName('krich-editor')[0]
     editorTools.addEventListener('click', event => {
@@ -76,7 +76,7 @@ export function initEditor(selector, elements) {
             case 'Backspace':
                 return () => {
                     if (editorContent.childElementCount === 0)
-                        editorContent.append(document.createElement('p'))
+                        editorContent.innerHTML = '<p><br/></p>'
                 }
         }
     }
