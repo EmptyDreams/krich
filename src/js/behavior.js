@@ -39,22 +39,28 @@ initBehaviors({
         onclick: () => execCommonCommand('bold', 'B')
     },
     underline: {
-        render: () => underlineStyle
+        render: () => underlineStyle,
+        onclick: () => execCommonCommand('underline', 'U')
     },
     italic: {
-        render: () => italicStyle
+        render: () => italicStyle,
+        onclick: () => execCommonCommand('italic', 'I')
     },
     through: {
-        render: () => throughStyle
+        render: () => throughStyle,
+        onclick: () => execCommonCommand('through', 'SPAN', false, null, 'through')
     },
-    code: {
-        render: () => codeStyle
+    inlineCode: {
+        render: () => codeStyle,
+        onclick: () => execCommonCommand('inlineCode', 'CODE')
     },
     sup: {
-        render: () => supStyle
+        render: () => supStyle,
+        onclick: () => execCommonCommand('sup', 'SUP')
     },
     sub: {
-        render: () => subStyle
+        render: () => subStyle,
+        onclick: () => execCommonCommand('sub', 'SUB')
     },
     clear: {
         render: () => clearStyle
@@ -82,8 +88,9 @@ initBehaviors({
  * @param tagName {string} 标签名称
  * @param removed {boolean} 是否已经移除过元素
  * @param realRange {Range} 真实使用的 Range
+ * @param className {string} 要设置的类名
  */
-export function execCommonCommand(name, tagName, removed = false, realRange = null) {
+export function execCommonCommand(name, tagName, removed = false, realRange = null, ...className) {
     const selection = getSelection()
     const range = realRange || selection.getRangeAt(0)
     const rangeArray = RangeUtils.splitRangeByLine(range)
@@ -104,18 +111,19 @@ export function execCommonCommand(name, tagName, removed = false, realRange = nu
     if (removed) {
         for (let i = 0; i < rangeArray.length; i++) {
             const it = rangeArray[i]
-            const bold = document.createElement(tagName)
-            bold.setAttribute(DATA_ID, name)
-            RangeUtils.surroundContents(it, bold)
+            const element = document.createElement(tagName)
+            element.className = className.join(' ')
+            element.setAttribute(DATA_ID, name)
+            RangeUtils.surroundContents(it, element)
             /** @param node {Node} */
             const removeIfEmpty = node => {
                 if (node && node.nodeType === Node.TEXT_NODE && !node.textContent)
                     node.remove()
             }
-            removeIfEmpty(bold.nextSibling)
-            removeIfEmpty(bold.previousSibling)
+            removeIfEmpty(element.nextSibling)
+            removeIfEmpty(element.previousSibling)
             rangeArray[i] = document.createRange()
-            RangeUtils.selectNodeContents(rangeArray[i], bold)
+            RangeUtils.selectNodeContents(rangeArray[i], element)
         }
     }
     selection.removeAllRanges()
