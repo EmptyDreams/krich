@@ -4,7 +4,7 @@ import boldStyle from '../resources/html/tools/bold.html'
 import underlineStyle from '../resources/html/tools/underline.html'
 import italicStyle from '../resources/html/tools/italic.html'
 import throughStyle from '../resources/html/tools/through.html'
-import codeStyle from '../resources/html/tools/code.html'
+import inlineCodeStyle from '../resources/html/tools/inlineCode.html'
 import supStyle from '../resources/html/tools/sup.html'
 import subStyle from '../resources/html/tools/sub.html'
 import clearStyle from '../resources/html/tools/clear.html'
@@ -51,7 +51,7 @@ initBehaviors({
         onclick: () => execCommonCommand('through', 'SPAN', false, null, 'through')
     },
     inlineCode: {
-        render: () => codeStyle,
+        render: () => inlineCodeStyle,
         onclick: () => execCommonCommand('inlineCode', 'CODE')
     },
     sup: {
