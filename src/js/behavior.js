@@ -48,7 +48,8 @@ initBehaviors({
     },
     through: {
         render: () => throughStyle,
-        onclick: () => execCommonCommand('through', 'SPAN', false, null, 'through')
+        hash: () => `through`,
+        onclick: () => execCommonCommand('through', 'SPAN', false, null, 'through'),
     },
     inlineCode: {
         render: () => inlineCodeStyle,
