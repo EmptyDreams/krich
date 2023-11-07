@@ -96,9 +96,16 @@ export function initEditor(selector, elements) {
         event.preventDefault()
         if (range.collapsed) {  // 如果没有选中任何内容，则直接键入换行
             let textContent = firstBlockquote.textContent
+            const index = range.startContainer.nodeType === Node.TEXT_NODE ? range.startOffset : textContent.length
+            if (index >= textContent.length - 1 && textContent.endsWith('\n\n')) {
+                firstBlockquote.textContent = textContent.substring(0, textContent.length - 1)
+                const p = document.createElement('p')
+                p.innerHTML = '<br/>'
+                firstBlockquote.insertAdjacentElement('afterend', p)
+                return setCursorPosition(p.firstChild, 0)
+            }
             let interval = ''
             if (!textContent.endsWith('\n')) interval = '\n'
-            const index = range.startContainer.nodeType === Node.TEXT_NODE ? range.startOffset : textContent.length
             firstBlockquote.textContent = textContent.substring(0, index) + '\n' + textContent.substring(index) + interval
             setCursorPosition(firstBlockquote.firstChild, index + 1)
         } else if (lines.length === 1) {    // 如果是范围选择并且限制在一个引用内，则删除选中的部分并替换为换行符
