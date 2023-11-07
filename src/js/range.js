@@ -1,4 +1,4 @@
-import {findParentTag, getFirstTextNode, getLastTextNode, getLca, splitElementFrom} from './utils'
+import {findParentTag, getFirstTextNode, getLastTextNode} from './utils'
 import {TOP_LIST} from './constant'
 
 /**

@@ -71,51 +71,6 @@ export function replaceElement(src, novel) {
  * @param node {Node}
  * @return {boolean}
  */
-function isTopElement(node) {
+export function isTopElement(node) {
     return TOP_LIST.includes(node.nodeName)
-}
-
-/**
- * 从指定位置将 text node 切分为两部分，并从父节点中提取出来。
- *
- * 该函数将保留右侧部分，将内容从左侧提取出来，若 node 不在其父元素的最左侧运算结果将会错误。
- *
- * @param node {Node} 要切分的文本节点
- * @param index {number} 切分的位置（该位置会被分配到右侧）
- * @return {[Text, Text]} 返回新创建的节点
- */
-export function splitElementFrom(node, index) {
-    let leftNode = document.createTextNode(node.textContent.substring(0, index))
-    const leftText = leftNode
-    node.textContent = node.textContent.substring(index)
-    let root = node.parentNode
-    let insertPos = node
-    while (!isTopElement(root)) {
-        const node = root.cloneNode(false)
-        node.appendChild(leftNode)
-        let pos = leftNode
-        let prev = pos.previousSibling
-        while (prev) {
-            node.insertBefore(prev, pos)
-            pos = prev
-            prev = prev.previousSibling
-        }
-        leftNode = node
-        insertPos = root
-        root = root.parentNode
-    }
-    return [leftText, node]
-}
-
-/**
- * 获取两个节点的最近公共祖先
- * @param node0 {Node}
- * @param node1 {Node}
- * @return {Node}
- */
-export function getLca(node0, node1) {
-    const range = document.createRange()
-    range.setStartBefore(node0)
-    range.setEndAfter(node1)
-    return range.commonAncestorContainer
 }
