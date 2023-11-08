@@ -1,7 +1,9 @@
 .krich-tools
   display flex
-  box-sizing border-box
   user-select none
+
+  *
+    box-sizing border-box
 
   & > *
     display flex
@@ -9,12 +11,17 @@
     position relative
     margin 5px 0
     border unset
+    width 40px
     height 40px
     background none
     border-radius 3px
     transition all .3s
-    padding 5px 10px
+    padding 5px 5px
     font-weight bold
+
+    & > button
+      width 100%
+      height 100%
 
     &:hover
       background var(--krich-tools-hover) !important
@@ -22,3 +29,12 @@
 
   button
     cursor pointer
+    display flex
+    align-items center
+    justify-content center
+
+  .btn-icon
+    width 20px
+    height 20px
+    line-height 15px
+    fill black

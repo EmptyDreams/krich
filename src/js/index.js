@@ -64,7 +64,7 @@ export function initEditor(selector, elements) {
                 target.onblur = () => classList.remove('show')
                 return
             }
-            target.getElementsByTagName('span')[0].innerText = original.innerText
+            target.getElementsByTagName('span')[0].innerHTML = original.innerHTML
         }
         behaviors[dataKey].onclick?.(event, target)
     })
