@@ -80,10 +80,11 @@ export function behaviorBlockquote() {
     } else if (!existing) {
         existing = lines.find(it => it.nodeName === 'BLOCKQUOTE')
     }
-    const newContent = lines.map(it => {
+    let newContent = lines.map(it => {
         const content = it.textContent
         return content.endsWith('\n') ? content.substring(0, content.length - 1) : content
     }).join('\n')
+    if (newContent.length === 0) newContent = '\n'
     if (existing) { // 如果已经存在一个引用，则将所有内容合并到这个引用中
         switch (mode) {
             case 0:

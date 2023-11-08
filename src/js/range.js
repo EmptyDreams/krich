@@ -141,6 +141,6 @@ export function setCursorPosition(node, index) {
  */
 export function correctStartContainer(range) {
     const {startContainer} = range
-    return getFirstTextNode(startContainer?.classList?.contains('krich-editor') ?
+    return getFirstTextNode(startContainer.classList?.contains('krich-editor') ?
         startContainer.childNodes[range.startOffset - 1] : startContainer)
 }

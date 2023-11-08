@@ -6,7 +6,7 @@ import {DATA_ID, behaviors, TOP_LIST} from './constant'
  * @return {Text}
  */
 export function getFirstTextNode(node) {
-    while (node.nodeType !== Node.TEXT_NODE) {
+    while (['#text', 'BR'].includes(node.nodeName)) {
         node = node.firstChild
     }
     return node
