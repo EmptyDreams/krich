@@ -1,4 +1,4 @@
-import {correctStartContainer} from '../range'
+import {correctStartContainer, setCursorPosition} from '../range'
 import * as RangeUtils from '../range'
 
 /**
@@ -32,7 +32,12 @@ export function behaviorBlockquote() {
     }
     const range = getSelection().getRangeAt(0)
     let {startContainer, endContainer, startOffset, endOffset} = range
-    if (range.collapsed) endContainer = startContainer = correctStartContainer(range)
+    let isEnd = false
+    if (range.collapsed) {
+        const correct = correctStartContainer(range)
+        isEnd = correct !== startContainer
+        endContainer = startContainer = correct
+    }
     if (isBlockquote(startContainer) && startContainer.parentNode === endContainer.parentNode) {
         /* 如果选择范围在一个引用中，则取消选择的区域的引用 */
         const blockquote = startContainer.parentElement
@@ -104,6 +109,7 @@ export function behaviorBlockquote() {
     } else {    // 否则新建一个引用
         const blockquote = buildBlockquote(newContent)
         lines[0].parentNode.insertBefore(blockquote, lines[0])
+        setCursorPosition(blockquote.firstChild, isEnd ? newContent.length : startOffset)
     }
     // 移除原有的标签
     lines.filter(it => it !== existing)
