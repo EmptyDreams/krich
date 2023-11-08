@@ -1,4 +1,4 @@
-import {findParentTag, getFirstTextNode, getLastTextNode} from './utils'
+import {findParentTag, getFirstTextNode, getLastTextNode, nextSiblingText} from './utils'
 import {TOP_LIST} from './constant'
 
 /**
@@ -132,6 +132,40 @@ export function setCursorPosition(node, index) {
     const selection = getSelection()
     selection.removeAllRanges()
     selection.addRange(range)
+}
+
+/**
+ * 将光标移动到指定位置（会一直向后查找直到找到满足条件的位置）
+ * @param node {Node}
+ * @param index {number}
+ */
+export function setCursorPositionIn(node, index) {
+    let dist = getFirstTextNode(node)
+    do {
+        const length = dist.textContent.length
+        if (index > length) index -= length
+        else break
+        dist = nextSiblingText(dist)
+        console.assert(!!dist, `运算时下标越界`, node, index)
+    } while (true)
+    setCursorPosition(dist, index)
+}
+
+/**
+ * 将光标移动到指定元素的结尾
+ * @param node {Node}
+ */
+export function setCursorPositionAfter(node) {
+    const last = getLastTextNode(node)
+    setCursorPosition(last, last.textContent.length)
+}
+
+/**
+ * 将光标移动到指定元素的开头
+ * @param node {Node}
+ */
+export function setCursorPositionBefore(node) {
+    setCursorPosition(getFirstTextNode(node), 0)
 }
 
 /**

@@ -74,3 +74,21 @@ export function replaceElement(src, novel) {
 export function isTopElement(node) {
     return TOP_LIST.includes(node.nodeName)
 }
+
+export /**
+ * 查找最邻近的文本节点
+ * @param node {Node}
+ */
+function nextSiblingText(node) {
+    let dist = node
+    while (true) {
+        const next = dist.nextSibling
+        if (next) {
+            dist = next
+            break
+        }
+        dist = dist.parentNode
+        if (!dist) return null
+    }
+    return getFirstTextNode(dist)
+}

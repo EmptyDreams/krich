@@ -17,7 +17,7 @@ import {
     equalsKrichNode,
     findParentTag,
     getElementBehavior,
-    getFirstTextNode, isTopElement
+    getFirstTextNode, isTopElement, nextSiblingText
 } from './utils'
 import * as RangeUtils from './range'
 import {DATA_ID, initBehaviors} from './constant'
@@ -249,24 +249,6 @@ function cloneDomTree(node, text, breaker) {
         node = node.parentNode
     }
     return [tree, textNode]
-}
-
-/**
- * 查找最邻近的文本节点
- * @param node {Node}
- */
-function nextSiblingText(node) {
-    let dist = node
-    while (true) {
-        const next = dist.nextSibling
-        if (next) {
-            dist = next
-            break
-        }
-        dist = dist.parentNode
-        if (!dist) return null
-    }
-    return getFirstTextNode(dist)
 }
 
 /**
