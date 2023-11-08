@@ -2,7 +2,6 @@ import {
     correctStartContainer,
     setCursorPosition,
     setCursorPositionAfter,
-    setCursorPositionBefore,
     setCursorPositionIn
 } from '../range'
 import * as RangeUtils from '../range'
