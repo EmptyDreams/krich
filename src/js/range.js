@@ -178,3 +178,14 @@ export function correctStartContainer(range) {
     return getFirstTextNode(startContainer.classList?.contains('krich-editor') ?
         startContainer.childNodes[range.startOffset - 1] : startContainer)
 }
+
+/**
+ * 获取矫正后的结束容器
+ * @param range {Range}
+ * @return {Node}
+ */
+export function correctEndContainer(range) {
+    const {endContainer} = range
+    return getFirstTextNode(endContainer.classList?.contains('krich-editor') ?
+        endContainer.childNodes[range.endOffset - 1] : endContainer)
+}

@@ -3,7 +3,7 @@ import {DATA_ID, behaviors, TOP_LIST} from './constant'
 /**
  * 获取指定节点的第一个文本子节点
  * @param node {Node}
- * @return {Text}
+ * @return {Node}
  */
 export function getFirstTextNode(node) {
     while (!['#text', 'BR'].includes(node.nodeName)) {
@@ -15,7 +15,7 @@ export function getFirstTextNode(node) {
 /**
  * 获取指定节点的最后一个文本子结点
  * @param node {Node}
- * @return {Text}
+ * @return {Node}
  */
 export function getLastTextNode(node) {
     while (!['#text', 'BR'].includes(node.nodeName))

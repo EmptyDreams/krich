@@ -3,7 +3,7 @@ import krichStyle from '../resources/css/main.styl'
 import './behavior'
 import {behaviors} from './constant'
 import {replaceElement} from './utils'
-import {getTopLines, setCursorPosition} from './range'
+import {correctEndContainer, correctStartContainer, getTopLines, setCursorPosition} from './range'
 
 export {behaviors}
 
@@ -84,52 +84,90 @@ export function initEditor(selector, elements) {
         const task = switchTask(event.key)
         if (task) setTimeout(task, 0)
     })
-    // 在引用中换行时合并引用，并纠正光标位置
     editorContent.addEventListener('keydown', event => {
-        const {key} = event
-        if (key !== 'Enter') return
-        const range = getSelection().getRangeAt(0)
-        const name = 'BLOCKQUOTE'
-        const lines = getTopLines(range)
-        const firstBlockquote = lines.find(it => it.nodeName === name)
-        if (!firstBlockquote) return
-        event.preventDefault()
-        if (range.collapsed) {  // 如果没有选中任何内容，则直接键入换行
-            let textContent = firstBlockquote.textContent
-            const index = range.startContainer.nodeType === Node.TEXT_NODE ? range.startOffset : textContent.length
-            if (index >= textContent.length - 1 && textContent.endsWith('\n\n')) {
-                firstBlockquote.textContent = textContent.substring(0, textContent.length - 1)
-                const p = document.createElement('p')
-                p.innerHTML = '<br/>'
-                firstBlockquote.insertAdjacentElement('afterend', p)
-                return setCursorPosition(p.firstChild, 0)
-            }
-            let interval = ''
-            if (!textContent.endsWith('\n')) interval = '\n'
-            firstBlockquote.textContent = textContent.substring(0, index) + '\n' + textContent.substring(index) + interval
-            setCursorPosition(firstBlockquote.firstChild, index + 1)
-        } else if (lines.length === 1) {    // 如果是范围选择并且限制在一个引用内，则删除选中的部分并替换为换行符
-            const textContent = firstBlockquote.textContent
-            const {startOffset} = range
-            firstBlockquote.textContent = textContent.substring(0, startOffset) + '\n' + textContent.substring(range.endOffset)
-            setCursorPosition(firstBlockquote.firstChild, startOffset + 1)
-        } else {    // 如果是范围选择并且跨越了多个标签
-            const first = lines[0]
-            const startOffset = range.startOffset
-            range.deleteContents()
-            if (first.nodeName === name) {
-                first.textContent += first.textContent.endsWith('\n') ? '\n' : '\n\n'
-                for (let i = 1; i < lines.length; i++)
-                    lines[i].remove()
-                setCursorPosition(first.firstChild, first.textContent.length)
-            } else if (startOffset === 0) {
-                first.insertAdjacentHTML('beforebegin', '<p><br/></p>')
-                first.innerHTML = '<br/>'
-                setCursorPosition(first.firstChild, 0)
-            } else {
-                first.insertAdjacentHTML('afterend', '<p><br/></p>')
-                setCursorPosition(first.nextSibling.firstChild, 0)
-            }
+        switch (event.key) {
+            case 'Enter':
+                enterEvent(event)
+                break
+            case 'Backspace':
+                deleteEvent(event)
+                break
         }
     })
+}
+
+/**
+ * 删除事件，用于在引用开头按下回车时代替浏览器默认动作
+ * @param event
+ */
+function deleteEvent(event) {
+    const range = getSelection().getRangeAt(0)
+    if (!range.collapsed) return
+    const startNode = correctEndContainer(range)
+    // 如果光标不在引用开头则直接退出
+    if (!(range.startOffset === 0 || startNode !== range.endContainer)) return
+    const blockquote = startNode.parentElement
+    if (blockquote.nodeName !== 'BLOCKQUOTE') return
+    event.preventDefault()
+    const html = blockquote.innerHTML
+    const endIndex = html.indexOf('\n')
+    const p = document.createElement('p')
+    if (endIndex < 0) { // 如果引用只有一行，则直接取消引用
+        replaceElement(blockquote, p)
+    } else {
+        p.innerHTML = endIndex === 0 ? '<br/>' : html.substring(0, endIndex)
+        blockquote.innerHTML = html.substring(endIndex + 1)
+        blockquote.insertAdjacentElement('beforebegin', p)
+    }
+    setCursorPosition(p.firstChild, 0)
+}
+
+/**
+ * 回车事件，用于在引用中按下回车时代替浏览器默认动作
+ * @param event {Event}
+ */
+function enterEvent(event) {
+    const range = getSelection().getRangeAt(0)
+    const name = 'BLOCKQUOTE'
+    const lines = getTopLines(range)
+    const firstBlockquote = lines.find(it => it.nodeName === name)
+    if (!firstBlockquote) return
+    event.preventDefault()
+    if (range.collapsed) {  // 如果没有选中任何内容，则直接键入换行
+        let textContent = firstBlockquote.textContent
+        const index = range.startContainer.nodeType === Node.TEXT_NODE ? range.startOffset : textContent.length
+        if (index >= textContent.length - 1 && textContent.endsWith('\n\n')) {
+            firstBlockquote.textContent = textContent.substring(0, textContent.length - 1)
+            const p = document.createElement('p')
+            p.innerHTML = '<br/>'
+            firstBlockquote.insertAdjacentElement('afterend', p)
+            return setCursorPosition(p.firstChild, 0)
+        }
+        let interval = ''
+        if (!textContent.endsWith('\n')) interval = '\n'
+        firstBlockquote.textContent = textContent.substring(0, index) + '\n' + textContent.substring(index) + interval
+        setCursorPosition(firstBlockquote.firstChild, index + 1)
+    } else if (lines.length === 1) {    // 如果是范围选择并且限制在一个引用内，则删除选中的部分并替换为换行符
+        const textContent = firstBlockquote.textContent
+        const {startOffset} = range
+        firstBlockquote.textContent = textContent.substring(0, startOffset) + '\n' + textContent.substring(range.endOffset)
+        setCursorPosition(firstBlockquote.firstChild, startOffset + 1)
+    } else {    // 如果是范围选择并且跨越了多个标签
+        const first = lines[0]
+        const startOffset = range.startOffset
+        range.deleteContents()
+        if (first.nodeName === name) {
+            first.textContent += first.textContent.endsWith('\n') ? '\n' : '\n\n'
+            for (let i = 1; i < lines.length; i++)
+                lines[i].remove()
+            setCursorPosition(first.firstChild, first.textContent.length)
+        } else if (startOffset === 0) {
+            first.insertAdjacentHTML('beforebegin', '<p><br/></p>')
+            first.innerHTML = '<br/>'
+            setCursorPosition(first.firstChild, 0)
+        } else {
+            first.insertAdjacentHTML('afterend', '<p><br/></p>')
+            setCursorPosition(first.nextSibling.firstChild, 0)
+        }
+    }
 }
