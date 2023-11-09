@@ -94,6 +94,7 @@ initBehaviors({
 export function execCommonCommand(name, tagName, removed = false, realRange = null, ...className) {
     const selection = getSelection()
     const range = realRange || selection.getRangeAt(0)
+    if (range.collapsed) return
     const rangeArray = RangeUtils.splitRangeByLine(range)
     if (!removed) {
         const firstRange = document.createRange()
@@ -110,11 +111,15 @@ export function execCommonCommand(name, tagName, removed = false, realRange = nu
         }
     }
     if (removed) {
-        for (let i = 0; i < rangeArray.length; i++) {
-            const it = rangeArray[i]
+        const buildElement = () => {
             const element = document.createElement(tagName)
             element.className = className.join(' ')
             element.setAttribute(DATA_ID, name)
+            return element
+        }
+        for (let i = 0; i < rangeArray.length; i++) {
+            const it = rangeArray[i]
+            const element = buildElement()
             RangeUtils.surroundContents(it, element)
             /** @param node {Node} */
             const removeIfEmpty = node => {
