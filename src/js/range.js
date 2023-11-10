@@ -1,5 +1,5 @@
 import {findParentTag, getFirstTextNode, getLastTextNode, nextSiblingText} from './utils'
-import {TOP_LIST} from './constant'
+import {TOP_LIST} from './global-fileds'
 
 /**
  * 设置选择范围在指定的 node

@@ -1,7 +1,7 @@
 import krichStyle from '../resources/css/main.styl'
 
 import './behavior'
-import {behaviors} from './constant'
+import {behaviors} from './global-fileds'
 import {replaceElement} from './utils'
 import {correctEndContainer, getTopLines, setCursorPosition} from './range'
 

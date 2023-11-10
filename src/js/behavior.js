@@ -20,7 +20,7 @@ import {
     getFirstTextNode, isTopElement, nextSiblingText
 } from './utils'
 import * as RangeUtils from './range'
-import {DATA_ID, initBehaviors} from './constant'
+import {DATA_ID, initBehaviors} from './global-fileds'
 import {behaviorHeader} from './behaviors/header'
 import {behaviorBlockquote} from './behaviors/blockquote'
 

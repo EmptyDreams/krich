@@ -1,4 +1,4 @@
-import {DATA_ID, behaviors, TOP_LIST} from './constant'
+import {DATA_ID, behaviors, TOP_LIST} from './global-fileds'
 
 /**
  * 获取指定节点的第一个文本子节点

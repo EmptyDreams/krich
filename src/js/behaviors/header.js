@@ -1,4 +1,4 @@
-import {SELECT_VALUE} from '../constant'
+import {SELECT_VALUE} from '../global-fileds'
 import * as RangeUtils from '../range'
 
 /**
