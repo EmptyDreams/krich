@@ -15,6 +15,22 @@ export default {
         resolve({
             browser: true
         }),
+        {
+            name: 'ReplaceHeaderAndFooter',
+            generateBundle(outputOptions, bundle) {
+                for (let fileName in bundle) {
+                    const value = bundle[fileName]
+                    if (value.type === 'chunk') {
+                        /** @type {string} */
+                        const code = value.code
+                        value.code = code.replace(
+                            new RegExp(`^(var\\s${outputOptions.name}\\s=\\s\\(function\\s\\(exports\\)\\s{)`),
+                            `var ${outputOptions.name} = function() {\n    const exports = {}`
+                        ).replace(/}\)\({}\);\n$/, '}')
+                    }
+                }
+            }
+        },
         html({
             include: './src/resources/**/*.html',
             htmlMinifierOptions: {
