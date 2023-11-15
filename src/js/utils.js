@@ -1,4 +1,26 @@
-import {DATA_ID, behaviors, TOP_LIST} from './global-fileds'
+import {DATA_ID, behaviors, TOP_LIST, DATA_HASH, queryContainer, BUTTON_STATUS} from './global-fileds'
+
+/**
+ * 构建一个新的元素
+ * @param key {string} behavior 中的 key 名
+ * @param tagName {string} 标签名称
+ * @param classNames {string} 想要添加的类名
+ */
+export function createElement(key, tagName, ...classNames) {
+    console.assert(key in behaviors, `${key} 不存在`)
+    const {hash, extra} = behaviors[key]
+    const element = document.createElement(tagName)
+    element.className = classNames.join(' ')
+    const button = queryContainer().querySelector(`.krich-tools>*[data-key=${key}]`)
+    if (hash) element.setAttribute(DATA_HASH, hash(button))
+    if (extra) {
+        const attributes = extra(button)
+        for (let key in attributes) {
+            element.setAttribute(key, attributes[key])
+        }
+    }
+    return element
+}
 
 /**
  * 获取指定节点的第一个文本子节点
@@ -75,11 +97,11 @@ export function isTopElement(node) {
     return TOP_LIST.includes(node.nodeName)
 }
 
-export /**
+/**
  * 查找最邻近的文本节点
  * @param node {Node}
  */
-function nextSiblingText(node) {
+export function nextSiblingText(node) {
     let dist = node
     while (true) {
         const next = dist.nextSibling
@@ -91,4 +113,44 @@ function nextSiblingText(node) {
         if (!dist) return null
     }
     return getFirstTextNode(dist)
+}
+
+/**
+ * 获取一个节点所持有的所有样式
+ * @param buttonContainer {HTMLElement} 按钮列表
+ * @param node {Node} 节点
+ * @return {boolean} 返回按钮和节点状态是否一致
+ */
+export function compareWith(buttonContainer, node) {
+    /**
+     * @param behavior {ButtonBehavior}
+     * @param button {HTMLElement}
+     * @param element {HTMLElement}
+     */
+    const defComparator = (behavior, button, element) => {
+        const buttonHash = behavior.hash?.(button)
+        const elementHash = element.getAttribute(DATA_HASH)
+        return buttonHash === elementHash
+    }
+    const record = new Set()
+    let element = node.parentElement
+    let dataId = element.getAttribute(DATA_ID)
+    while (dataId) {
+        record.add(dataId)
+        const behavior = behaviors[dataId]
+        const {verify, noStatus} = behavior
+        if (noStatus) continue
+        const button = buttonContainer.querySelector(`*[data-key=${dataId}]`)
+        if (verify) {
+            if (!verify(button, element))
+                return false
+        } else if (!defComparator(behavior, button, element)) {
+            return false
+        }
+    }
+    for (let child of buttonContainer.children) {
+        const id = child.getAttribute('data-key')
+        if (BUTTON_STATUS[id] && !record.has(id)) return false
+    }
+    return true
 }

@@ -5,6 +5,7 @@ import {
     setCursorPositionIn
 } from '../range'
 import * as RangeUtils from '../range'
+import {createElement} from '../utils'
 
 /**
  * 引用按钮的点击事件
@@ -32,9 +33,7 @@ export function behaviorBlockquote() {
     const findLineEndIndex = (blockquote, endOffset) =>
         blockquote.innerHTML.indexOf('\n', endOffset)
     const buildBlockquote = html => {
-        const blockquote = document.createElement('blockquote')
-        blockquote.setAttribute('data-id', 'blockquote')
-        blockquote.setAttribute('data-stamp', Date.now().toString(16))
+        const blockquote = createElement('blockquote', 'blockquote')
         blockquote.innerHTML = html
         return blockquote
     }

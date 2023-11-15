@@ -26,12 +26,14 @@ import {behaviorBlockquote} from './behaviors/blockquote'
 
 initBehaviors({
     headerSelect: {
+        noStatus: true,
         render: () => headerSelectStyle,
         onclick: behaviorHeader
     },
     blockquote: {
+        noStatus: true,
         render: () => blockquoteStyle,
-        hash: item => item.getAttribute('data-stamp'),
+        hash: () => Date.now().toString(16),
         onclick: behaviorBlockquote
     },
     bold: {
@@ -64,22 +66,44 @@ initBehaviors({
         onclick: () => execCommonCommand('sub', 'SUB')
     },
     clear: {
-        render: () => clearStyle
+        noStatus: true,
+        render: () => clearStyle,
+        onclick: () => {
+            // TODO
+        }
     },
     color: {
-        render: () => colorStyle
+        render: () => colorStyle,
+        onclick: () => {
+            // TODO
+        }
     },
     background: {
-        render: () => backgroundStyle
+        render: () => backgroundStyle,
+        onclick: () => {
+            // TODO
+        }
     },
     ul: {
-        render: () => ulStyle
+        noStatus: true,
+        render: () => ulStyle,
+        onclick: () => {
+            // TODO
+        }
     },
     ol: {
-        render: () => olStyle
+        noStatus: true,
+        render: () => olStyle,
+        onclick: () => {
+            // TODO
+        }
     },
     multi: {
-        render: () => multiStyle
+        noStatus: true,
+        render: () => multiStyle,
+        onclick: () => {
+            // TODO
+        }
     }
 })
 

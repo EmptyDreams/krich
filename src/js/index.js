@@ -1,9 +1,10 @@
 import krichStyle from '../resources/css/main.styl'
 
 import './behavior'
-import {behaviors} from './global-fileds'
-import {replaceElement} from './utils'
+import {behaviors, BUTTON_STATUS, initContainerQuery, SELECT_VALUE} from './global-fileds'
+import {compareWith, replaceElement} from './utils'
 import {correctEndContainer, getTopLines, setCursorPosition} from './range'
+import {registryBeforeInputEventListener} from './events/before-input'
 
 export {behaviors}
 
@@ -35,6 +36,7 @@ export {behaviors}
  * @param elements {{[key: string]: (boolean | any)}} 要显示的选项元素，key 表示选项名称，填 true 或 false 表示启用或禁用，填其他值表示具体配置
  */
 export function initEditor(selector, elements) {
+    initContainerQuery(selector)
     const container = document.querySelector(selector)
     container.insertAdjacentHTML('beforebegin', `<style>${krichStyle}</style>`)
     container.innerHTML = `<div class="krich-tools">${
@@ -44,6 +46,8 @@ export function initEditor(selector, elements) {
     }</div><div class="krich-editor" spellcheck contenteditable><p><br/></p></div>`
     const editorTools = container.getElementsByClassName('krich-tools')[0]
     const editorContent = container.getElementsByClassName('krich-editor')[0]
+    // 标记是否已经对比过按钮状态和文本状态
+    let statusCheckCache = false
     editorTools.addEventListener('click', event => {
         const original = event.target
         let target = original
@@ -65,15 +69,20 @@ export function initEditor(selector, elements) {
                 return
             }
             target.getElementsByTagName('span')[0].innerHTML = original.innerHTML
+            const value = BUTTON_STATUS[dataKey] = original.getAttribute(SELECT_VALUE)
+            target.setAttribute(SELECT_VALUE, value)
+        } else {
+            BUTTON_STATUS[dataKey] = target.classList.toggle('active')
         }
         behaviors[dataKey].onclick?.(event, target)
+        statusCheckCache = false
     })
     const switchTask = key => {
         switch (key) {
-            case 'Enter':
+            case 'Enter':   // 将顶层的 div 替换为 p
                 return () => editorContent.querySelectorAll('&>div:not([data-id])')
                         .forEach(it => replaceElement(it, document.createElement('p')))
-            case 'Backspace':
+            case 'Backspace':   // 若编辑器被清空则填充一个 p
                 return () => {
                     if (editorContent.childElementCount === 0)
                         editorContent.innerHTML = '<p><br/></p>'
@@ -93,6 +102,23 @@ export function initEditor(selector, elements) {
                 deleteEvent(event)
                 break
         }
+    })
+    registryBeforeInputEventListener(editorContent, event => {
+        if (statusCheckCache) return
+        statusCheckCache = true
+        const range = getSelection().getRangeAt(0)
+        if (compareWith(editorTools, correctEndContainer(range))) return
+        event.preventDefault()
+        /** @type {Node|HTMLElement} */
+        let element = document.createTextNode(event.data)
+        for (let key in behaviors) {
+            const behavior = behaviors[key]
+            if (behavior.noStatus) continue
+            const newElement = behavior.build(key)
+            newElement.append(element)
+            element = newElement
+        }
+        range.insertNode(element)
     })
 }
 
