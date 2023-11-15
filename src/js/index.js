@@ -3,7 +3,14 @@ import krichStyle from '../resources/css/main.styl'
 import './behavior'
 import {behaviors, BUTTON_STATUS, initContainerQuery, SELECT_VALUE} from './global-fileds'
 import {compareWith, replaceElement} from './utils'
-import {correctEndContainer, correctStartContainer, getTopLines, setCursorPosition, selectNodeContents} from './range'
+import {
+    correctEndContainer,
+    correctStartContainer,
+    getTopLines,
+    setCursorPosition,
+    selectNodeContents,
+    setStartAt, setEndAfter, setCursorPositionIn
+} from './range'
 import {registryBeforeInputEventListener} from './events/before-input'
 
 export {behaviors}
@@ -113,20 +120,36 @@ export function initEditor(selector, elements) {
     registryBeforeInputEventListener(editorContent, event => {
         if (statusCheckCache) return
         statusCheckCache = true
-        const range = getSelection().getRangeAt(0)
-        if (compareWith(editorTools, correctEndContainer(range))) return
-        const node = document.createTextNode(event.data)
-        const prevNode = correctStartContainer(range)
-        prevNode.parentNode.insertBefore(node, prevNode.nextSibling)
-        const newRange = document.createRange()
-        selectNodeContents(newRange, node)
-        for (let child of editorContent.children) {
-            const dataId = child.getAttribute('data-key')
-            const status = BUTTON_STATUS[dataId]
-            const behavior = behaviors[dataId]
-            if (!status || behavior.noStatus) continue
-            behavior.onclick(newRange, child, null)
-        }
+        const selection = getSelection()
+        const range = selection.getRangeAt(0)
+        if (!range.collapsed || compareWith(editorTools, correctEndContainer(range))) return
+        setTimeout(() => {
+            // noinspection JSUnresolvedReference
+            const data = event.data
+            const node = correctStartContainer(range)
+            const {startOffset, startContainer} = range
+            // noinspection JSUnresolvedReference
+            const newRange = document.createRange()
+            let endOffset = startOffset + data.length
+            if (node === startContainer) {
+                setStartAt(newRange, node, startOffset)
+                newRange.setEnd(node, endOffset)
+            } else {
+                const len = node.textContent.length
+                setStartAt(newRange, node, len - data.length)
+                setEndAfter(newRange, node)
+                endOffset = len
+            }
+            for (let child of editorTools.children) {
+                const dataId = child.getAttribute('data-key')
+                const status = BUTTON_STATUS[dataId]
+                const behavior = behaviors[dataId]
+                if (!status || behavior.noStatus) continue
+                behavior.onclick(newRange, child, null)
+            }
+            setCursorPositionIn(node, endOffset)
+        }, 0)
+
     })
 }
 

@@ -38,32 +38,32 @@ initBehaviors({
     },
     bold: {
         render: () => boldStyle,
-        onclick: () => execCommonCommand('bold', 'B')
+        onclick: range => execCommonCommand('bold', 'B', range)
     },
     underline: {
         render: () => underlineStyle,
-        onclick: () => execCommonCommand('underline', 'U')
+        onclick: range => execCommonCommand('underline', 'U', range)
     },
     italic: {
         render: () => italicStyle,
-        onclick: () => execCommonCommand('italic', 'I')
+        onclick: range => execCommonCommand('italic', 'I', range)
     },
     through: {
         render: () => throughStyle,
         hash: () => `through`,
-        onclick: () => execCommonCommand('through', 'SPAN', false, null, 'through'),
+        onclick: range => execCommonCommand('through', 'SPAN', range, false, 'through'),
     },
     inlineCode: {
         render: () => inlineCodeStyle,
-        onclick: () => execCommonCommand('inlineCode', 'CODE')
+        onclick: range => execCommonCommand('inlineCode', 'CODE', range)
     },
     sup: {
         render: () => supStyle,
-        onclick: () => execCommonCommand('sup', 'SUP')
+        onclick: range => execCommonCommand('sup', 'SUP', range)
     },
     sub: {
         render: () => subStyle,
-        onclick: () => execCommonCommand('sub', 'SUB')
+        onclick: range => execCommonCommand('sub', 'SUB', range)
     },
     clear: {
         noStatus: true,
@@ -111,13 +111,11 @@ initBehaviors({
  * 执行一次通用修改指令
  * @param dataId {string} 指令名称
  * @param tagName {string} 标签名称
+ * @param range {Range} 使用的 Range
  * @param removed {boolean} 是否已经移除过元素
- * @param realRange {Range} 真实使用的 Range
  * @param classNames {string} 要设置的类名
  */
-export function execCommonCommand(dataId, tagName, removed = false, realRange = null, ...classNames) {
-    const selection = getSelection()
-    const range = realRange || selection.getRangeAt(0)
+export function execCommonCommand(dataId, tagName, range, removed = false, ...classNames) {
     if (range.collapsed) return true
     let rangeArray = RangeUtils.splitRangeByLine(range)
     if (!removed) {
@@ -136,6 +134,7 @@ export function execCommonCommand(dataId, tagName, removed = false, realRange = 
     }
     if (removed)
         rangeArray = setStyleInRange(rangeArray, dataId, tagName, ...classNames)
+    const selection = getSelection()
     selection.removeAllRanges()
     selection.addRange(RangeUtils.mergeRanges(rangeArray))
     optimizeTree(rangeArray)

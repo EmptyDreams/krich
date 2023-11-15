@@ -8,8 +8,7 @@
  */
 export function registryBeforeInputEventListener(target, consumer) {
     target.addEventListener('beforeinput', event => {
-        if (event.isComposing) event.preventDefault()
-        else consumer(event)
+        if (!event.isComposing) consumer(event)
     })
     target.addEventListener('compositionend', consumer)
 }
