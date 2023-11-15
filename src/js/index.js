@@ -3,7 +3,7 @@ import krichStyle from '../resources/css/main.styl'
 import './behavior'
 import {behaviors, BUTTON_STATUS, initContainerQuery, SELECT_VALUE} from './global-fileds'
 import {compareWith, replaceElement} from './utils'
-import {correctEndContainer, getTopLines, setCursorPosition} from './range'
+import {correctEndContainer, correctStartContainer, getTopLines, setCursorPosition, selectNodeContents} from './range'
 import {registryBeforeInputEventListener} from './events/before-input'
 
 export {behaviors}
@@ -74,7 +74,8 @@ export function initEditor(selector, elements) {
         } else {
             BUTTON_STATUS[dataKey] = target.classList.toggle('active')
         }
-        behaviors[dataKey].onclick?.(event, target)
+        const range = getSelection().getRangeAt(0)
+        behaviors[dataKey].onclick?.(range, target, event)
         statusCheckCache = false
     })
     const switchTask = key => {
@@ -108,17 +109,18 @@ export function initEditor(selector, elements) {
         statusCheckCache = true
         const range = getSelection().getRangeAt(0)
         if (compareWith(editorTools, correctEndContainer(range))) return
-        event.preventDefault()
-        /** @type {Node|HTMLElement} */
-        let element = document.createTextNode(event.data)
-        for (let key in behaviors) {
-            const behavior = behaviors[key]
-            if (behavior.noStatus) continue
-            const newElement = behavior.build(key)
-            newElement.append(element)
-            element = newElement
+        const node = document.createTextNode(event.data)
+        const prevNode = correctStartContainer(range)
+        prevNode.parentNode.insertBefore(node, prevNode.nextSibling)
+        const newRange = document.createRange()
+        selectNodeContents(newRange, node)
+        for (let child of editorContent.children) {
+            const dataId = child.getAttribute('data-key')
+            const status = BUTTON_STATUS[dataId]
+            const behavior = behaviors[dataId]
+            if (!status || behavior.noStatus) continue
+            behavior.onclick(newRange, child, null)
         }
-        range.insertNode(element)
     })
 }
 

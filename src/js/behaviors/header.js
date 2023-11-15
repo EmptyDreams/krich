@@ -3,12 +3,12 @@ import * as RangeUtils from '../range'
 
 /**
  * 标题按钮的点击事件
- * @param event {Event}
+ * @param range {Range}
+ * @param target {HTMLElement}
  */
-export function behaviorHeader(event) {
-    const value = event.target.getAttribute(SELECT_VALUE)
+export function behaviorHeader(range, target) {
+    const value = target.getAttribute(SELECT_VALUE)
     console.assert(value?.length === 1, `${value} 值异常`)
-    const range = getSelection().getRangeAt(0)
     RangeUtils.getTopLines(range).forEach(item => {
         const novel = document.createElement(value === '0' ? 'p' : 'h' + value)
         novel.setAttribute('data-id', 'headerSelect')

@@ -14,20 +14,13 @@ class ButtonBehavior {
      *
      * 三个参数依次为：
      *
-     * 1. 点击事件的原始 Event 对象
+     * 1. 选中的区域
      * 2. 被点击的按钮的对象
+     * 3. 点击事件的原始 Event 对象
      *
-     * @type {function(Event, HTMLElement)}
+     * @type {function(Range, HTMLElement, ?Event)}
      */
     onclick
-    /**
-     * 构建一个元素
-     *
-     * 函数参数是当前样式 ID 的名称
-     *
-     * @type {undefined|function(string): HTMLElement}
-     */
-    build
     /**
      * 哈希函数，将按钮当前的状态转化为一个哈希值
      *
