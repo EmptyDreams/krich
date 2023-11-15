@@ -74,8 +74,14 @@ export function initEditor(selector, elements) {
         } else {
             BUTTON_STATUS[dataKey] = target.classList.toggle('active')
         }
-        const range = getSelection().getRangeAt(0)
-        behaviors[dataKey].onclick?.(range, target, event)
+        const selection = getSelection()
+        const range = selection.getRangeAt(0)
+        const correct = behaviors[dataKey].onclick?.(range, target, event)
+        editorContent.focus()
+        if (correct) {
+            selection.removeAllRanges()
+            selection.addRange(range)
+        }
         statusCheckCache = false
     })
     const switchTask = key => {

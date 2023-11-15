@@ -118,7 +118,7 @@ initBehaviors({
 export function execCommonCommand(dataId, tagName, removed = false, realRange = null, ...classNames) {
     const selection = getSelection()
     const range = realRange || selection.getRangeAt(0)
-    if (range.collapsed) return
+    if (range.collapsed) return true
     let rangeArray = RangeUtils.splitRangeByLine(range)
     if (!removed) {
         const firstRange = document.createRange()
