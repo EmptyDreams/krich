@@ -53,7 +53,7 @@ export function initEditor(selector, elements) {
     const editorTools = container.getElementsByClassName('krich-tools')[0]
     const editorContent = container.getElementsByClassName('krich-editor')[0]
     // 标记是否已经对比过按钮状态和文本状态
-    let statusCheckCache = false
+    let statusCheckCache = true
     editorTools.addEventListener('click', event => {
         const original = event.target
         let target = original
@@ -119,7 +119,12 @@ export function initEditor(selector, elements) {
                 break
         }
     })
-    container.addEventListener('cursor_move', event => console.log(event))
+    container.addEventListener('cursor_move', event => {
+        const {range, prevRange} = event
+        if (range.startContainer !== prevRange?.startContainer) {
+            statusCheckCache = false
+        }
+    })
     registryBeforeInputEventListener(editorContent, event => {
         if (statusCheckCache) return
         statusCheckCache = true
@@ -179,6 +184,7 @@ function onCursorMove() {
         return
     const event = new Event('cursor_move')
     event.range = range
+    event.prevRange = prevCursor
     KRICH_CONTAINER.dispatchEvent(event)
     prevCursor = range
 }
