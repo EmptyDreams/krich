@@ -109,17 +109,17 @@ initBehaviors({
 
 /**
  * 执行一次通用修改指令
- * @param name {string} 指令名称
+ * @param dataId {string} 指令名称
  * @param tagName {string} 标签名称
  * @param removed {boolean} 是否已经移除过元素
  * @param realRange {Range} 真实使用的 Range
- * @param className {string} 要设置的类名
+ * @param classNames {string} 要设置的类名
  */
-export function execCommonCommand(name, tagName, removed = false, realRange = null, ...className) {
+export function execCommonCommand(dataId, tagName, removed = false, realRange = null, ...classNames) {
     const selection = getSelection()
     const range = realRange || selection.getRangeAt(0)
     if (range.collapsed) return
-    const rangeArray = RangeUtils.splitRangeByLine(range)
+    let rangeArray = RangeUtils.splitRangeByLine(range)
     if (!removed) {
         const firstRange = document.createRange()
         removed = removeStylesInRange(rangeArray[0], firstRange, tagName) || removed
@@ -134,31 +134,45 @@ export function execCommonCommand(name, tagName, removed = false, realRange = nu
             rangeArray[last] = lastRange
         }
     }
-    if (removed) {
-        const buildElement = () => {
-            const element = document.createElement(tagName)
-            element.className = className.join(' ')
-            element.setAttribute(DATA_ID, name)
-            return element
-        }
-        for (let i = 0; i < rangeArray.length; i++) {
-            const it = rangeArray[i]
-            const element = buildElement()
-            RangeUtils.surroundContents(it, element)
-            /** @param node {Node} */
-            const removeIfEmpty = node => {
-                if (node && node.nodeType === Node.TEXT_NODE && !node.textContent)
-                    node.remove()
-            }
-            removeIfEmpty(element.nextSibling)
-            removeIfEmpty(element.previousSibling)
-            rangeArray[i] = document.createRange()
-            RangeUtils.selectNodeContents(rangeArray[i], element)
-        }
-    }
+    if (removed)
+        rangeArray = setStyleInRange(rangeArray, dataId, tagName, ...classNames)
     selection.removeAllRanges()
     selection.addRange(RangeUtils.mergeRanges(rangeArray))
     optimizeTree(rangeArray)
+}
+
+/**
+ * 为指定区域内的文本设置样式
+ * @param ranges {Range|Range[]} 选择的区域，如果为数组区域必须连续
+ * @param dataId {string} 要设置的样式的 ID
+ * @param tagName {string} 要设置的样式的 tagName
+ * @param classNames {string} 要添加的类名
+ * @return {Range[]} 设置后的选择范围
+ */
+export function setStyleInRange(ranges, dataId, tagName, ...classNames) {
+    /** @type {Range[]} */
+    const rangeArray = Array.isArray(ranges) ? ranges : RangeUtils.splitRangeByLine(ranges)
+    const buildElement = () => {
+        const element = document.createElement(tagName)
+        element.className = classNames.join(' ')
+        element.setAttribute(DATA_ID, dataId)
+        return element
+    }
+    for (let i = 0; i < rangeArray.length; i++) {
+        const it = rangeArray[i]
+        const element = buildElement()
+        RangeUtils.surroundContents(it, element)
+        /** @param node {Node} */
+        const removeIfEmpty = node => {
+            if (node && node.nodeType === Node.TEXT_NODE && !node.textContent)
+                node.remove()
+        }
+        removeIfEmpty(element.nextSibling)
+        removeIfEmpty(element.previousSibling)
+        rangeArray[i] = document.createRange()
+        RangeUtils.selectNodeContents(rangeArray[i], element)
+    }
+    return rangeArray
 }
 
 /**
