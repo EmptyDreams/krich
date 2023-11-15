@@ -1,8 +1,8 @@
 /**
- * 编辑器容器的 query 表达式
- * @type {?string}
+ * 编辑器容器
+ * @type {HTMLElement}
  */
-let CONTAINER_QUERY
+export let KRICH_CONTAINER
 /**
  * 存储按钮状态
  * @type {{[p:string]: boolean|string}}
@@ -34,11 +34,6 @@ export function initBehaviors(value) {
 }
 
 /** 初始化容器 */
-export function initContainerQuery(query) {
-    CONTAINER_QUERY = query
-}
-
-/** 获取编辑器容器 */
-export function queryContainer() {
-    return document.querySelector(CONTAINER_QUERY)
+export function initContainerQuery(container) {
+    KRICH_CONTAINER = container
 }

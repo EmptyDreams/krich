@@ -20,7 +20,7 @@ class ButtonBehavior {
      *
      * 返回值用于告知调用者函数是否需要外部还原光标位置
      *
-     * @type {function(Range, HTMLElement, ?Event): boolean|undefined}
+     * @type {function(Range, HTMLElement, ?Event): boolean|undefined|void}
      */
     onclick
     /**

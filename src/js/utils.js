@@ -1,4 +1,4 @@
-import {DATA_ID, behaviors, TOP_LIST, DATA_HASH, queryContainer, BUTTON_STATUS} from './global-fileds'
+import {DATA_ID, behaviors, TOP_LIST, DATA_HASH, BUTTON_STATUS, KRICH_CONTAINER} from './global-fileds'
 
 /**
  * 构建一个新的元素
@@ -11,7 +11,7 @@ export function createElement(key, tagName, ...classNames) {
     const {hash, extra} = behaviors[key]
     const element = document.createElement(tagName)
     element.className = classNames.join(' ')
-    const button = queryContainer().querySelector(`.krich-tools>*[data-key=${key}]`)
+    const button = KRICH_CONTAINER.querySelector(`.krich-tools>*[data-key=${key}]`)
     if (hash) element.setAttribute(DATA_HASH, hash(button))
     if (extra) {
         const attributes = extra(button)

@@ -1,14 +1,13 @@
 import krichStyle from '../resources/css/main.styl'
 
 import './behavior'
-import {behaviors, BUTTON_STATUS, initContainerQuery, SELECT_VALUE} from './global-fileds'
+import {behaviors, BUTTON_STATUS, initContainerQuery, KRICH_CONTAINER, SELECT_VALUE} from './global-fileds'
 import {compareWith, replaceElement} from './utils'
 import {
     correctEndContainer,
     correctStartContainer,
     getTopLines,
     setCursorPosition,
-    selectNodeContents,
     setStartAt, setEndAfter, setCursorPositionIn
 } from './range'
 import {registryBeforeInputEventListener} from './events/before-input'
@@ -43,7 +42,6 @@ export {behaviors}
  * @param elements {{[key: string]: (boolean | any)}} 要显示的选项元素，key 表示选项名称，填 true 或 false 表示启用或禁用，填其他值表示具体配置
  */
 export function initEditor(selector, elements) {
-    initContainerQuery(selector)
     const container = document.querySelector(selector)
     container.insertAdjacentHTML('beforebegin', `<style>${krichStyle}</style>`)
     container.innerHTML = `<div class="krich-tools">${
@@ -51,6 +49,7 @@ export function initEditor(selector, elements) {
             .map(it => behaviors[it].render())
             .join('')
     }</div><div class="krich-editor" spellcheck contenteditable><p><br/></p></div>`
+    initContainerQuery(container)
     const editorTools = container.getElementsByClassName('krich-tools')[0]
     const editorContent = container.getElementsByClassName('krich-editor')[0]
     // 标记是否已经对比过按钮状态和文本状态
@@ -101,8 +100,11 @@ export function initEditor(selector, elements) {
                     if (editorContent.childElementCount === 0)
                         editorContent.innerHTML = '<p><br/></p>'
                 }
+            case 'ArrowLeft': case 'ArrowRight': case 'ArrowUp': case 'ArrowDown':
+                return onCursorMove
         }
     }
+    editorContent.addEventListener('mouseup', onCursorMove)
     editorContent.addEventListener('keyup', event => {
         const task = switchTask(event.key)
         if (task) setTimeout(task, 0)
@@ -117,6 +119,7 @@ export function initEditor(selector, elements) {
                 break
         }
     })
+    container.addEventListener('cursor_move', event => console.log(event))
     registryBeforeInputEventListener(editorContent, event => {
         if (statusCheckCache) return
         statusCheckCache = true
@@ -149,8 +152,35 @@ export function initEditor(selector, elements) {
             }
             setCursorPositionIn(node, endOffset)
         }, 0)
-
     })
+}
+
+/** @type {Range} */
+let prevCursor
+function onCursorMove() {
+    let range = getSelection().getRangeAt(0)
+    if (range.collapsed) {
+        const point = correctStartContainer(range)
+        if (point !== range.startContainer) {
+            const cursor = document.createRange()
+            setEndAfter(cursor, point)
+            cursor.collapse(false)
+            range = cursor
+        }
+    } else {
+        const cursor = document.createRange()
+        const end = correctEndContainer(range)
+        const endOffset = cursor.endContainer === range.endContainer ? cursor.endOffset : end.textContent.length
+        cursor.setEnd(end, endOffset)
+        cursor.collapse(false)
+        range = cursor
+    }
+    if (prevCursor && prevCursor.endOffset === range.endOffset && prevCursor.endContainer === range.endContainer)
+        return
+    const event = new Event('cursor_move')
+    event.range = range
+    KRICH_CONTAINER.dispatchEvent(event)
+    prevCursor = range
 }
 
 /**
