@@ -116,8 +116,8 @@ export function nextSiblingText(node) {
 }
 
 /**
- * 获取一个节点所持有的所有样式
- * @param buttonContainer {HTMLElement} 按钮列表
+ * 判断一个节点持有的样式和按钮列表的样式是否相同
+ * @param buttonContainer {HTMLElement} 按钮的父级控件
  * @param node {Node} 节点
  * @return {boolean} 返回按钮和节点状态是否一致
  */
