@@ -156,7 +156,7 @@ export function compareBtnListStatusWith(buttonContainer, node) {
         const button = buttonContainer.querySelector(`&>*[data-key=${dataId}]`)
         if (!compareBtnStatusWith(button, element))
             return false
-        element = element.nextElementSibling
+        element = element.parentElement
         dataId = element?.getAttribute(DATA_ID)
     }
     for (let child of buttonContainer.children) {
@@ -196,7 +196,7 @@ export function syncButtonsStatus(buttonContainer, node) {
         if (!compareBtnStatusWith(button, element)) {
             syncHelper(button, element)
         }
-        element = element.nextElementSibling
+        element = element.parentElement
         dataId = element?.getAttribute(DATA_ID)
     }
     for (let button of buttonContainer.children) {
