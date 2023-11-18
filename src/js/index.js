@@ -95,11 +95,6 @@ export function initEditor(selector, elements) {
             case 'Enter':   // 将顶层的 div 替换为 p
                 return () => editorContent.querySelectorAll('&>div:not([data-id])')
                         .forEach(it => replaceElement(it, document.createElement('p')))
-            case 'Backspace':   // 若编辑器被清空则填充一个 p
-                return () => {
-                    if (editorContent.childElementCount === 0)
-                        editorContent.innerHTML = '<p><br/></p>'
-                }
             case 'ArrowLeft': case 'ArrowRight': case 'ArrowUp': case 'ArrowDown':
                 return onCursorMove
         }
@@ -199,9 +194,17 @@ function onCursorMove() {
 function deleteEvent(event) {
     const range = getSelection().getRangeAt(0)
     if (!range.collapsed) return
+    const {startOffset, startContainer} = range
+    if (startOffset === 0) {
+        if (startContainer.classList?.contains('krich-editor') ||
+            (startContainer.nodeName === 'P' && startContainer.parentNode.firstChild === startContainer)
+        ) {
+            return event.preventDefault()
+        }
+    } else console.log(startContainer, startOffset)
     const startNode = correctEndContainer(range)
     // 如果光标不在引用开头则直接退出
-    if (!(range.startOffset === 0 || startNode !== range.endContainer)) return
+    if (!(startOffset === 0 || startNode !== range.endContainer)) return
     const blockquote = startNode.parentElement
     if (blockquote.nodeName !== 'BLOCKQUOTE') return
     event.preventDefault()
