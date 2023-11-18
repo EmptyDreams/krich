@@ -44,4 +44,9 @@ class ButtonBehavior {
      * @type {undefined|function(HTMLElement, HTMLElement): boolean}
      */
     verify
+    /**
+     * 将当前按钮的样式改为和指定节点一致的状态
+     * @type {undefined|function(btn: HTMLElement, dist: HTMLElement|undefined)}
+     */
+    setter
 }

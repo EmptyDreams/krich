@@ -2,7 +2,7 @@ import krichStyle from '../resources/css/main.styl'
 
 import './behavior'
 import {behaviors, BUTTON_STATUS, initContainerQuery, KRICH_CONTAINER, SELECT_VALUE} from './global-fileds'
-import {compareWith, replaceElement} from './utils'
+import {compareBtnListStatusWith, replaceElement, syncButtonsStatus} from './utils'
 import {
     correctEndContainer,
     correctStartContainer,
@@ -122,7 +122,7 @@ export function initEditor(selector, elements) {
     container.addEventListener('cursor_move', event => {
         const {range, prevRange} = event
         if (range.startContainer !== prevRange?.startContainer) {
-            statusCheckCache = false
+            syncButtonsStatus(editorTools, range.startContainer)
         }
     })
     registryBeforeInputEventListener(editorContent, event => {
@@ -130,7 +130,7 @@ export function initEditor(selector, elements) {
         statusCheckCache = true
         const selection = getSelection()
         const range = selection.getRangeAt(0)
-        if (!range.collapsed || compareWith(editorTools, correctEndContainer(range))) return
+        if (!range.collapsed || compareBtnListStatusWith(editorTools, correctEndContainer(range))) return
         setTimeout(() => {
             // noinspection JSUnresolvedReference
             const data = event.data

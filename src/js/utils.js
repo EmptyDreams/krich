@@ -1,4 +1,4 @@
-import {DATA_ID, behaviors, TOP_LIST, DATA_HASH, BUTTON_STATUS, KRICH_CONTAINER} from './global-fileds'
+import {DATA_ID, behaviors, TOP_LIST, DATA_HASH, BUTTON_STATUS, KRICH_CONTAINER, SELECT_VALUE} from './global-fileds'
 
 /**
  * 构建一个新的元素
@@ -116,41 +116,92 @@ export function nextSiblingText(node) {
 }
 
 /**
+ * 比较按钮和标签的状态是否相同
+ * @param button {HTMLElement} 按钮对象
+ * @param element {HTMLElement} 标签对象
+ * @return {boolean}
+ */
+export function compareBtnStatusWith(button, element) {
+    const {verify, hash} = getElementBehavior(element)
+    /**
+     * @param button {HTMLElement}
+     * @param element {HTMLElement}
+     */
+    const defComparator = (button, element) => {
+        const buttonHash = hash?.(button)
+        const elementHash = element.getAttribute(DATA_HASH)
+        return buttonHash === elementHash
+    }
+    if (verify) {
+        if (!verify(button, element))
+            return false
+    } else if (!defComparator(button, element)) {
+        return false
+    }
+}
+
+/**
  * 判断一个节点持有的样式和按钮列表的样式是否相同
  * @param buttonContainer {HTMLElement} 按钮的父级控件
  * @param node {Node} 节点
  * @return {boolean} 返回按钮和节点状态是否一致
  */
-export function compareWith(buttonContainer, node) {
-    /**
-     * @param behavior {ButtonBehavior}
-     * @param button {HTMLElement}
-     * @param element {HTMLElement}
-     */
-    const defComparator = (behavior, button, element) => {
-        const buttonHash = behavior.hash?.(button)
-        const elementHash = element.getAttribute(DATA_HASH)
-        return buttonHash === elementHash
-    }
+export function compareBtnListStatusWith(buttonContainer, node) {
     const record = new Set()
     let element = node.parentElement
     let dataId = element.getAttribute(DATA_ID)
     while (dataId) {
         record.add(dataId)
-        const behavior = behaviors[dataId]
-        const {verify, noStatus} = behavior
-        if (noStatus) continue
-        const button = buttonContainer.querySelector(`*[data-key=${dataId}]`)
-        if (verify) {
-            if (!verify(button, element))
-                return false
-        } else if (!defComparator(behavior, button, element)) {
+        if (getElementBehavior(element).noStatus) continue
+        const button = buttonContainer.querySelector(`&>*[data-key=${dataId}]`)
+        if (!compareBtnStatusWith(button, element))
             return false
-        }
+        element = element.nextElementSibling
+        dataId = element?.getAttribute(DATA_ID)
     }
     for (let child of buttonContainer.children) {
         const id = child.getAttribute('data-key')
         if (BUTTON_STATUS[id] && !record.has(id)) return false
     }
     return true
+}
+
+/**
+ * 同步按钮和指定节点的状态
+ * @param buttonContainer {HTMLElement} 按钮的父级标签
+ * @param node {Node} 文本节点
+ */
+export function syncButtonsStatus(buttonContainer, node) {
+    const syncHelper = (button, element) => {
+        const setter = element ? getElementBehavior(element).setter : null
+        if (setter) {
+            setter(button, element)
+        } else if (button.classList.contains('select')) {
+            const value = element?.getAttribute(SELECT_VALUE) ?? '0'
+            button.setAttribute(SELECT_VALUE, value)
+            const item = button.querySelector(`.item[${SELECT_VALUE}="${value}"]`)
+            button.getElementsByClassName('value')[0].innerHTML = item.innerHTML
+        } else if (element) {
+            button.classList.add('active')
+        } else {
+            button.classList.remove('active')
+        }
+    }
+    let element = node.parentElement
+    let dataId = element.getAttribute(DATA_ID)
+    const record = new Set()
+    while (dataId) {
+        record.add(record)
+        const button = buttonContainer.querySelector(`&>*[data-key=${dataId}]`)
+        if (!compareBtnStatusWith(button, element)) {
+            syncHelper(button, element)
+        }
+        element = element.nextElementSibling
+        dataId = element?.getAttribute(DATA_ID)
+    }
+    for (let button of buttonContainer.children) {
+        if (!record.has(button.getAttribute('data-key'))) {
+            syncHelper(button, null)
+        }
+    }
 }
