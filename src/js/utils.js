@@ -191,7 +191,7 @@ export function syncButtonsStatus(buttonContainer, node) {
     let dataId = element.getAttribute(DATA_ID)
     const record = new Set()
     while (dataId) {
-        record.add(record)
+        record.add(dataId)
         const button = buttonContainer.querySelector(`&>*[data-key=${dataId}]`)
         if (!compareBtnStatusWith(button, element)) {
             syncHelper(button, element)
