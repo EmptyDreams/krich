@@ -160,7 +160,10 @@ export function initEditor(selector, elements) {
     })
 }
 
-/** @type {Range} */
+/**
+ * 上一刻鼠标光标所在的位置
+ * @type {Range}
+ */
 let prevCursor
 function onCursorMove() {
     let range = getSelection().getRangeAt(0)
