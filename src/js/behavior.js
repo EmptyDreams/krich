@@ -14,6 +14,7 @@ import ulStyle from '../resources/html/tools/ul.html'
 import olStyle from '../resources/html/tools/ol.html'
 import multiStyle from '../resources/html/tools/multi.html'
 import {
+    createElement,
     equalsKrichNode,
     findParentTag,
     getElementBehavior,
@@ -151,15 +152,9 @@ export function execCommonCommand(dataId, tagName, range, removed = false, ...cl
 export function setStyleInRange(ranges, dataId, tagName, ...classNames) {
     /** @type {Range[]} */
     const rangeArray = Array.isArray(ranges) ? ranges : RangeUtils.splitRangeByLine(ranges)
-    const buildElement = () => {
-        const element = document.createElement(tagName)
-        element.className = classNames.join(' ')
-        element.setAttribute(DATA_ID, dataId)
-        return element
-    }
     for (let i = 0; i < rangeArray.length; i++) {
         const it = rangeArray[i]
-        const element = buildElement()
+        const element = createElement(dataId, tagName, ...classNames)
         RangeUtils.surroundContents(it, element)
         /** @param node {Node} */
         const removeIfEmpty = node => {

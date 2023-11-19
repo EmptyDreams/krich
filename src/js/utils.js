@@ -11,6 +11,7 @@ export function createElement(key, tagName, ...classNames) {
     const {hash, extra} = behaviors[key]
     const element = document.createElement(tagName)
     element.className = classNames.join(' ')
+    element.setAttribute(DATA_ID, key)
     const button = KRICH_CONTAINER.querySelector(`.krich-tools>*[data-key=${key}]`)
     if (hash) element.setAttribute(DATA_HASH, hash(button))
     if (extra) {
