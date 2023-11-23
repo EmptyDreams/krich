@@ -175,6 +175,7 @@ export function compareBtnListStatusWith(buttonContainer, node) {
 export function syncButtonsStatus(buttonContainer, node) {
     const syncHelper = (button, element) => {
         const setter = element ? getElementBehavior(element).setter : null
+        const key = button.getAttribute('data-key')
         if (setter) {
             setter(button, element)
         } else if (button.classList.contains('select')) {
@@ -182,10 +183,13 @@ export function syncButtonsStatus(buttonContainer, node) {
             button.setAttribute(SELECT_VALUE, value)
             const item = button.querySelector(`.item[${SELECT_VALUE}="${value}"]`)
             button.getElementsByClassName('value')[0].innerHTML = item.innerHTML
+            BUTTON_STATUS[key] = value
         } else if (element) {
             button.classList.add('active')
+            BUTTON_STATUS[key] = true
         } else {
             button.classList.remove('active')
+            delete BUTTON_STATUS[key]
         }
     }
     let element = node.parentElement
