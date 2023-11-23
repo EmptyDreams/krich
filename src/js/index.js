@@ -201,7 +201,7 @@ function deleteEvent(event) {
         ) {
             return event.preventDefault()
         }
-    } else console.log(startContainer, startOffset)
+    }
     const startNode = correctEndContainer(range)
     // 如果光标不在引用开头则直接退出
     if (!(startOffset === 0 || startNode !== range.endContainer)) return
