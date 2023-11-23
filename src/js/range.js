@@ -1,4 +1,4 @@
-import {findParentTag, getFirstTextNode, getLastTextNode, nextSiblingText} from './utils'
+import {cloneDomTree, findParentTag, getFirstTextNode, getLastTextNode, nextSiblingText} from './utils'
 import {TOP_LIST} from './global-fileds'
 
 /**
@@ -92,9 +92,47 @@ export function splitRangeByLine(range) {
  * @return {void}
  */
 export function surroundContents(range, container) {
-    const fragment = range.extractContents()
-    container.appendChild(fragment)
-    range.insertNode(container)
+    const {startContainer, endContainer, startOffset, endOffset, commonAncestorContainer} = range
+    console.assert(
+        startContainer.nodeType === endContainer.nodeType && startContainer.nodeType === Node.TEXT_NODE,
+        'Range 始末位置都应在 TEXT NODE 当中', range
+    )
+    if (startContainer === endContainer)
+        return range.surroundContents(container)
+    /** @param consumer {function(Text)} */
+    function forEachAllTextNode(consumer) {
+        const array = []
+        let dist = startContainer
+        do {
+            array.push(dist)
+            dist = nextSiblingText(dist)
+        } while (dist && range.intersectsNode(dist))
+        array.forEach(consumer)
+    }
+    const breaker = it => it === commonAncestorContainer
+    /** @return {Node} */
+    const findSecRoot = node => {
+        while (!breaker(node.parentNode))
+            node = node.parentNode
+        return node
+    }
+    forEachAllTextNode(dist => {
+        const textContent = dist.textContent
+        let node
+        if (dist === startContainer && startOffset !== 0) {
+            node = cloneDomTree(dist, textContent.substring(startOffset), breaker)[0]
+            dist.textContent = textContent.substring(0, startOffset)
+            commonAncestorContainer.insertBefore(container, findSecRoot(dist).nextSibling)
+        } else if (dist === endContainer && endOffset !== textContent.length) {
+            node = cloneDomTree(dist, textContent.substring(0, endOffset), breaker)[0]
+            dist.textContent = textContent.substring(endOffset)
+        } else {
+            node = findSecRoot(dist)
+            if (dist === startContainer)
+                commonAncestorContainer.insertBefore(container, node)
+        }
+        container.append(node)
+    })
 }
 
 /**

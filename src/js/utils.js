@@ -206,3 +206,25 @@ export function syncButtonsStatus(buttonContainer, node) {
         }
     }
 }
+
+/**
+ * 复制 DOM 树
+ * @param node {Node} #text 节点
+ * @param text {string} 文本节点的内容
+ * @param breaker {function(Node):boolean} 断路器，判断是否终止复制
+ * @return {[Node, Text]} 克隆出来的文本节点
+ */
+export function cloneDomTree(node, text, breaker) {
+    const textNode = document.createTextNode(text)
+    let tree = textNode
+    let pos = node
+    node = node.parentNode
+    while (!breaker(node)) {
+        const item = node.cloneNode(false)
+        item.appendChild(tree)
+        tree = item
+        pos = node
+        node = node.parentNode
+    }
+    return [tree, textNode]
+}
