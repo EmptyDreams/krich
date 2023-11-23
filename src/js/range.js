@@ -127,7 +127,8 @@ export function surroundContents(range, container) {
             node = cloneDomTree(dist, textContent.substring(0, endOffset), breaker)[0]
             dist.textContent = textContent.substring(endOffset)
         } else {
-            node = findSecRoot(dist)
+            node = cloneDomTree(dist, textContent, breaker)[0]
+            dist.textContent = ''
             if (dist === startContainer)
                 commonAncestorContainer.insertBefore(container, node)
         }

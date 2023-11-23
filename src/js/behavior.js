@@ -367,13 +367,25 @@ function optimizeTree(ranges) {
         }
         let node = getFirstTextNode(range.startContainer.parentNode)
         do {
-            let sibling = node.nextSibling
-            while (sibling?.nodeType === Node.TEXT_NODE) {
-                node.textContent += sibling.textContent
-                sibling.remove()
-                sibling = node.nextSibling
+            if (node.textContent.length === 0) {
+                let dist = node.parentNode
+                const next = nextSiblingText(node)
+                node.remove()
+                while (!dist.firstChild) {
+                    const parent = dist.parentNode
+                    dist.remove()
+                    dist = parent
+                }
+                node = next
+            } else {
+                let sibling = node.nextSibling
+                while (sibling?.nodeType === Node.TEXT_NODE) {
+                    node.textContent += sibling.textContent
+                    sibling.remove()
+                    sibling = node.nextSibling
+                }
+                node = nextSiblingText(node)
             }
-            node = nextSiblingText(node)
         } while (node)
     }
 }
