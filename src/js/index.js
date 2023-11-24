@@ -89,6 +89,7 @@ export function initEditor(selector, elements) {
             selection.addRange(range)
         }
         statusCheckCache = false
+        onCursorMove(true)
     })
     const switchTask = key => {
         switch (key) {
@@ -103,10 +104,10 @@ export function initEditor(selector, elements) {
                     syncButtonsStatus(editorTools, correctStartContainer(getSelection().getRangeAt(0)))
                 }
             case 'ArrowLeft': case 'ArrowRight': case 'ArrowUp': case 'ArrowDown':
-                return onCursorMove
+                return () => onCursorMove()
         }
     }
-    editorContent.addEventListener('mouseup', onCursorMove)
+    editorContent.addEventListener('mouseup', () => onCursorMove())
     editorContent.addEventListener('keyup', event => {
         const task = switchTask(event.key)
         if (task) setTimeout(task, 0)
@@ -123,7 +124,7 @@ export function initEditor(selector, elements) {
     })
     container.addEventListener('cursor_move', event => {
         const {range, prevRange} = event
-        if (range.startContainer !== prevRange?.startContainer) {
+        if (range.endContainer !== prevRange?.endContainer) {
             syncButtonsStatus(editorTools, range.startContainer)
         }
     })
@@ -158,7 +159,7 @@ export function initEditor(selector, elements) {
  * @type {Range}
  */
 let prevCursor
-function onCursorMove() {
+function onCursorMove(skipEvent = false) {
     let range = getSelection().getRangeAt(0)
     if (range.collapsed) {
         const point = correctStartContainer(range)
@@ -178,10 +179,13 @@ function onCursorMove() {
     }
     if (prevCursor && prevCursor.endOffset === range.endOffset && prevCursor.endContainer === range.endContainer)
         return
-    const event = new Event('cursor_move')
-    event.range = range
-    event.prevRange = prevCursor
-    KRICH_CONTAINER.dispatchEvent(event)
+    if (!skipEvent) {
+        const event = new Event('cursor_move')
+        event.range = range
+        event.prevRange = prevCursor
+        KRICH_CONTAINER.dispatchEvent(event)
+        if (event.defaultPrevented) return
+    }
     prevCursor = range
 }
 
