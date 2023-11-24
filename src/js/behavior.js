@@ -137,8 +137,17 @@ export function execCommonCommand(dataId, tagName, range, removed = false, ...cl
     if (removed)
         rangeArray = setStyleInRange(rangeArray, dataId, tagName, ...classNames)
     const selection = getSelection()
+    const selectionRange = selection.getRangeAt(0)
     selection.removeAllRanges()
-    selection.addRange(RangeUtils.mergeRanges(rangeArray))
+    if (selectionRange === range) {
+        selection.addRange(RangeUtils.mergeRanges(rangeArray))
+    } else {
+        const newRange = document.createRange()
+        const last = rangeArray[rangeArray.length - 1]
+        newRange.setEnd(last.endContainer, last.endOffset)
+        newRange.collapse(false)
+        selection.addRange(newRange)
+    }
     optimizeTree(rangeArray)
 }
 

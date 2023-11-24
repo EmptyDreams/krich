@@ -8,7 +8,7 @@ import {
     correctStartContainer,
     getTopLines,
     setCursorPosition,
-    setStartAt, setEndAfter, setCursorPositionIn
+    setEndAfter, setCursorPositionIn, selectNodeContents, setCursorPositionAfter
 } from './range'
 import {registryBeforeInputEventListener} from './events/before-input'
 
@@ -95,6 +95,13 @@ export function initEditor(selector, elements) {
             case 'Enter':   // 将顶层的 div 替换为 p
                 return () => editorContent.querySelectorAll('&>div:not([data-id])')
                         .forEach(it => replaceElement(it, document.createElement('p')))
+            case 'Backspace': case 'Delete':
+                return () => {
+                    if (editorContent.children.length === 1 && editorContent.firstChild.textContent.length === 0) {
+                        statusCheckCache = false
+                    }
+                    syncButtonsStatus(editorTools, correctStartContainer(getSelection().getRangeAt(0)))
+                }
             case 'ArrowLeft': case 'ArrowRight': case 'ArrowUp': case 'ArrowDown':
                 return onCursorMove
         }
@@ -125,32 +132,23 @@ export function initEditor(selector, elements) {
         statusCheckCache = true
         const selection = getSelection()
         const range = selection.getRangeAt(0)
-        if (!range.collapsed || compareBtnListStatusWith(editorTools, correctEndContainer(range))) return
+        if (!range.collapsed) return
+        event.preventDefault()
         setTimeout(() => {
             // noinspection JSUnresolvedReference
             const data = event.data
-            const node = correctStartContainer(range)
-            const {startOffset, startContainer} = range
-            // noinspection JSUnresolvedReference
+            const text = document.createTextNode(data)
+            range.insertNode(text)
+            const buttonList = compareBtnListStatusWith(editorTools, correctStartContainer(range))
+            if (!buttonList)
+                return setCursorPositionAfter(text)
             const newRange = document.createRange()
-            let endOffset = startOffset + data.length
-            if (node === startContainer) {
-                setStartAt(newRange, node, startOffset)
-                newRange.setEnd(node, endOffset)
-            } else {
-                const len = node.textContent.length
-                setStartAt(newRange, node, len - data.length)
-                setEndAfter(newRange, node)
-                endOffset = len
-            }
-            for (let child of editorTools.children) {
+            selectNodeContents(newRange, text)
+            for (let child of buttonList) {
                 const dataId = child.getAttribute('data-key')
-                const status = BUTTON_STATUS[dataId]
                 const behavior = behaviors[dataId]
-                if (!status || behavior.noStatus) continue
                 behavior.onclick(newRange, child, null)
             }
-            setCursorPositionIn(node, endOffset)
         }, 0)
     })
 }

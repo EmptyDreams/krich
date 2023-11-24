@@ -145,26 +145,27 @@ export function compareBtnStatusWith(button, element) {
  * 判断一个节点持有的样式和按钮列表的样式是否相同
  * @param buttonContainer {HTMLElement} 按钮的父级控件
  * @param node {Node} 节点
- * @return {boolean} 返回按钮和节点状态是否一致
+ * @return {null|HTMLElement[]} 返回按钮和节点状态不一致的按钮列表
  */
 export function compareBtnListStatusWith(buttonContainer, node) {
     const record = new Set()
     let element = node.parentElement
     let dataId = element.getAttribute(DATA_ID)
+    const result = []
     while (dataId) {
         record.add(dataId)
         if (getElementBehavior(element).noStatus) continue
         const button = buttonContainer.querySelector(`&>*[data-key=${dataId}]`)
         if (!compareBtnStatusWith(button, element))
-            return false
+            result.push(button)
         element = element.parentElement
         dataId = element?.getAttribute(DATA_ID)
     }
     for (let child of buttonContainer.children) {
         const id = child.getAttribute('data-key')
-        if (BUTTON_STATUS[id] && !record.has(id)) return false
+        if (BUTTON_STATUS[id] && !record.has(id) && !behaviors[id].noStatus) result.push(child)
     }
-    return true
+    return result.length === 0 ? null : result
 }
 
 /**
