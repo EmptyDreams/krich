@@ -8,7 +8,7 @@ import {
     correctStartContainer,
     getTopLines,
     setCursorPosition,
-    setEndAfter, setCursorPositionIn, selectNodeContents, setCursorPositionAfter
+    setEndAfter, selectNodeContents, setCursorPositionAfter
 } from './range'
 import {registryBeforeInputEventListener} from './events/before-input'
 
