@@ -135,22 +135,20 @@ export function initEditor(selector, elements) {
         const range = selection.getRangeAt(0)
         if (!range.collapsed) return
         event.preventDefault()
-        setTimeout(() => {
-            // noinspection JSUnresolvedReference
-            const data = event.data
-            const text = document.createTextNode(data)
-            range.insertNode(text)
-            const buttonList = compareBtnListStatusWith(editorTools, correctStartContainer(range))
-            if (!buttonList)
-                return setCursorPositionAfter(text)
-            const newRange = document.createRange()
-            selectNodeContents(newRange, text)
-            for (let child of buttonList) {
-                const dataId = child.getAttribute('data-key')
-                const behavior = behaviors[dataId]
-                behavior.onclick(newRange, child, null)
-            }
-        }, 0)
+        // noinspection JSUnresolvedReference
+        const data = event.data
+        const text = document.createTextNode(data)
+        range.insertNode(text)
+        const buttonList = compareBtnListStatusWith(editorTools, correctStartContainer(range))
+        if (!buttonList)
+            return setCursorPositionAfter(text)
+        const newRange = document.createRange()
+        selectNodeContents(newRange, text)
+        for (let child of buttonList) {
+            const dataId = child.getAttribute('data-key')
+            const behavior = behaviors[dataId]
+            behavior.onclick(newRange, child, null)
+        }
     })
 }
 
