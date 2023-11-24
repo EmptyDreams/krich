@@ -22,7 +22,7 @@ import {
     getFirstTextNode, isTopElement, nextSiblingText
 } from './utils'
 import * as RangeUtils from './range'
-import {DATA_ID, initBehaviors} from './global-fileds'
+import {DATA_ID, initBehaviors, KRICH_CONTAINER} from './global-fileds'
 import {behaviorHeader} from './behaviors/header'
 import {behaviorBlockquote} from './behaviors/blockquote'
 
@@ -324,7 +324,7 @@ function optimizeTree(ranges) {
     const nextElementSibling  = element => {
         const sibling1 = element.nextSibling
         const sibling2 = element.nextElementSibling
-        return sibling1 === sibling2 ? sibling2 : null
+        return sibling1 === sibling2 && sibling1.nodeName !== 'BR' ? sibling2 : null
     }
     /**
      * 将 `that` 合并到 `dist` 中并移除 `that`
@@ -360,6 +360,10 @@ function optimizeTree(ranges) {
             }
         }
         return result
+    }
+    for (let child of KRICH_CONTAINER.getElementsByClassName('krich-editor')[0].children) {
+        if (child.childNodes.length !== 1 && child.lastChild.nodeName === 'BR')
+            child.lastChild.remove()
     }
     for (let range of ranges) {
         const common = range.commonAncestorContainer

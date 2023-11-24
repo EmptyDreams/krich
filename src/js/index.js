@@ -48,7 +48,7 @@ export function initEditor(selector, elements) {
         Object.getOwnPropertyNames(elements)
             .map(it => behaviors[it].render())
             .join('')
-    }</div><div class="krich-editor" spellcheck contenteditable><p><br/></p></div>`
+    }</div><div class="krich-editor" spellcheck contenteditable><p><br></p></div>`
     initContainerQuery(container)
     const editorTools = container.getElementsByClassName('krich-tools')[0]
     const editorContent = container.getElementsByClassName('krich-editor')[0]
@@ -212,7 +212,7 @@ function deleteEvent(event) {
     if (endIndex < 0) { // 如果引用只有一行，则直接取消引用
         replaceElement(blockquote, p)
     } else {
-        p.innerHTML = endIndex === 0 ? '<br/>' : html.substring(0, endIndex)
+        p.innerHTML = endIndex === 0 ? '<br>' : html.substring(0, endIndex)
         blockquote.innerHTML = html.substring(endIndex + 1)
         blockquote.insertAdjacentElement('beforebegin', p)
     }
@@ -236,7 +236,7 @@ function enterEvent(event) {
         if (index >= textContent.length - 1 && textContent.endsWith('\n\n')) {
             firstBlockquote.textContent = textContent.substring(0, textContent.length - 1)
             const p = document.createElement('p')
-            p.innerHTML = '<br/>'
+            p.innerHTML = '<br>'
             firstBlockquote.insertAdjacentElement('afterend', p)
             return setCursorPosition(p.firstChild, 0)
         }
@@ -259,11 +259,11 @@ function enterEvent(event) {
                 lines[i].remove()
             setCursorPosition(first.firstChild, first.textContent.length)
         } else if (startOffset === 0) {
-            first.insertAdjacentHTML('beforebegin', '<p><br/></p>')
-            first.innerHTML = '<br/>'
+            first.insertAdjacentHTML('beforebegin', '<p><br></p>')
+            first.innerHTML = '<br>'
             setCursorPosition(first.firstChild, 0)
         } else {
-            first.insertAdjacentHTML('afterend', '<p><br/></p>')
+            first.insertAdjacentHTML('afterend', '<p><br></p>')
             setCursorPosition(first.nextSibling.firstChild, 0)
         }
     }
