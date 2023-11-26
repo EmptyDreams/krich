@@ -114,7 +114,7 @@ export class KRange {
         }
         this.item = range
         console.assert(
-            [range.startContainer, range.endContainer].find(it => !['#text', 'BR'].includes(it.nodeName)),
+            ![range.startContainer, range.endContainer].find(it => !['#text', 'BR'].includes(it.nodeName)),
             'KRange 的起点或终点不在 TEXT NODE 中', range
         )
     }
