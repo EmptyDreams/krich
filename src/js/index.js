@@ -178,8 +178,9 @@ function deleteEvent(event) {
     const {startOffset, startContainer} = range
     const blockquote = startContainer.parentElement
     // 当在编辑器开头按下删除键时阻止该动作，防止删掉空的 p 标签
-    if (startOffset === 0 && startContainer.nodeName === 'P' && blockquote.firstChild === startContainer) {
-        return event.preventDefault()
+    if (startContainer.nodeName === 'P' && blockquote.firstChild === startContainer) {
+        if (startOffset === 0 || startContainer.textContent.length === 0)
+            return event.preventDefault()
     }
     // 如果光标不在引用开头则直接退出
     if (startOffset !== 0 || blockquote.nodeName !== 'BLOCKQUOTE') return
