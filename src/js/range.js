@@ -76,10 +76,13 @@ export class KRange {
         // 如果起点或结尾不是 TEXT NODE 则进行纠正
         if (startStatus || endStatus) {
             const newRange = document.createRange()
+            function setEndAfter(node) {
+                const text = getLastTextNode(node)
+                newRange.setEnd(text, text.textContent.length)
+            }
             if (range.collapsed) {
                 if (startStatus) {
-                    const node = getLastTextNode(startContainer.childNodes[startOffset])
-                    newRange.setEndAfter(node)
+                    setEndAfter(startContainer.childNodes[startOffset])
                 } else {
                     newRange.setEnd(startContainer, startOffset)
                 }
@@ -88,9 +91,10 @@ export class KRange {
                 if (startStatus) {
                     const start = startContainer.childNodes[startOffset]
                     if (range.intersectsNode(start)) {
-                        newRange.setStartBefore(getFirstTextNode(start))
+                        newRange.setStart(getFirstTextNode(start), 0)
                     } else {
-                        newRange.setStartAfter(getLastTextNode(start))
+                        const text = getLastTextNode(start)
+                        newRange.setStart(text, text.textContent.length)
                     }
                 } else {
                     newRange.setStart(startContainer, startOffset)
@@ -98,9 +102,9 @@ export class KRange {
                 if (endStatus) {
                     const end = endContainer.childNodes[endOffset]
                     if (range.intersectsNode(end)) {
-                        newRange.setEndAfter(getLastTextNode(end))
+                        setEndAfter(end)
                     } else {
-                        newRange.setEndBefore(getFirstTextNode(end))
+                        newRange.setEnd(getFirstTextNode(end), 0)
                     }
                 } else {
                     newRange.setEnd(endContainer, endOffset)
@@ -109,6 +113,10 @@ export class KRange {
             range = newRange
         }
         this.item = range
+        console.assert(
+            [range.startContainer, range.endContainer].find(it => !['#text', 'BR'].includes(it.nodeName)),
+            'KRange 的起点或终点不在 TEXT NODE 中', range
+        )
     }
 
     /**

@@ -184,15 +184,15 @@ function deleteEvent(event) {
     const range = KRange.activated().item
     if (!range.collapsed) return
     const {startOffset, startContainer} = range
+    const blockquote = startContainer.parentElement
     // 当在编辑器开头按下删除键时阻止该动作，防止删掉空的 p 标签
-    if (KRICH_EDITOR.firstChild === startContainer && startContainer.textContent.length === 0) {
+    if (startOffset === 0 && KRICH_EDITOR.firstChild === blockquote) {
         event.preventDefault()
-        if (startContainer.nodeName !== 'P')
-            startContainer.outerHTML = '<p><br></p>'
+        if (blockquote.nodeName !== 'P')
+            blockquote.outerHTML = '<p><br></p>'
         return
     }
     // 如果光标不在引用开头则直接退出
-    const blockquote = startContainer.parentElement
     if (startOffset !== 0 || blockquote.nodeName !== 'BLOCKQUOTE') return
     event.preventDefault()
     const html = blockquote.innerHTML
