@@ -71,8 +71,9 @@ export class KRange {
             return
         }
         const {startContainer, startOffset, endContainer, endOffset} = range
-        const startStatus = startContainer.nodeType !== Node.TEXT_NODE
-        const endStatus = endContainer.nodeType !== Node.TEXT_NODE
+        const checkStatus = node => !['#text', 'BR'].includes(node.nodeName)
+        const startStatus = checkStatus(startContainer)
+        const endStatus = checkStatus(endContainer)
         // 如果起点或结尾不是 TEXT NODE 则进行纠正
         if (startStatus || endStatus) {
             const newRange = document.createRange()
