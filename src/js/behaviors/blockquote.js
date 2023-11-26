@@ -7,8 +7,9 @@ import {createElement} from '../utils'
 
 /**
  * 引用按钮的点击事件
+ * @param kRange {KRange}
  */
-export function behaviorBlockquote() {
+export function behaviorBlockquote(kRange) {
     const isBlockquote = container => {
         if (!container) return false
         const parent = container.parentNode
@@ -35,7 +36,6 @@ export function behaviorBlockquote() {
         blockquote.innerHTML = html
         return blockquote
     }
-    const kRange = KRange.activated()
     const range = kRange.item
     const {startContainer, endContainer, startOffset, endOffset} = range
     if (isBlockquote(startContainer) && startContainer.parentNode === endContainer.parentNode) {

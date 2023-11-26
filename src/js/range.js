@@ -261,6 +261,10 @@ export class KRange {
         function locateRange(container, offset) {
             const top = findParentTag(container, ...TOP_LIST)
             const y = findIndexInCollection(KRICH_EDITOR.children, top)
+            if (!top.firstChild) {
+                console.assert(offset === 0, 'offset 应当等于 0', offset)
+                return [0, y]
+            }
             let x = 0
             let node = getFirstTextNode(top)
             while (node !== container) {
@@ -356,6 +360,7 @@ export class KRange {
     /**
      * 反序列化数据
      * @param data {[number,number]|[number, number, number, number]}
+     * @return {KRange}
      */
     static deserialized(data) {
         const [startX, startY] = data

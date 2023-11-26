@@ -33,10 +33,10 @@ initBehaviors({
         onclick: behaviorHeader
     },
     blockquote: {
-        noStatus: true,
         render: () => blockquoteStyle,
         hash: () => Date.now().toString(16),
-        onclick: behaviorBlockquote
+        onclick: behaviorBlockquote,
+        verify: () => true
     },
     bold: {
         render: () => boldStyle,

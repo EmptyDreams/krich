@@ -133,16 +133,19 @@ export function initEditor(selector, elements) {
     registryBeforeInputEventListener(editorContent, event => {
         if (statusCheckCache) return
         statusCheckCache = true
-        const range = KRange.activated().item
+        let kRange = KRange.activated()
+        let range = kRange.item
         if (!range.collapsed) return
         event.preventDefault()
         const top = findParentTag(range.startContainer, ...TOP_LIST)
         if (top.textContent.length === 0)
             top.innerHTML = ''
+        const offlineData = kRange.serialization()
         // noinspection JSUnresolvedReference
         const data = event.data
         const text = document.createTextNode(data)
         range.insertNode(text)
+        range = KRange.deserialized(offlineData).item
         const buttonList = compareBtnListStatusWith(editorTools, range.startContainer)
         if (!buttonList)
             return setCursorPositionAfter(text)
@@ -152,6 +155,8 @@ export function initEditor(selector, elements) {
             const behavior = behaviors[dataId]
             behavior.onclick(newRange, child, null)
         }
+        offlineData[0] += data.length
+        KRange.deserialized(offlineData).active()
     })
 }
 

@@ -139,6 +139,7 @@ export function compareBtnStatusWith(button, element) {
     } else if (!defComparator(button, element)) {
         return false
     }
+    return true
 }
 
 /**
