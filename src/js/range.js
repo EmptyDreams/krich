@@ -384,9 +384,7 @@ function findTextByIndex(node, index) {
     while (true) {
         console.assert(!!text, '下标超限', node)
         const length = text.textContent.length
-        if (length <= index) {
-            return [text, index]
-        }
+        if (index <= length) return [text, index]
         index -= length
         text = nextSiblingText(text)
     }
