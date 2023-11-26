@@ -1,8 +1,8 @@
 import krichStyle from '../resources/css/main.styl'
 
 import './behavior'
-import {behaviors, BUTTON_STATUS, initContainerQuery, KRICH_CONTAINER, SELECT_VALUE} from './global-fileds'
-import {compareBtnListStatusWith, replaceElement, syncButtonsStatus} from './utils'
+import {behaviors, BUTTON_STATUS, initContainerQuery, KRICH_CONTAINER, SELECT_VALUE, TOP_LIST} from './global-fileds'
+import {compareBtnListStatusWith, findParentTag, replaceElement, syncButtonsStatus} from './utils'
 import {
     KRange,
     setCursorPosition,
@@ -128,6 +128,9 @@ export function initEditor(selector, elements) {
         const range = KRange.activated().item
         if (!range.collapsed) return
         event.preventDefault()
+        const top = findParentTag(range.startContainer, ...TOP_LIST)
+        if (top.textContent.length === 0)
+            top.innerHTML = ''
         // noinspection JSUnresolvedReference
         const data = event.data
         const text = document.createTextNode(data)

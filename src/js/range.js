@@ -77,8 +77,12 @@ export class KRange {
         if (startStatus || endStatus) {
             const newRange = document.createRange()
             if (range.collapsed) {
-                const node = getLastTextNode(startContainer.childNodes[startOffset])
-                newRange.setEndAfter(node)
+                if (startStatus) {
+                    const node = getLastTextNode(startContainer.childNodes[startOffset])
+                    newRange.setEndAfter(node)
+                } else {
+                    newRange.setEnd(startContainer, startOffset)
+                }
                 newRange.collapse(false)
             } else {
                 if (startStatus) {
