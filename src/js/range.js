@@ -153,7 +153,8 @@ export class KRange {
      * @param node {Node}
      */
     setEndAfter(node) {
-        this.item.setEndAfter(getLastTextNode(node))
+        const text = getLastTextNode(node)
+        this.setEnd(text, text.textContent.length)
     }
 
     /** 将当前区间设定为激活区间 */
