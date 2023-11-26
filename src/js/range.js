@@ -294,14 +294,14 @@ export class KRange {
      */
     getAllTopElements() {
         const range = this.item
-        const result = []
         const start = findParentTag(range.startContainer, ...TOP_LIST)
         const end = findParentTag(range.endContainer, ...TOP_LIST)
+        const result = [start]
         let item = start
-        do {
+        while (item !== end) {
             result.push(item)
             item = item.nextElementSibling
-        } while (item !== end)
+        }
         return result
     }
 
