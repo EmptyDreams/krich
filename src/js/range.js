@@ -180,15 +180,16 @@ export class KRange {
      */
     [Symbol.iterator]() {
         const range = this.item
-        let node = range.startContainer
+        let value = range.startContainer
+        let done = false
         // noinspection JSUnusedGlobalSymbols
         return {
             next: () => {
-                const next = nextSiblingText(node)
-                const result = {
-                    value: node, done: !range.intersectsNode(next)
-                }
-                node = next
+                if (done) return {done}
+                const next = nextSiblingText(value)
+                done = !(next && range.intersectsNode(next))
+                const result = {value}
+                value = next
                 return result
             }
         }
