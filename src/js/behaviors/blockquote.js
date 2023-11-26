@@ -1,10 +1,8 @@
 import {
-    correctStartContainer,
+    KRange,
     setCursorPosition,
-    setCursorPositionAfter,
     setCursorPositionIn
 } from '../range'
-import * as RangeUtils from '../range'
 import {createElement} from '../utils'
 
 /**
@@ -37,14 +35,9 @@ export function behaviorBlockquote() {
         blockquote.innerHTML = html
         return blockquote
     }
-    const range = getSelection().getRangeAt(0)
-    let {startContainer, endContainer, startOffset, endOffset} = range
-    let isEnd = false
-    if (range.collapsed) {
-        const correct = correctStartContainer(range)
-        isEnd = correct !== startContainer
-        endContainer = startContainer = correct
-    }
+    const kRange = KRange.activated()
+    const range = kRange.item
+    const {startContainer, endContainer, startOffset, endOffset} = range
     if (isBlockquote(startContainer) && startContainer.parentNode === endContainer.parentNode) {
         /* 如果选择范围在一个引用中，则取消选择的区域的引用 */
         const blockquote = startContainer.parentElement
@@ -62,11 +55,7 @@ export function behaviorBlockquote() {
             blockquote.insertAdjacentHTML('afterend', selectedHtml(0))
             const next = blockquote.nextSibling
             blockquote.remove()
-            if (isEnd) {
-                setCursorPositionAfter(next)
-            } else {
-                setCursorPositionIn(next, startOffset - prevSelectedLine + 1)
-            }
+            setCursorPositionIn(next, startOffset - prevSelectedLine + 1)
         }
         // 如果是只点击了一下则判定为选择了全部
         if (range.collapsed) return removeAll()
@@ -96,7 +85,7 @@ export function behaviorBlockquote() {
         }
         return
     }
-    const lines = RangeUtils.getTopLines(range)
+    const lines = kRange.getAllTopElements()
     let mode = 0, existing
     if (isBlockquote(lines[0].previousSibling)) {
         mode = 0b10
@@ -137,7 +126,7 @@ export function behaviorBlockquote() {
     } else {    // 否则新建一个引用
         const blockquote = buildBlockquote(newHtml)
         lines[0].parentNode.insertBefore(blockquote, lines[0])
-        setCursorPosition(blockquote.firstChild, isEnd ? blockquote.textContent.length : startOffset)
+        setCursorPosition(blockquote.firstChild, startOffset)
     }
     // 移除原有的标签
     lines.filter(it => it !== existing)

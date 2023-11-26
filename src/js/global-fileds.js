@@ -4,6 +4,11 @@
  */
 export let KRICH_CONTAINER
 /**
+ * 编辑区域容器
+ * @type {HTMLElement}
+ */
+export let KRICH_EDITOR
+/**
  * 存储按钮状态
  * @type {{[p:string]: boolean|string}}
  */
@@ -36,4 +41,5 @@ export function initBehaviors(value) {
 /** 初始化容器 */
 export function initContainerQuery(container) {
     KRICH_CONTAINER = container
+    KRICH_EDITOR = container.getElementsByClassName('krich-editor')[0]
 }

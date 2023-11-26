@@ -1,169 +1,12 @@
-import {cloneDomTree, findParentTag, getFirstTextNode, getLastTextNode, nextSiblingText} from './utils'
-import {TOP_LIST} from './global-fileds'
-
-/**
- * 设置选择范围在指定的 node
- * @param range {Range}
- * @param node {Node}
- */
-export function selectNodeContents(range, node) {
-    setStartBefore(range, node)
-    setEndAfter(range, node)
-}
-
-/**
- * 设置起始点在一个 node 的开头（自动设置终止点为当前 node 的结尾）
- * @param range {Range}
- * @param node {Node}
- */
-export function setStartBefore(range, node) {
-    setStartAt(range, getFirstTextNode(node), 0)
-}
-
-/**
- * 设置起始点在一个 text node 的中间
- * @param range {Range}
- * @param node {Node}
- * @param index {number}
- */
-export function setStartAt(range, node, index) {
-    console.assert(
-        node.nodeType === Node.TEXT_NODE || node.nodeName === 'BR',
-        'node 类型必须为 #text 或 BR', node
-    )
-    range.setStart(node, index)
-}
-
-/**
- * 设置起始点在一个 text node 的中间
- * @param range {Range}
- * @param node {Node}
- * @param index {number} 终止点在 node 中的位置，下标反转，0 为 node 结尾
- */
-export function setEndAt(range, node, index) {
-    console.assert(
-        node.nodeType === Node.TEXT_NODE || node.nodeName === 'BR',
-        'node 类型必须为 #text 或 BR', node
-    )
-    range.setEnd(node, node.textContent.length - index)
-}
-
-/**
- * 设置终止点在一个 node 的结尾
- * @param range {Range}
- * @param node {Node}
- */
-export function setEndAfter(range, node) {
-    setEndAt(range, getLastTextNode(node), 0)
-}
-
-/**
- * 通过行切分 Range
- * @param range {Range}
- * @return {Range[]}
- */
-export function splitRangeByLine(range) {
-    if (!range.commonAncestorContainer.classList?.contains('krich-editor'))
-        return [range]
-    const {startContainer, endContainer} = range
-    const result = []
-    let item = findParentTag(startContainer, ...TOP_LIST)
-    do {
-        const childRange = document.createRange()
-        if (result.length === 0 && item.contains(startContainer)) {
-            setStartAt(childRange, startContainer, range.startOffset)
-            setEndAfter(childRange, item)
-        } else if (item.contains(endContainer)) {
-            setStartBefore(childRange, item)
-            childRange.setEnd(endContainer, range.endOffset)
-        } else {
-            selectNodeContents(childRange, item)
-        }
-        result.push(childRange)
-        item = item.nextSibling
-    } while (item && range.intersectsNode(item))
-    return result
-}
-
-/**
- * 使用指定的容器包裹范围内选中的节点（不能跨行）
- * @param range {Range} 选择范围
- * @param container {HTMLElement} 容器
- * @return {void}
- */
-export function surroundContents(range, container) {
-    const {startContainer, endContainer, startOffset, endOffset, commonAncestorContainer} = range
-    console.assert(
-        startContainer.nodeType === endContainer.nodeType && startContainer.nodeType === Node.TEXT_NODE,
-        'Range 始末位置都应在 TEXT NODE 当中', range
-    )
-    if (startContainer === endContainer)
-        return range.surroundContents(container)
-    /** @param consumer {function(Text)} */
-    function forEachAllTextNode(consumer) {
-        const array = []
-        let dist = startContainer
-        do {
-            array.push(dist)
-            dist = nextSiblingText(dist)
-        } while (dist && range.intersectsNode(dist))
-        array.forEach(consumer)
-    }
-    const breaker = it => it === commonAncestorContainer
-    /** @return {Node} */
-    const findSecRoot = node => {
-        while (!breaker(node.parentNode))
-            node = node.parentNode
-        return node
-    }
-    forEachAllTextNode(dist => {
-        const textContent = dist.textContent
-        let node
-        if (dist === startContainer && startOffset !== 0) {
-            node = cloneDomTree(dist, textContent.substring(startOffset), breaker)[0]
-            dist.textContent = textContent.substring(0, startOffset)
-            commonAncestorContainer.insertBefore(container, findSecRoot(dist).nextSibling)
-        } else if (dist === endContainer && endOffset !== textContent.length) {
-            node = cloneDomTree(dist, textContent.substring(0, endOffset), breaker)[0]
-            dist.textContent = textContent.substring(endOffset)
-        } else {
-            node = cloneDomTree(dist, textContent, breaker)[0]
-            dist.textContent = ''
-            if (dist === startContainer)
-                commonAncestorContainer.insertBefore(container, node)
-        }
-        container.append(node)
-    })
-}
-
-/**
- * 合并相邻的 Range
- * @param ranges {Range[]}
- * @return {Range}
- */
-export function mergeRanges(ranges) {
-    const first = ranges[0]
-    const last = ranges[ranges.length - 1]
-    const result = document.createRange()
-    result.setStart(first.startContainer, first.startOffset)
-    result.setEnd(last.endContainer, last.endOffset)
-    return result
-}
-
-/**
- * 遍历 Range 包含的所有顶层节点
- * @param range {Range}
- * @return {HTMLElement[]}
- */
-export function getTopLines(range) {
-    const result = []
-    let item = findParentTag(correctStartContainer(range), ...TOP_LIST)
-    do {
-        result.push(item)
-        item = item.nextElementSibling
-    } while (item && range.intersectsNode(item))
-    return result
-}
+import {
+    cloneDomTree,
+    findIndexInCollection,
+    findParentTag,
+    getFirstTextNode,
+    getLastTextNode,
+    nextSiblingText
+} from './utils'
+import {KRICH_EDITOR, TOP_LIST} from './global-fileds'
 
 /**
  * 将鼠标光标移动到指定位置
@@ -213,24 +56,324 @@ export function setCursorPositionBefore(node) {
     setCursorPosition(getFirstTextNode(node), 0)
 }
 
-/**
- * 获取矫正后的起始容器
- * @param range {Range}
- * @return {Node}
- */
-export function correctStartContainer(range) {
-    const {startContainer} = range
-    return getFirstTextNode(startContainer.classList?.contains('krich-editor') ?
-        startContainer.childNodes[range.startOffset - 1] : startContainer)
+export class KRange {
+
+    /** @type {Range} */
+    item
+
+    /**
+     * 从 Range 构建一个 KRange
+     * @param range {Range|undefined}
+     */
+    constructor(range = undefined) {
+        if (!range) {
+            this.item = document.createRange()
+            return
+        }
+        const {startContainer, startOffset, endContainer, endOffset} = range
+        const startStatus = startContainer.nodeType !== Node.TEXT_NODE
+        const endStatus = endContainer.nodeType !== Node.TEXT_NODE
+        // 如果起点或结尾不是 TEXT NODE 则进行纠正
+        if (startStatus || endStatus) {
+            const newRange = document.createRange()
+            if (range.collapsed) {
+                const node = getLastTextNode(startContainer.childNodes[startOffset])
+                newRange.setEndAfter(node)
+                newRange.collapse(false)
+            } else {
+                if (startStatus) {
+                    const start = startContainer.childNodes[startOffset]
+                    if (range.intersectsNode(start)) {
+                        newRange.setStartBefore(getFirstTextNode(start))
+                    } else {
+                        newRange.setStartAfter(getLastTextNode(start))
+                    }
+                } else {
+                    newRange.setStart(startContainer, startOffset)
+                }
+                if (endStatus) {
+                    const end = endContainer.childNodes[endOffset]
+                    if (range.intersectsNode(end)) {
+                        newRange.setEndAfter(getLastTextNode(end))
+                    } else {
+                        newRange.setEndBefore(getFirstTextNode(end))
+                    }
+                } else {
+                    newRange.setEnd(endContainer, endOffset)
+                }
+            }
+            range = newRange
+        }
+        this.item = range
+    }
+
+    /**
+     * 设置区间在指定位置开始
+     * @param node {Node}
+     * @param offset {number}
+     */
+    setStart(node, offset) {
+        const [text, index] = findTextByIndex(node, offset)
+        this.item.setStart(text, index)
+    }
+
+    /**
+     * 设置区间在指定位置结束
+     * @param node {Node}
+     * @param offset {number}
+     */
+    setEnd(node, offset) {
+        const [text, index] = findTextByIndex(node, offset)
+        this.item.setEnd(text, index)
+    }
+
+    /**
+     * 设置区间在指定节点前开始
+     * @param node {Node}
+     */
+    setStartBefore(node) {
+        this.setStart(node, 0)
+    }
+
+    /**
+     * 设置区间在指定节点后结束
+     * @param node {Node}
+     */
+    setEndAfter(node) {
+        this.item.setEndAfter(getLastTextNode(node))
+    }
+
+    /** 将当前区间设定为激活区间 */
+    active() {
+        const selection = getSelection()
+        selection.removeAllRanges()
+        selection.addRange(this.item)
+    }
+
+    /**
+     * 判断两个 KRange 是否相等
+     * @param that {KRange}
+     */
+    equals(that) {
+        const thisRange = this.item
+        const thatRange = that.item
+        if (thisRange === thatRange) return true
+        const list = ['collapsed', 'startContainer', 'endContainer', 'startOffset', 'endOffset']
+        return !list.find(it => thisRange[it] !== thatRange[it])
+    }
+
+    /**
+     * @return {{next: (function(): {value: Node, done: boolean})}}
+     */
+    [Symbol.iterator]() {
+        const range = this.item
+        let node = range.startContainer
+        // noinspection JSUnusedGlobalSymbols
+        return {
+            next: () => {
+                const next = nextSiblingText(node)
+                const result = {
+                    value: node, done: !range.intersectsNode(next)
+                }
+                node = next
+                return result
+            }
+        }
+    }
+
+    /**
+     * 使用指定的容器包裹范围内选中的节点（不能跨行）
+     * @param container {HTMLElement} 容器
+     * @return {void}
+     */
+    surroundContents(container) {
+        const range = this.item
+        const {startContainer, endContainer, startOffset, endOffset, commonAncestorContainer} = range
+        console.assert(
+            startContainer.nodeType === endContainer.nodeType && startContainer.nodeType === Node.TEXT_NODE,
+            'Range 始末位置都应在 TEXT NODE 当中', range
+        )
+        if (startContainer === endContainer)
+            return range.surroundContents(container)
+        /** @param consumer {function(Text)} */
+        function forEachAllTextNode(consumer) {
+            const array = []
+            let dist = startContainer
+            do {
+                array.push(dist)
+                dist = nextSiblingText(dist)
+            } while (dist && range.intersectsNode(dist))
+            array.forEach(consumer)
+        }
+        const breaker = it => it === commonAncestorContainer
+        /** @return {Node} */
+        const findSecRoot = node => {
+            while (!breaker(node.parentNode))
+                node = node.parentNode
+            return node
+        }
+        forEachAllTextNode(dist => {
+            const textContent = dist.textContent
+            let node
+            if (dist === startContainer && startOffset !== 0) {
+                node = cloneDomTree(dist, textContent.substring(startOffset), breaker)[0]
+                dist.textContent = textContent.substring(0, startOffset)
+                commonAncestorContainer.insertBefore(container, findSecRoot(dist).nextSibling)
+            } else if (dist === endContainer && endOffset !== textContent.length) {
+                node = cloneDomTree(dist, textContent.substring(0, endOffset), breaker)[0]
+                dist.textContent = textContent.substring(endOffset)
+            } else {
+                node = cloneDomTree(dist, textContent, breaker)[0]
+                dist.textContent = ''
+                if (dist === startContainer)
+                    commonAncestorContainer.insertBefore(container, node)
+            }
+            container.append(node)
+        })
+    }
+
+    /**
+     * 将 Range 信息序列化
+     * @return {[number,number]|[number, number, number, number]}
+     */
+    serialization() {
+        /**
+         * 获取指定
+         * @param container {Text} 所在节点
+         * @param offset {number} 偏移量
+         * @return {[number, number]} 0-横向局部偏移量，2-纵向全局偏移量
+         */
+        function locateRange(container, offset) {
+            const top = findParentTag(container, ...TOP_LIST)
+            const y = findIndexInCollection(KRICH_EDITOR.children, top)
+            let x = 0
+            let node = getFirstTextNode(top)
+            while (node !== container) {
+                x += node.textContent.length
+                node = nextSiblingText(node)
+            }
+            return [x + offset, y]
+        }
+        const range = this.item
+        const {startContainer, startOffset, endContainer, endOffset} = range
+        const startLocation = locateRange(startContainer, startOffset)
+        if (range.collapsed) return startLocation
+        const endLocation = locateRange(endContainer, endOffset)
+        return [...startLocation, ...endLocation]
+    }
+
+    /**
+     * 通过行切分 Range
+     * @return {KRange[]}
+     */
+    splitLine() {
+        const range = this.item
+        const {startContainer, endContainer} = range
+        const lines = this.getAllTopElements()
+        if (lines.length === 1) return [this]
+        return lines.map((item, index) => {
+            let newRange
+            if (index === 0) {
+                newRange = new KRange()
+                newRange.setStart(startContainer, range.startOffset)
+                newRange.setEndAfter(item)
+            } else if (index === lines.length - 1) {
+                newRange = new KRange()
+                newRange.setStartBefore(item)
+                newRange.setEnd(endContainer, range.endOffset)
+            } else {
+                newRange = KRange.selectNodeContents(item)
+            }
+            return newRange
+        })
+    }
+
+    /**
+     * 获取所有被包含的行
+     * @return {HTMLElement[]}
+     */
+    getAllTopElements() {
+        const range = this.item
+        const result = []
+        const start = findParentTag(range.startContainer, ...TOP_LIST)
+        const end = findParentTag(range.endContainer, ...TOP_LIST)
+        let item = start
+        do {
+            result.push(item)
+            item = item.nextElementSibling
+        } while (item !== end)
+        return result
+    }
+
+    /**
+     * 获取当前的激活 KRange
+     * @return {KRange}
+     */
+    static activated() {
+        return new KRange(getSelection().getRangeAt(0))
+    }
+
+    /**
+     * 创建一个选中指定元素的 KRange
+     * @param node {Node}
+     * @return {KRange}
+     */
+    static selectNodeContents(node) {
+        const result = new KRange()
+        result.setStartBefore(node)
+        result.setEndAfter(node)
+        return result
+    }
+
+    /**
+     * 连接相邻的 KRange
+     * @param ranges {KRange[]}
+     */
+    static join(ranges) {
+        const first = ranges[0].item
+        const last = ranges[ranges.length - 1].item
+        const result = new KRange()
+        result.setStart(first.startContainer, first.startOffset)
+        result.setEnd(last.endContainer, last.endOffset)
+        return result
+    }
+
+    /**
+     * 反序列化数据
+     * @param data {[number,number]|[number, number, number, number]}
+     */
+    static deserialized(data) {
+        const [startX, startY] = data
+        const topChildren = KRICH_EDITOR.children
+        const range = new KRange()
+        range.setStart(topChildren[startY], startX)
+        if (data.length === 2) {
+            range.item.collapse(true)
+            return range
+        }
+        const endX = data[2]
+        const endY = data[3]
+        range.setEnd(topChildren[endY], endX)
+        return range
+    }
+
 }
 
 /**
- * 获取矫正后的结束容器
- * @param range {Range}
- * @return {Node}
+ * 通过下标查找 Text
+ * @param node {Node}
+ * @param index {number}
+ * @return {[Text, number]}
  */
-export function correctEndContainer(range) {
-    const {endContainer} = range
-    return getFirstTextNode(endContainer.classList?.contains('krich-editor') ?
-        endContainer.childNodes[range.endOffset - 1] : endContainer)
+function findTextByIndex(node, index) {
+    let text = getFirstTextNode(node)
+    while (true) {
+        console.assert(!!text, '下标超限', node)
+        const length = text.textContent.length
+        if (length <= index) {
+            return [text, index]
+        }
+        index -= length
+        text = nextSiblingText(text)
+    }
 }

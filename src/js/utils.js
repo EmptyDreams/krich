@@ -233,3 +233,16 @@ export function cloneDomTree(node, text, breaker) {
     }
     return [tree, textNode]
 }
+
+/**
+ * 查找指定元素在 Collection 中的下标
+ * @param children {HTMLCollection}
+ * @param item {HTMLElement}
+ * @return {number}
+ */
+export function findIndexInCollection(children, item) {
+    for (let i = 0; i < children.length; i++) {
+        if (children[i] === item) return i
+    }
+    return -1
+}
