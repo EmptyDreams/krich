@@ -12,7 +12,7 @@ export function createElement(key, tagName, ...classNames) {
     const element = document.createElement(tagName)
     element.className = classNames.join(' ')
     element.setAttribute(DATA_ID, key)
-    const button = KRICH_CONTAINER.querySelector(`.krich-tools>*[data-key=${key}]`)
+    const button = KRICH_CONTAINER.querySelector(`.krich-tools>*[${DATA_ID}=${key}]`)
     if (hash) element.setAttribute(DATA_HASH, hash(button))
     if (extra) {
         const attributes = extra(button)
@@ -156,14 +156,14 @@ export function compareBtnListStatusWith(buttonContainer, node) {
     while (dataId) {
         record.add(dataId)
         if (getElementBehavior(element).noStatus) continue
-        const button = buttonContainer.querySelector(`&>*[data-key=${dataId}]`)
+        const button = buttonContainer.querySelector(`&>*[${DATA_ID}=${dataId}]`)
         if (!compareBtnStatusWith(button, element))
             result.push(button)
         element = element.parentElement
         dataId = element?.getAttribute(DATA_ID)
     }
     for (let child of buttonContainer.children) {
-        const id = child.getAttribute('data-key')
+        const id = child.getAttribute(DATA_ID)
         if (BUTTON_STATUS[id] && !record.has(id) && !behaviors[id].noStatus) result.push(child)
     }
     return result.length === 0 ? null : result
@@ -177,7 +177,7 @@ export function compareBtnListStatusWith(buttonContainer, node) {
 export function syncButtonsStatus(buttonContainer, node) {
     const syncHelper = (button, element) => {
         const setter = element ? getElementBehavior(element).setter : null
-        const key = button.getAttribute('data-key')
+        const key = button.getAttribute(DATA_ID)
         if (setter) {
             setter(button, element)
         } else if (button.classList.contains('select')) {
@@ -199,7 +199,7 @@ export function syncButtonsStatus(buttonContainer, node) {
     const record = new Set()
     while (dataId) {
         record.add(dataId)
-        const button = buttonContainer.querySelector(`&>*[data-key=${dataId}]`)
+        const button = buttonContainer.querySelector(`&>*[${DATA_ID}=${dataId}]`)
         if (!compareBtnStatusWith(button, element)) {
             syncHelper(button, element)
         }
@@ -207,7 +207,7 @@ export function syncButtonsStatus(buttonContainer, node) {
         dataId = element?.getAttribute(DATA_ID)
     }
     for (let button of buttonContainer.children) {
-        if (!record.has(button.getAttribute('data-key'))) {
+        if (!record.has(button.getAttribute(DATA_ID))) {
             syncHelper(button, null)
         }
     }

@@ -3,18 +3,16 @@ import krichStyle from '../resources/css/main.styl'
 import './behavior'
 import {
     behaviors,
-    BUTTON_STATUS,
+    BUTTON_STATUS, DATA_ID,
     initContainerQuery,
     KRICH_CONTAINER,
     KRICH_EDITOR,
-    SELECT_VALUE,
-    TOP_LIST
+    SELECT_VALUE
 } from './global-fileds'
-import {compareBtnListStatusWith, findParentTag, replaceElement, syncButtonsStatus} from './utils'
+import {compareBtnListStatusWith, replaceElement, syncButtonsStatus} from './utils'
 import {
     KRange,
-    setCursorPosition,
-    setCursorPositionAfter
+    setCursorPosition
 } from './range'
 import {registryBeforeInputEventListener} from './events/before-input'
 
@@ -66,7 +64,7 @@ export function initEditor(selector, elements) {
         if (target.classList.contains('krich-tools')) return
         let type, dataKey
         while (true) {
-            dataKey = target.getAttribute('data-key')
+            dataKey = target.getAttribute(DATA_ID)
             if (dataKey) {
                 type = dataKey
                 break
@@ -147,7 +145,7 @@ export function initEditor(selector, elements) {
             newRange.setEnd(startContainer, startOffset)
             const offline = newRange.serialization()
             for (let child of buttonList) {
-                const dataId = child.getAttribute('data-key')
+                const dataId = child.getAttribute(DATA_ID)
                 const behavior = behaviors[dataId]
                 behavior.onclick(KRange.deserialized(offline), child, null)
             }
