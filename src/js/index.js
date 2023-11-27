@@ -182,7 +182,7 @@ function onCursorMove(skipEvent = false) {
 }
 
 /**
- * 删除事件，用于在引用中按下回车时代替浏览器默认动作
+ * 删除事件，用于在引用中按下 backspace 时代替浏览器默认动作
  * @param event {Event}
  */
 function deleteEvent(event) {
@@ -191,7 +191,7 @@ function deleteEvent(event) {
     const {startOffset, startContainer} = range
     const blockquote = startContainer.parentElement
     // 当在编辑器开头按下删除键时阻止该动作，防止删掉空的 p 标签
-    if (startOffset === 0 && KRICH_EDITOR.firstChild === blockquote) {
+    if (startOffset === 0 && KRICH_EDITOR.firstChild === blockquote && blockquote.textContent.length === 0) {
         event.preventDefault()
         if (blockquote.nodeName !== 'P')
             blockquote.outerHTML = '<p><br></p>'
