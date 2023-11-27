@@ -313,7 +313,7 @@ function optimizeTree(ranges) {
     const nextElementSibling  = element => {
         const sibling1 = element.nextSibling
         const sibling2 = element.nextElementSibling
-        return sibling1 === sibling2 && sibling1.nodeName !== 'BR' ? sibling2 : null
+        return sibling1 === sibling2 && sibling1?.nodeName !== 'BR' ? sibling2 : null
     }
     /**
      * 将 `that` 合并到 `dist` 中并移除 `that`
