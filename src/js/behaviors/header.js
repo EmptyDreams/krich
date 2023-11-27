@@ -1,5 +1,6 @@
 import {SELECT_VALUE} from '../global-fileds'
 import {KRange} from '../range'
+import {createElement} from '../utils'
 
 /**
  * 标题按钮的点击事件
@@ -11,9 +12,8 @@ export function behaviorHeader(range, target) {
     console.assert(value?.length === 1, `${value} 值异常`)
     const data = range.serialization()
     range.getAllTopElements().forEach(item => {
-        const novel = document.createElement(value === '0' ? 'p' : 'h' + value)
-        novel.setAttribute('data-id', 'headerSelect')
-        novel.innerHTML = item.textContent
+        const novel = createElement('headerSelect', value === '0' ? 'p' : 'h' + value)
+        novel.innerHTML = item.textContent || '<br>'
         item.replaceWith(novel)
     })
     KRange.deserialized(data).active()
