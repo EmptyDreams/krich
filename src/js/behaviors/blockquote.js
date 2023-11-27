@@ -98,29 +98,31 @@ export function behaviorBlockquote(kRange) {
         existing = lines.find(it => it.nodeName === 'BLOCKQUOTE')
     }
     let newHtml = lines.map(it => it.innerHTML).join('\n')
-    let oldLength
+    let oldLength, fixLine
     if (newHtml.length === 0) newHtml = '\n'
     if (existing) { // 如果已经存在一个引用，则将所有内容合并到这个引用中
         switch (mode) {
-            case 0:
+            case 0: // 选取内存在一个引用，则将内容合并到该引用中
                 existing.innerHTML = newHtml
                 setCursorPosition(existing.firstChild, startOffset)
                 break
-            case 1: // 0b01
+            case 1: // 0b01 - 选取的下界与一个引用相邻，则将内容合并到下界的引用中
                 existing.innerHTML = newHtml + '\n' + existing.innerHTML
                 setCursorPosition(existing.firstChild, startOffset)
                 break
-            case 2: // 0b10
+            case 2: // 0b10 - 选取的上界与一个引用相邻，则将内容合并到上界的引用中
                 oldLength = existing.textContent.length
-                existing.innerHTML += '\n' + newHtml
-                setCursorPosition(existing.firstChild, oldLength + startOffset + 1)
+                fixLine = !existing.textContent.endsWith('\n')
+                existing.innerHTML += (fixLine ? '\n' : '') + newHtml
+                setCursorPosition(existing.firstChild, oldLength + startOffset + (fixLine ? 1 : 0))
                 break
-            case 3: // 0b11
+            case 3: // 0b11 - 选取的上界和下界均与一个引用相邻，则将所有内容合并到上界的引用中
                 const first = lines[0].previousSibling
-                oldLength = first.textContent.length
-                first.innerHtml += '\n' + newHtml + '\n' + existing.innerHTML
+                const oldTextContent = first.textContent
+                fixLine = !oldTextContent.endsWith('\n')
+                first.innerHTML += (fixLine ? '\n' : '') + newHtml + '\n' + existing.innerHTML
                 existing.remove()
-                setCursorPosition(first.firstChild, oldLength + startOffset + 1)
+                setCursorPosition(first.firstChild, oldTextContent.length + startOffset + (fixLine ? 1 : 0))
                 break
         }
     } else {    // 否则新建一个引用
