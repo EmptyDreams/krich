@@ -131,7 +131,9 @@ export function initEditor(selector, elements) {
         }
     })
     registryBeforeInputEventListener(editorContent, event => {
-        if (statusCheckCache) return
+        // noinspection JSUnresolvedReference
+        const data = event.data
+        if (statusCheckCache || !data) return
         statusCheckCache = true
         let kRange = KRange.activated()
         let range = kRange.item
@@ -141,8 +143,6 @@ export function initEditor(selector, elements) {
         if (top.textContent.length === 0)
             top.innerHTML = ''
         const offlineData = kRange.serialization()
-        // noinspection JSUnresolvedReference
-        const data = event.data
         const text = document.createTextNode(data)
         range.insertNode(text)
         range = KRange.deserialized(offlineData).item
