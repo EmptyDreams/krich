@@ -155,10 +155,11 @@ export function compareBtnListStatusWith(buttonContainer, node) {
     const result = []
     while (dataId) {
         record.add(dataId)
-        if (getElementBehavior(element).noStatus) continue
-        const button = buttonContainer.querySelector(`&>*[${DATA_ID}=${dataId}]`)
-        if (!compareBtnStatusWith(button, element))
-            result.push(button)
+        if (!getElementBehavior(element).noStatus) {
+            const button = buttonContainer.querySelector(`&>*[${DATA_ID}=${dataId}]`)
+            if (!compareBtnStatusWith(button, element))
+                result.push(button)
+        }
         element = element.parentElement
         dataId = element?.getAttribute(DATA_ID)
     }
