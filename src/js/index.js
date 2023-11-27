@@ -135,28 +135,23 @@ export function initEditor(selector, elements) {
         const data = event.data
         if (statusCheckCache || !data) return
         statusCheckCache = true
-        let kRange = KRange.activated()
-        let range = kRange.item
-        if (!range.collapsed) return
-        event.preventDefault()
-        const top = findParentTag(range.startContainer, ...TOP_LIST)
-        if (top.textContent.length === 0)
-            top.innerHTML = ''
-        const offlineData = kRange.serialization()
-        const text = document.createTextNode(data)
-        range.insertNode(text)
-        range = KRange.deserialized(offlineData).item
-        const buttonList = compareBtnListStatusWith(editorTools, range.startContainer)
-        if (!buttonList)
-            return setCursorPositionAfter(text)
-        const newRange = KRange.selectNodeContents(text)
-        for (let child of buttonList) {
-            const dataId = child.getAttribute('data-key')
-            const behavior = behaviors[dataId]
-            behavior.onclick(newRange, child, null)
-        }
-        offlineData[0] += data.length
-        KRange.deserialized(offlineData).active()
+        setTimeout(() => {
+            let kRange = KRange.activated()
+            let range = kRange.item
+            if (!range.collapsed) return
+            const {startContainer, startOffset} = range
+            const buttonList = compareBtnListStatusWith(editorTools, startContainer)
+            if (!buttonList) return
+            const newRange = new KRange()
+            newRange.setStart(startContainer, startOffset - data.length)
+            newRange.setEnd(startContainer, startOffset)
+            const offline = newRange.serialization()
+            for (let child of buttonList) {
+                const dataId = child.getAttribute('data-key')
+                const behavior = behaviors[dataId]
+                behavior.onclick(KRange.deserialized(offline), child, null)
+            }
+        }, 0)
     })
 }
 

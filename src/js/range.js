@@ -289,7 +289,7 @@ export class KRange {
         const range = this.item
         const {startContainer, endContainer} = range
         const lines = this.getAllTopElements()
-        if (lines.length === 1) return [this]
+        if (lines.length === 1) return [this.copy()]
         return lines.map((item, index) => {
             let newRange
             if (index === 0) {
@@ -322,6 +322,14 @@ export class KRange {
             if (item === end) return result
             item = item.nextElementSibling
         }
+    }
+
+    /**
+     * 拷贝对象
+     * @return {KRange}
+     */
+    copy() {
+        return new KRange(this.item)
     }
 
     /**

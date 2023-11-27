@@ -134,10 +134,11 @@ export function execCommonCommand(dataId, tagName, range, removed = false, ...cl
             rangeArray[lastIndex] = lastRange
         }
     }
+    const selectionRange = KRange.activated()
+    const isEquals = selectionRange.equals(range)
     if (removed)
         rangeArray = setStyleInRange(rangeArray, dataId, tagName, ...classNames)
-    const selectionRange = KRange.activated()
-    if (selectionRange.equals(range)) {
+    if (isEquals) {
         KRange.join(rangeArray).active()
     } else {
         const last = rangeArray[lastIndex]
