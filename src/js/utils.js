@@ -100,9 +100,10 @@ export function isTopElement(node) {
 
 /**
  * 查找最邻近的文本节点
- * @param node {Node}
+ * @param node {Node} 起始节点
+ * @param limit {HTMLElement?} 父节点约束，查询范围不会超过该节点的范围
  */
-export function nextSiblingText(node) {
+export function nextSiblingText(node, limit) {
     let dist = node
     while (true) {
         const next = dist.nextSibling
@@ -111,7 +112,7 @@ export function nextSiblingText(node) {
             break
         }
         dist = dist.parentNode
-        if (!dist) return null
+        if (!dist || dist === limit) return null
     }
     return getFirstTextNode(dist)
 }

@@ -305,6 +305,7 @@ function optimizeTree(ranges) {
      * @return {boolean} 是否合并了传入的 `element` 和其下一个兄弟节点
      */
     const optimizeNodes = (element, recursion) => {
+        if (element.tagName === 'BR') return false
         let result = false
         const sibling = nextElementSibling(element)
         const eleBehavior = getElementBehavior(element)
@@ -344,7 +345,7 @@ function optimizeTree(ranges) {
         }
         let node = getFirstTextNode(range.startContainer.parentNode)
         do {
-            if (node.textContent.length === 0) {
+            if (node.nodeType === Node.TEXT_NODE && node.textContent.length === 0) {
                 let dist = node.parentNode
                 const next = nextSiblingText(node)
                 node.remove()

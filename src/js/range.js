@@ -198,11 +198,32 @@ export class KRange {
         const range = this.item
         const {startContainer, endContainer, startOffset, endOffset, commonAncestorContainer} = range
         console.assert(
-            startContainer.nodeType === endContainer.nodeType && startContainer.nodeType === Node.TEXT_NODE,
+            ['BR', '#text'].includes(startContainer.nodeName) && ['BR', '#text'].includes(endContainer.nodeName),
             'Range 始末位置都应在 TEXT NODE 当中', range
         )
-        if (startContainer === endContainer)
-            return range.surroundContents(container)
+        if (startContainer === endContainer) {
+            const insertBefore = item => startContainer.parentNode.insertBefore(item, startContainer)
+            const insertAfter = item => startContainer.parentNode.insertBefore(item, startContainer.nextSibling)
+            const textContent = startContainer.textContent
+            if (startOffset === 0 && endOffset === textContent.length) {
+                insertBefore(container)
+                container.append(startContainer)
+            } else if (startOffset === 0) {
+                insertBefore(container)
+                container.append(document.createTextNode(textContent.substring(0, endOffset)))
+                startContainer.textContent = textContent.substring(endOffset)
+            } else if (endOffset === textContent.length) {
+                insertAfter(container)
+                container.append(document.createTextNode(textContent.substring(startOffset)))
+                startContainer.textContent = textContent.substring(0, startOffset)
+            } else {
+                insertAfter(document.createTextNode(textContent.substring(endOffset)))
+                insertAfter(container)
+                container.append(document.createTextNode(textContent.substring(startOffset, endOffset)))
+                startContainer.textContent = textContent.substring(0, startOffset)
+            }
+            return
+        }
         /** @param consumer {function(Text)} */
         function forEachAllTextNode(consumer) {
             const array = []
@@ -400,7 +421,7 @@ function findTextByIndex(node, index, focusHead) {
     while (true) {
         console.assert(!!text, '下标超限', node)
         const length = text.textContent.length
-        const next = nextSiblingText(text)
+        const next = nextSiblingText(text, node)
         if (focusHead) {
             if (index < length || (!next && index === length)) return [text, index]
         } else if (index <= length) return [text, index]
