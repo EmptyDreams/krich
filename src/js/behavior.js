@@ -53,7 +53,7 @@ initBehaviors({
     through: {
         render: () => throughStyle,
         hash: () => `through`,
-        onclick: range => execCommonCommand('through', 'SPAN', range, false, 'through'),
+        onclick: range => execCommonCommand('through', 'SPAN', range, false, ['through']),
     },
     inlineCode: {
         render: () => inlineCodeStyle,
@@ -61,11 +61,11 @@ initBehaviors({
     },
     sup: {
         render: () => supStyle,
-        onclick: range => execCommonCommand('sup', 'SUP', range)
+        onclick: range => execCommonCommand('sup', 'SUP', range, false, [], ['SUB'])
     },
     sub: {
         render: () => subStyle,
-        onclick: range => execCommonCommand('sub', 'SUB', range)
+        onclick: range => execCommonCommand('sub', 'SUB', range, false, [], ['SUP'])
     },
     clear: {
         noStatus: true,
@@ -115,13 +115,17 @@ initBehaviors({
  * @param tagName {string} 标签名称
  * @param range {KRange} 使用的 Range
  * @param removed {boolean} 是否已经移除过元素
- * @param classNames {string} 要设置的类名
+ * @param classNames {string[]} 要设置的类名
+ * @param conflicts {string[]} 相互冲突的样式名
  */
-export function execCommonCommand(dataId, tagName, range, removed = false, ...classNames) {
+export function execCommonCommand(dataId, tagName, range, removed = false, classNames = [], conflicts = []) {
     if (range.item.collapsed) return true
+    const selectionRange = KRange.activated()
+    const isEquals = selectionRange.equals(range)
     let rangeArray = range.splitLine()
     const lastIndex = rangeArray.length - 1
     if (!removed) {
+        rangeArray.forEach(it => removeStylesInRange(it, it, ...conflicts))
         const firstRange = new KRange()
         removed = removeStylesInRange(rangeArray[0], firstRange, tagName) || removed
         rangeArray[0] = firstRange
@@ -134,8 +138,6 @@ export function execCommonCommand(dataId, tagName, range, removed = false, ...cl
             rangeArray[lastIndex] = lastRange
         }
     }
-    const selectionRange = KRange.activated()
-    const isEquals = selectionRange.equals(range)
     if (removed)
         rangeArray = setStyleInRange(rangeArray, dataId, tagName, ...classNames)
     if (isEquals) {
