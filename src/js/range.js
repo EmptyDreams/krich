@@ -275,6 +275,23 @@ export class KRange {
     }
 
     /**
+     * 从 data 中恢复数据
+     * @param data {[number,number]|[number, number, number, number]}
+     */
+    deserialized(data) {
+        const [startX, startY] = data
+        const topChildren = KRICH_EDITOR.children
+        this.setStart(topChildren[startY], startX)
+        if (data.length === 2) {
+            this.item.collapse(true)
+            return
+        }
+        const endX = data[2]
+        const endY = data[3]
+        this.setEnd(topChildren[endY], endX)
+    }
+
+    /**
      * 通过行切分 Range
      * @return {KRange[]}
      */
@@ -364,17 +381,8 @@ export class KRange {
      * @return {KRange}
      */
     static deserialized(data) {
-        const [startX, startY] = data
-        const topChildren = KRICH_EDITOR.children
         const range = new KRange()
-        range.setStart(topChildren[startY], startX)
-        if (data.length === 2) {
-            range.item.collapse(true)
-            return range
-        }
-        const endX = data[2]
-        const endY = data[3]
-        range.setEnd(topChildren[endY], endX)
+        range.deserialized(data)
         return range
     }
 

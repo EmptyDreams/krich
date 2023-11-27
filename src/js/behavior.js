@@ -126,17 +126,13 @@ export function execCommonCommand(dataId, tagName, range, removed = false, class
     const lastIndex = rangeArray.length - 1
     if (!removed) {
         if (conflicts)
-            rangeArray.forEach(it => removeStylesInRange(it, it, ...conflicts))
-        const firstRange = new KRange()
-        removed = removeStylesInRange(rangeArray[0], firstRange, tagName) || removed
-        rangeArray[0] = firstRange
+            rangeArray.forEach(it => removeStylesInRange(it, ...conflicts))
+        removed = removeStylesInRange(rangeArray[0], tagName) || removed
         if (rangeArray.length > 1) {
             for (let i = 1; i < lastIndex; ++i) {
-                removed = removeStylesInRange(rangeArray[i], null, tagName) || removed
+                removed = removeStylesInRange(rangeArray[i], tagName) || removed
             }
-            const lastRange = new KRange()
-            removed = removeStylesInRange(rangeArray[lastIndex], lastRange, tagName) || removed
-            rangeArray[lastIndex] = lastRange
+            removed = removeStylesInRange(rangeArray[lastIndex], tagName) || removed
         }
     }
     if (removed)
@@ -160,17 +156,10 @@ export function execCommonCommand(dataId, tagName, range, removed = false, class
  * @return {KRange[]} 设置后的选择范围
  */
 export function setStyleInRange(ranges, dataId, tagName, ...classNames) {
-    /** @param node {Node} */
-    const removeIfEmpty = node => {
-        if (node && node.nodeType === Node.TEXT_NODE && !node.textContent)
-            node.remove()
-    }
     const rangeArray = Array.isArray(ranges) ? ranges : ranges.splitLine()
     for (let i = 0; i < rangeArray.length; i++) {
         const element = createElement(dataId, tagName, ...classNames)
         rangeArray[i].surroundContents(element)
-        removeIfEmpty(element.nextSibling)
-        removeIfEmpty(element.previousSibling)
         rangeArray[i] = KRange.selectNodeContents(element)
     }
     return rangeArray
@@ -179,23 +168,23 @@ export function setStyleInRange(ranges, dataId, tagName, ...classNames) {
 /**
  * 删除选择范围内的指定样式
  * @param range {KRange} 选择范围
- * @param newRange {?KRange} 新创建的选择范围
  * @param tagNames {string} 要删除的标签名
  * @return {boolean} 是否存在元素没有修改
  */
-export function removeStylesInRange(range, newRange, ...tagNames) {
+export function removeStylesInRange(range, ...tagNames) {
+    const offlineData = range.serialization()
     let nonAllEdit = false
     let isFirst = true
     const breaker = it => tagNames.includes(it.nodeName) || isTopElement(it.nodeName)
-    for (let anchor of range) {
+    const innerRange = range.item
+    let anchor = innerRange.startContainer
+    do {
         const topNode = findParentTag(anchor, ...tagNames)
-        if (topNode) {
+        if (!topNode) {
+            nonAllEdit = true
+        } else {
             if (isFullInclusion(range, topNode)) {
                 removeNodeReserveChild(topNode)
-                if (newRange) {
-                    if (isFirst) newRange.setStartBefore(anchor)
-                    newRange.setEndAfter(anchor)
-                }
             } else {
                 const [split, mode] = splitTextNodeAccordingRange(range, isFirst)
                 const oldAnchor = anchor
@@ -209,37 +198,17 @@ export function removeStylesInRange(range, newRange, ...tagNames) {
                     }
                     if (split.length === 3)
                         insertNode(2, it => it === topNode.parentNode)
-                    const mid = insertNode(1, breaker)
-                    if (newRange) {
-                        if (isFirst) newRange.setStartBefore(mid)
-                        newRange.setEndAfter(mid)
-                    }
                 } else {
                     anchor.textContent = split[1]
                     const array = cloneDomTree(oldAnchor, split[0], breaker)
                     topNode.parentNode.insertBefore(array[0], topNode.nextSibling)
-                    if (newRange) {
-                        if (isFirst) newRange.setStartBefore(array[1])
-                        newRange.setEndAfter(array[1])
-                    }
-                }
-            }
-        } else {
-            nonAllEdit = true
-            if (newRange) {
-                if (isFullInclusion(range, anchor)) {
-                    if (isFirst) newRange.setStartBefore(anchor)
-                    newRange.setEndAfter(anchor)
-                } else {
-                    const innerItem = range.item
-                    if (isFirst) newRange.setStart(anchor, innerItem.startOffset)
-                    if (innerItem.endContainer === anchor)
-                        newRange.setEnd(anchor, innerItem.endOffset)
                 }
             }
         }
         isFirst = false
-    }
+        anchor = nextSiblingText(topNode ?? anchor)
+    } while (anchor && innerRange.intersectsNode(anchor))
+    range.deserialized(offlineData)
     return nonAllEdit
 }
 
@@ -263,10 +232,10 @@ function isFullInclusion(range, childNode) {
  */
 function removeNodeReserveChild(node) {
     const parent = node.parentNode
-    for (let childNode of node.childNodes) {
-        parent.insertBefore(childNode, node)
+    while (node.firstChild) {
+        parent.insertBefore(node.firstChild, node)
     }
-    parent.removeChild(node)
+    node.remove()
 }
 
 /**
