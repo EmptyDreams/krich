@@ -61,7 +61,7 @@ export function behaviorBlockquote(kRange) {
         if (range.collapsed) return removeAll()
         const start = findLineStartIndex(blockquote, startOffset)
         const end = findLineEndIndex(blockquote, endOffset)
-        if (start === 0 && end === -1) {    // 如果包含了整个引用
+        if (start === 0 && (end === -1 || end === html.length - 1)) {    // 如果包含了整个引用
             removeAll()
         } else if (start === 0) {   // 如果包含第一行
             blockquote.insertAdjacentHTML('beforebegin', selectedHtml(0, end))
