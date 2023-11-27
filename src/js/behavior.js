@@ -141,13 +141,14 @@ export function execCommonCommand(dataId, tagName, range, removed = false, class
     }
     if (removed)
         rangeArray = setStyleInRange(rangeArray, dataId, tagName, ...classNames)
+    let offline = isEquals ? KRange.join(rangeArray).serialization() : null
+    optimizeTree(rangeArray)
     if (isEquals) {
-        KRange.join(rangeArray).active()
+        KRange.deserialized(offline).active()
     } else {
         const last = rangeArray[lastIndex]
         setCursorPositionAfter(last.item.endContainer)
     }
-    optimizeTree(rangeArray)
 }
 
 /**

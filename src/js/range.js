@@ -91,22 +91,15 @@ export class KRange {
             } else {
                 if (startStatus) {
                     const start = startContainer.childNodes[startOffset]
-                    if (range.intersectsNode(start)) {
-                        newRange.setStart(getFirstTextNode(start), 0)
-                    } else {
-                        const text = getLastTextNode(start)
-                        newRange.setStart(text, text.textContent.length)
-                    }
+                    newRange.setStart(getFirstTextNode(start), 0)
+                } else if (startContainer.textContent.length === startOffset) {
+                    newRange.setStart(nextSiblingText(startContainer), 0)
                 } else {
                     newRange.setStart(startContainer, startOffset)
                 }
                 if (endStatus) {
-                    const end = endContainer.childNodes[endOffset]
-                    if (range.intersectsNode(end)) {
-                        setEndAfter(end)
-                    } else {
-                        newRange.setEnd(getFirstTextNode(end), 0)
-                    }
+                    const end = endContainer.childNodes[endOffset - 1]
+                    setEndAfter(end)
                 } else {
                     newRange.setEnd(endContainer, endOffset)
                 }
@@ -126,7 +119,7 @@ export class KRange {
      * @param offset {number}
      */
     setStart(node, offset) {
-        const [text, index] = findTextByIndex(node, offset)
+        const [text, index] = findTextByIndex(node, offset, true)
         this.item.setStart(text, index)
     }
 
@@ -136,7 +129,7 @@ export class KRange {
      * @param offset {number}
      */
     setEnd(node, offset) {
-        const [text, index] = findTextByIndex(node, offset)
+        const [text, index] = findTextByIndex(node, offset, false)
         this.item.setEnd(text, index)
     }
 
@@ -389,17 +382,21 @@ export class KRange {
 
 /**
  * 通过下标查找 Text
- * @param node {Node}
- * @param index {number}
+ * @param node {Node} 查找范围约束
+ * @param index {number} 下标
+ * @param focusHead {boolean} 是否将焦点聚焦到开头
  * @return {[Text, number]}
  */
-function findTextByIndex(node, index) {
+function findTextByIndex(node, index, focusHead) {
     let text = getFirstTextNode(node)
     while (true) {
         console.assert(!!text, '下标超限', node)
         const length = text.textContent.length
-        if (index <= length) return [text, index]
+        const next = nextSiblingText(text)
+        if (focusHead) {
+            if (index < length || (!next && index === length)) return [text, index]
+        } else if (index <= length) return [text, index]
         index -= length
-        text = nextSiblingText(text)
+        text = next
     }
 }
