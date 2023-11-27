@@ -216,7 +216,7 @@ export function removeStylesInRange(range, newRange, ...tagNames) {
                 } else {
                     anchor.textContent = split[1]
                     const array = cloneDomTree(oldAnchor, split[0], breaker)
-                    topNode.parentNode.insertBefore(array[0], topNode)
+                    topNode.parentNode.insertBefore(array[0], topNode.nextSibling)
                     if (newRange) {
                         if (isFirst) newRange.setStartBefore(array[1])
                         newRange.setEndAfter(array[1])
