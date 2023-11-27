@@ -5,7 +5,6 @@ import {
     behaviors,
     BUTTON_STATUS, DATA_ID,
     initContainerQuery,
-    KRICH_CONTAINER,
     KRICH_EDITOR,
     SELECT_VALUE
 } from './global-fileds'
@@ -89,7 +88,6 @@ export function initEditor(selector, elements) {
         editorContent.focus()
         if (correct) range.active()
         statusCheckCache = false
-        onCursorMove()
     })
     const switchTask = key => {
         switch (key) {
@@ -103,11 +101,8 @@ export function initEditor(selector, elements) {
                     }
                     syncButtonsStatus(editorTools, KRange.activated().item.startContainer)
                 }
-            case 'ArrowLeft': case 'ArrowRight': case 'ArrowUp': case 'ArrowDown':
-                return () => onCursorMove()
         }
     }
-    editorContent.addEventListener('mouseup', () => onCursorMove())
     editorContent.addEventListener('keyup', event => {
         const task = switchTask(event.key)
         if (task) setTimeout(task, 0)
@@ -122,15 +117,16 @@ export function initEditor(selector, elements) {
                 break
         }
     })
-    container.addEventListener('cursor_move', event => {
-        const range = event.range.item
-        const prevRange = event.prevRange?.item
+    let prevRange
+    document.addEventListener('selectionchange', () => {
+        const range = KRange.activated().item
         if (!range.collapsed) {
             const lca = range.commonAncestorContainer
             syncButtonsStatus(editorTools, lca.firstChild ?? lca)
         } else if (range.endContainer !== prevRange?.endContainer) {
             syncButtonsStatus(editorTools, range.startContainer)
         }
+        prevRange = range
     })
     registryBeforeInputEventListener(editorContent, event => {
         // noinspection JSUnresolvedReference
@@ -155,25 +151,6 @@ export function initEditor(selector, elements) {
             }
         }, 0)
     })
-}
-
-/**
- * 上一刻鼠标光标所在的位置
- * @type {KRange}
- */
-let prevCursor
-function onCursorMove() {
-    const range = KRange.activated()
-    const inner = range.item
-    const prev = prevCursor?.item
-    if (prev && prev.endOffset === inner.endOffset && prev.endContainer === inner.endContainer)
-        return
-    const event = new Event('cursor_move')
-    event.range = range
-    event.prevRange = prevCursor
-    KRICH_CONTAINER.dispatchEvent(event)
-    if (event.defaultPrevented) return
-    prevCursor = range
 }
 
 /**
