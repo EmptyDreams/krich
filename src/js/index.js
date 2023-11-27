@@ -89,7 +89,7 @@ export function initEditor(selector, elements) {
         editorContent.focus()
         if (correct) range.active()
         statusCheckCache = false
-        onCursorMove(true)
+        onCursorMove()
     })
     const switchTask = key => {
         switch (key) {
@@ -123,7 +123,8 @@ export function initEditor(selector, elements) {
         }
     })
     container.addEventListener('cursor_move', event => {
-        const {range, prevRange} = event
+        const range = event.range.item
+        const prevRange = event.prevRange?.item
         if (range.endContainer !== prevRange?.endContainer) {
             syncButtonsStatus(editorTools, range.startContainer)
         }
@@ -158,19 +159,17 @@ export function initEditor(selector, elements) {
  * @type {KRange}
  */
 let prevCursor
-function onCursorMove(skipEvent = false) {
+function onCursorMove() {
     const range = KRange.activated()
     const inner = range.item
     const prev = prevCursor?.item
     if (prev && prev.endOffset === inner.endOffset && prev.endContainer === inner.endContainer)
         return
-    if (!skipEvent) {
-        const event = new Event('cursor_move')
-        event.range = range
-        event.prevRange = prevCursor
-        KRICH_CONTAINER.dispatchEvent(event)
-        if (event.defaultPrevented) return
-    }
+    const event = new Event('cursor_move')
+    event.range = range
+    event.prevRange = prevCursor
+    KRICH_CONTAINER.dispatchEvent(event)
+    if (event.defaultPrevented) return
     prevCursor = range
 }
 
