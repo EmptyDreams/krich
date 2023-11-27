@@ -116,16 +116,17 @@ initBehaviors({
  * @param range {KRange} 使用的 Range
  * @param removed {boolean} 是否已经移除过元素
  * @param classNames {string[]} 要设置的类名
- * @param conflicts {string[]} 相互冲突的样式名
+ * @param conflicts {string[]?} 相互冲突的样式名
  */
-export function execCommonCommand(dataId, tagName, range, removed = false, classNames = [], conflicts = []) {
+export function execCommonCommand(dataId, tagName, range, removed = false, classNames = [], conflicts) {
     if (range.item.collapsed) return true
     const selectionRange = KRange.activated()
     const isEquals = selectionRange.equals(range)
     let rangeArray = range.splitLine()
     const lastIndex = rangeArray.length - 1
     if (!removed) {
-        rangeArray.forEach(it => removeStylesInRange(it, it, ...conflicts))
+        if (conflicts)
+            rangeArray.forEach(it => removeStylesInRange(it, it, ...conflicts))
         const firstRange = new KRange()
         removed = removeStylesInRange(rangeArray[0], firstRange, tagName) || removed
         rangeArray[0] = firstRange

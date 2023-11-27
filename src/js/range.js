@@ -241,7 +241,7 @@ export class KRange {
                 node = cloneDomTree(dist, textContent, breaker)[0]
                 dist.textContent = ''
                 if (dist === startContainer)
-                    commonAncestorContainer.insertBefore(container, node)
+                    commonAncestorContainer.insertBefore(container, findSecRoot(dist))
             }
             container.append(node)
         })

@@ -125,7 +125,10 @@ export function initEditor(selector, elements) {
     container.addEventListener('cursor_move', event => {
         const range = event.range.item
         const prevRange = event.prevRange?.item
-        if (range.endContainer !== prevRange?.endContainer) {
+        if (!range.collapsed) {
+            const lca = range.commonAncestorContainer
+            syncButtonsStatus(editorTools, lca.firstChild ?? lca)
+        } else if (range.endContainer !== prevRange?.endContainer) {
             syncButtonsStatus(editorTools, range.startContainer)
         }
     })
