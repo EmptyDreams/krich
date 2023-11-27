@@ -247,3 +247,20 @@ export function findIndexInCollection(children, item) {
     }
     return -1
 }
+
+/**
+ * 查找指定字符在字符串指定区域中出现的次数
+ * @param item {string} 指定字符
+ * @param str {string} 字符串
+ * @param startIndex {number} 起始下标（包含）
+ * @param endIndex {number?} 终止下标（不包含，缺省查询到结尾）
+ */
+export function countChar(item, str, startIndex, endIndex) {
+    console.assert(item.length === 1, '[item] 的长度应当等于 1', item)
+    const end = endIndex ?? str.length
+    let count = 0
+    for (let i = startIndex; i < end; ++i) {
+        if (str[i] === item) ++count
+    }
+    return count
+}

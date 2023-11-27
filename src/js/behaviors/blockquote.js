@@ -3,7 +3,7 @@ import {
     setCursorPosition,
     setCursorPositionIn
 } from '../range'
-import {createElement} from '../utils'
+import {countChar, createElement} from '../utils'
 
 /**
  * 引用按钮的点击事件
@@ -47,15 +47,15 @@ export function behaviorBlockquote(kRange) {
             const array = html.substring(start, end)
                 .split('\n')
             prevSelectedLine = array.length
-            return array.map(it => `<p>${it}</p>`)
-                .join('')
+            return array.map(it => `<p>${it}</p>`).join('')
         }
         /** 清除整个引用 */
         const removeAll = () => {
             blockquote.insertAdjacentHTML('afterend', selectedHtml(0))
+            const index = startOffset - countChar('\n', blockquote.textContent, 0, startOffset)
             const next = blockquote.nextSibling
             blockquote.remove()
-            setCursorPositionIn(next, startOffset - prevSelectedLine + 1)
+            setCursorPositionIn(next, index)
         }
         // 如果是只点击了一下则判定为选择了全部
         if (range.collapsed) return removeAll()
