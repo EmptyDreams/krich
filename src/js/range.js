@@ -315,13 +315,13 @@ export class KRange {
         const range = this.item
         const start = findParentTag(range.startContainer, ...TOP_LIST)
         const end = findParentTag(range.endContainer, ...TOP_LIST)
-        const result = [start]
+        const result = []
         let item = start
-        while (item !== end) {
+        while (true) {
             result.push(item)
+            if (item === end) return result
             item = item.nextElementSibling
         }
-        return result
     }
 
     /**
