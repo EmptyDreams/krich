@@ -1,6 +1,5 @@
 import {
-    KRange,
-    setCursorPosition,
+    KRange, setCursorPositionAfter,
     setCursorPositionIn
 } from '../range'
 import {countChar, createElement} from '../utils'
@@ -86,51 +85,16 @@ export function behaviorBlockquote(kRange) {
         return
     }
     const lines = kRange.getAllTopElements()
-    let mode = 0, existing
-    if (isBlockquote(lines[0].previousSibling)) {
-        mode = 0b10
-        existing = lines[0].previousSibling
-    }
-    if (isBlockquote(lines[lines.length - 1].nextSibling)) {
-        mode |= 0b01
-        existing = lines[lines.length - 1].nextSibling
-    } else if (!existing) {
-        existing = lines.find(it => it.nodeName === 'BLOCKQUOTE')
-    }
-    let newHtml = lines.map(it => it.innerHTML).join('\n')
-    let oldLength, fixLine
-    if (newHtml.length === 0) newHtml = '\n'
+    const existing = lines.find(it => it.nodeName === 'BLOCKQUOTE')
+    const newHtml = lines.map(it => it.innerHTML).join('\n') || '\n'
+    const blockquote = existing ?? buildBlockquote(newHtml)
     if (existing) { // 如果已经存在一个引用，则将所有内容合并到这个引用中
-        switch (mode) {
-            case 0: // 选取内存在一个引用，则将内容合并到该引用中
-                existing.innerHTML = newHtml
-                setCursorPosition(existing.firstChild, startOffset)
-                break
-            case 1: // 0b01 - 选取的下界与一个引用相邻，则将内容合并到下界的引用中
-                existing.innerHTML = newHtml + '\n' + existing.innerHTML
-                setCursorPosition(existing.firstChild, startOffset)
-                break
-            case 2: // 0b10 - 选取的上界与一个引用相邻，则将内容合并到上界的引用中
-                oldLength = existing.textContent.length
-                fixLine = !existing.textContent.endsWith('\n')
-                existing.innerHTML += (fixLine ? '\n' : '') + newHtml
-                setCursorPosition(existing.firstChild, oldLength + startOffset + (fixLine ? 1 : 0))
-                break
-            case 3: // 0b11 - 选取的上界和下界均与一个引用相邻，则将所有内容合并到上界的引用中
-                const first = lines[0].previousSibling
-                const oldTextContent = first.textContent
-                fixLine = !oldTextContent.endsWith('\n')
-                first.innerHTML += (fixLine ? '\n' : '') + newHtml + '\n' + existing.innerHTML
-                existing.remove()
-                setCursorPosition(first.firstChild, oldTextContent.length + startOffset + (fixLine ? 1 : 0))
-                break
-        }
+        blockquote.innerHTML = newHtml
     } else {    // 否则新建一个引用
-        const blockquote = buildBlockquote(newHtml)
         lines[0].parentNode.insertBefore(blockquote, lines[0])
-        setCursorPosition(blockquote.firstChild, startOffset)
     }
     // 移除原有的标签
     lines.filter(it => it !== existing)
         .forEach(it => it.remove())
+    setCursorPositionAfter(blockquote)
 }
