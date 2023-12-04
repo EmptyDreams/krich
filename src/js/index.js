@@ -194,9 +194,8 @@ function deleteEvent(event) {
 function enterEvent(event) {
     const kRange = KRange.activated()
     const range = kRange.item
-    const name = 'BLOCKQUOTE'
     const lines = kRange.getAllTopElements()
-    const firstBlockquote = lines.find(it => it.nodeName === name)
+    const firstBlockquote = lines.find(it => it.nodeName === 'BLOCKQUOTE')
     if (!firstBlockquote) return
     event.preventDefault()
     const {startOffset} = range
@@ -219,7 +218,7 @@ function enterEvent(event) {
         setCursorPosition(firstBlockquote.firstChild, startOffset + 1)
     } else {    // 如果是范围选择并且跨越了多个标签
         const first = lines[0]
-        if (first.nodeName === name) {
+        if (first.nodeName === 'BLOCKQUOTE') {
             first.textContent += first.textContent.endsWith('\n') ? '\n' : '\n\n'
             setCursorPosition(first.firstChild, first.textContent.length)
         } else if (startOffset === 0) {
