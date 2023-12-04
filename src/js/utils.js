@@ -408,8 +408,9 @@ export function zipTree(container) {
                     }
                 }
                 sibling.remove()
+            } else {
+                item = sibling
             }
-            item = sibling
             sibling = nextSibling
         }
     }
