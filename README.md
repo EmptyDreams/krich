@@ -4,4 +4,12 @@
 
 ## 预览
 
-使用 git 指令克隆仓库或下载仓库代码的压缩包到本地，执行 `npm install` 后在项目根目录执行 `npx rollup -c -w` 即可在 `3000` 端口开启一个本地服务器预览 `krich`。
+首先本地需要有 nodejs 环境，还没有测试 nodejs 的最低版本要求，如果运行的时候报语法错误更新一下 nodejs 版本即可。
+
+1. 使用 git 指令克隆仓库：`git clone https://github.com/EmptyDreams/krich.git`
+2. 在仓库根目录下启动命令提示符
+3. 执行 `npm install`
+4. 执行 `npx rollup -c -w`
+5. 在浏览器中打开 `http://localhost:3000`
+
+如果 `3000` 与您的其它应用的端口号冲突，可以在 rollup 配置文件中修改这个端口号。
