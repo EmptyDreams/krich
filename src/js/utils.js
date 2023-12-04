@@ -102,22 +102,112 @@ export function isTopElement(node) {
 }
 
 /**
- * 查找最邻近的文本节点
  * @param node {Node} 起始节点
- * @param limit {HTMLElement?} 父节点约束，查询范围不会超过该节点的范围
+ * @param limit {(HTMLElement|Node)?} 父节点约束
+ * @param varName {string} 变量名
+ * @param fun {function(Node):Node} 终止函数
+ * @return {Node|null}
  */
-export function nextSiblingText(node, limit) {
+function getSiblingText(node, limit, varName, fun) {
+    if (node === limit) return null
     let dist = node
     while (true) {
-        const next = dist.nextSibling
-        if (next) {
-            dist = next
+        const sibling = dist[varName]
+        if (sibling) {
+            dist = sibling
             break
         }
         dist = dist.parentNode
         if (!dist || dist === limit) return null
     }
-    return getFirstTextNode(dist)
+    return fun(dist)
+}
+
+/**
+ * 查找最邻近的下一个文本节点
+ * @param node {Node} 起始节点
+ * @param limit {(HTMLElement|Node)?} 父节点约束，查询范围不会超过该节点的范围
+ * @return {Node|null}
+ */
+export function nextSiblingText(node, limit) {
+    return getSiblingText(node, limit, 'nextSibling', getFirstTextNode)
+}
+
+/**
+ * 查找最邻近的上一个文本节点
+ * @param node {Node} 起始节点
+ * @param limit {(HTMLElement|Node)?} 父节点约束，查询范围不会超过该节点的范围
+ * @return {Node|null}
+ */
+export function prevSiblingText(node, limit) {
+    return getSiblingText(node, limit, 'previousSibling', getLastTextNode)
+}
+
+/**
+ * 通过指定节点切割父级标签
+ * @param element {HTMLElement|Node} 父级标签
+ * @param startContainer {Node} 起始节点
+ * @param startOffset {number} 切割位置在起始节点中的下标
+ * @param endContainer {Node?} 终止节点
+ * @param endOffset {number?} 切割位置在终止节点中的下标
+ * @return {{
+ *     list: (HTMLElement|Node)[],
+ *     index: 0|1
+ * }} list 是切分后的结果序列，index 表示选中的是哪部分
+ */
+export function splitElementByContainer(
+    element,
+    startContainer, startOffset, endContainer, endOffset
+) {
+    let index = 1
+    const buildResult = list => ({index, list})
+    const breaker = it => it === element
+    if (startOffset === 0) {
+        const prev = prevSiblingText(startContainer, element)
+        if (prev) {
+            startContainer = prev
+            startOffset = prev.textContent.length
+        } else {
+            startContainer = endContainer
+            startOffset = endOffset
+            endContainer = null
+            index = 0
+        }
+    }
+    /**
+     * 从终点开始向前复制
+     * @param node {Node} 最右侧的节点
+     * @param offset {number} 切割位点
+     * @return {HTMLElement}
+     */
+    const cloneFromEnd = (node, offset) => {
+        const textContent = node.textContent
+        const firstNode = cloneDomTree(node, textContent.substring(0, offset), breaker)[0]
+        node.textContent = textContent.substring(offset)
+        if (element.nodeType === Node.TEXT_NODE)
+            return firstNode
+        const container = element.cloneNode(false)
+        container.append(firstNode)
+        let item = prevSiblingText(node, element)
+        while (item?.textContent) {
+            container.insertBefore(cloneDomTree(item, item.textContent, breaker)[0], container.firstChild)
+            item.textContent = ''
+            item = prevSiblingText(item, element)
+        }
+        return container
+    }
+    const left = cloneFromEnd(startContainer, startOffset)
+    element.parentNode.insertBefore(left, element)
+    if (endContainer && endOffset === 0) {
+        endContainer = prevSiblingText(endContainer, element)
+        endOffset = endContainer.textContent.length
+    }
+    if (!endContainer) return buildResult([left, element])
+    const next = nextSiblingText(endContainer, element)
+    if (!next && endOffset === endContainer.textContent.length) return buildResult([left, element])
+    const mid = cloneFromEnd(endContainer, endOffset)
+    element.parentNode.insertBefore(mid, element)
+    return buildResult([left, mid, element])
 }
 
 /**
@@ -227,6 +317,7 @@ export function syncButtonsStatus(buttonContainer, node) {
  */
 export function cloneDomTree(node, text, breaker) {
     const textNode = document.createTextNode(text)
+    if (breaker(node)) return [textNode, textNode]
     /** @type {Text|HTMLElement} */
     let tree = textNode
     let pos = node
@@ -269,4 +360,69 @@ export function countChar(item, str, startIndex, endIndex) {
         if (str[i] === item) ++count
     }
     return count
+}
+
+/**
+ * 压缩 DOM 树结构
+ * @param container {HTMLElement}
+ */
+export function zipTree(container) {
+    console.assert(!container.classList.contains('krich-editor'), '不能直接对编辑器 content 进行压缩')
+    /** 移除为空的节点 */
+    const removeEmptyNode = () => {
+        let item = getFirstTextNode(container)
+        while (item) {
+            const nextText = nextSiblingText(item, container)
+            if (item.nodeName !== 'BR') {
+                if (!item.textContent) {
+                    let parent = item.parentElement
+                    item.remove()
+                    while (parent.childNodes.length === 0) {
+                        const next = parent.parentElement
+                        parent.remove()
+                        parent = next
+                    }
+                }
+            }
+            item = nextText
+        }
+    }
+    /**
+     * 合并相邻且相同的节点
+     * @param firstNode {Node}
+     */
+    const mergeEqualsNode = firstNode => {
+        let item = firstNode
+        let sibling = item.nextSibling
+        while (sibling) {
+            const nextSibling = sibling.nextSibling
+            if (item.nodeName === sibling.nodeName) {   // 判断两个节点是同一种节点
+                if (item.nodeType === Node.TEXT_NODE) { // 判断是否是文本节点
+                    item.textContent += sibling.textContent
+                } else {
+                    // 能够到这里说明这两个节点都是 HTMLElement
+                    // noinspection JSCheckFunctionSignatures
+                    if (equalsKrichNode(item, sibling)) {
+                        while (sibling.firstChild)
+                            item.appendChild(sibling.firstChild)
+                    }
+                }
+                sibling.remove()
+            }
+            item = sibling
+            sibling = nextSibling
+        }
+    }
+    /**
+     * 递归合并
+     * @param parent {HTMLElement}
+     */
+    const recursionMerge = parent => {
+        mergeEqualsNode(parent.firstChild)
+        for (let child of parent.children) {
+            recursionMerge(child)
+        }
+    }
+    removeEmptyNode()
+    recursionMerge(container)
 }

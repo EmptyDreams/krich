@@ -1,10 +1,9 @@
 import {
-    cloneDomTree,
     findIndexInCollection,
     findParentTag,
     getFirstTextNode,
     getLastTextNode,
-    nextSiblingText
+    nextSiblingText, splitElementByContainer, zipTree
 } from './utils'
 import {KRICH_EDITOR, TOP_LIST} from './global-fileds'
 
@@ -46,14 +45,6 @@ export function setCursorPositionIn(node, index) {
 export function setCursorPositionAfter(node) {
     const last = getLastTextNode(node)
     setCursorPosition(last, last.textContent.length)
-}
-
-/**
- * 将光标移动到指定元素的开头
- * @param node {Node}
- */
-export function setCursorPositionBefore(node) {
-    setCursorPosition(getFirstTextNode(node), 0)
 }
 
 export class KRange {
@@ -201,64 +192,28 @@ export class KRange {
             ['BR', '#text'].includes(startContainer.nodeName) && ['BR', '#text'].includes(endContainer.nodeName),
             'Range 始末位置都应在 TEXT NODE 当中', range
         )
-        if (startContainer === endContainer) {
-            const insertBefore = item => startContainer.parentNode.insertBefore(item, startContainer)
-            const insertAfter = item => startContainer.parentNode.insertBefore(item, startContainer.nextSibling)
-            const textContent = startContainer.textContent
-            if (startOffset === 0 && endOffset === textContent.length) {
-                insertBefore(container)
-                container.append(startContainer)
-            } else if (startOffset === 0) {
-                insertBefore(container)
-                container.append(document.createTextNode(textContent.substring(0, endOffset)))
-                startContainer.textContent = textContent.substring(endOffset)
-            } else if (endOffset === textContent.length) {
-                insertAfter(container)
-                container.append(document.createTextNode(textContent.substring(startOffset)))
-                startContainer.textContent = textContent.substring(0, startOffset)
+        if (startContainer === endContainer && startOffset === 0 && endOffset === startContainer.textContent.length) {
+            startContainer.parentNode.insertBefore(container, startContainer)
+            container.append(startContainer)
+        } else {
+            const {list, index} = splitElementByContainer(
+                commonAncestorContainer,
+                startContainer, startOffset, endContainer, endOffset
+            )
+            if (commonAncestorContainer.nodeType === Node.TEXT_NODE) {
+                list[index].parentNode.insertBefore(container, list[index])
+                container.append(list[index])
+                zipTree(list[0].parentElement)
             } else {
-                insertAfter(document.createTextNode(textContent.substring(endOffset)))
-                insertAfter(container)
-                container.append(document.createTextNode(textContent.substring(startOffset, endOffset)))
-                startContainer.textContent = textContent.substring(0, startOffset)
+                container.append(...list[index].childNodes)
+                list[index].append(container)
+                for (let i = 1; i < list.length; i++) {
+                    list[0].append(...list[i].childNodes)
+                    list[i].remove()
+                }
+                zipTree(list[0])
             }
-            return
         }
-        /** @param consumer {function(Text)} */
-        function forEachAllTextNode(consumer) {
-            const array = []
-            let dist = startContainer
-            do {
-                array.push(dist)
-                dist = nextSiblingText(dist)
-            } while (dist && range.intersectsNode(dist))
-            array.forEach(consumer)
-        }
-        const breaker = it => it === commonAncestorContainer
-        /** @return {Node} */
-        const findSecRoot = node => {
-            while (!breaker(node.parentNode))
-                node = node.parentNode
-            return node
-        }
-        forEachAllTextNode(dist => {
-            const textContent = dist.textContent
-            let node
-            if (dist === startContainer && startOffset !== 0) {
-                node = cloneDomTree(dist, textContent.substring(startOffset), breaker)[0]
-                dist.textContent = textContent.substring(0, startOffset)
-                commonAncestorContainer.insertBefore(container, findSecRoot(dist).nextSibling)
-            } else if (dist === endContainer && endOffset !== textContent.length) {
-                node = cloneDomTree(dist, textContent.substring(0, endOffset), breaker)[0]
-                dist.textContent = textContent.substring(endOffset)
-            } else {
-                node = cloneDomTree(dist, textContent, breaker)[0]
-                dist.textContent = ''
-                if (dist === startContainer)
-                    commonAncestorContainer.insertBefore(container, findSecRoot(dist))
-            }
-            container.append(node)
-        })
     }
 
     /**

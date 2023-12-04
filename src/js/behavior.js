@@ -14,14 +14,11 @@ import ulStyle from '../resources/html/tools/ul.html'
 import olStyle from '../resources/html/tools/ol.html'
 import multiStyle from '../resources/html/tools/multi.html'
 import {
-    cloneDomTree,
     createElement,
-    equalsKrichNode,
     findParentTag,
-    getElementBehavior,
-    getFirstTextNode, isTopElement, nextSiblingText
+    splitElementByContainer, zipTree
 } from './utils'
-import {DATA_ID, initBehaviors, KRICH_CONTAINER} from './global-fileds'
+import {DATA_ID, initBehaviors, TOP_LIST} from './global-fileds'
 import {behaviorHeader} from './behaviors/header'
 import {behaviorBlockquote} from './behaviors/blockquote'
 import {KRange, setCursorPositionAfter} from './range'
@@ -138,12 +135,14 @@ export function execCommonCommand(dataId, tagName, range, removed = false, class
     if (removed)
         rangeArray = setStyleInRange(rangeArray, dataId, tagName, ...classNames)
     let offline = isEquals ? KRange.join(rangeArray).serialization() : null
-    optimizeTree(rangeArray)
+    const lastItem = rangeArray[lastIndex].item.endContainer
+    for (let kRange of rangeArray) {
+        zipTree(findParentTag(kRange.item.startContainer, TOP_LIST))
+    }
     if (isEquals) {
         KRange.deserialized(offline).active()
     } else {
-        const last = rangeArray[lastIndex]
-        setCursorPositionAfter(last.item.endContainer)
+        setCursorPositionAfter(lastItem)
     }
 }
 
@@ -173,58 +172,31 @@ export function setStyleInRange(ranges, dataId, tagName, ...classNames) {
  */
 export function removeStylesInRange(range, ...dataId) {
     const offlineData = range.serialization()
-    let nonAllEdit = false
-    let isFirst = true
     const checker = it => dataId.includes(it.getAttribute?.(DATA_ID))
-    const breaker = it => checker(it) || isTopElement(it.nodeName)
-    const innerRange = range.item
-    let anchor = innerRange.startContainer
-    do {
-        const topNode = findParentTag(anchor, checker)
-        if (!topNode) {
-            nonAllEdit = true
-        } else {
-            if (isFullInclusion(range, topNode)) {
-                removeNodeReserveChild(topNode)
-            } else {
-                const [split, mode] = splitTextNodeAccordingRange(range, isFirst)
-                const oldAnchor = anchor
-                if (mode) {
-                    anchor.textContent = split[0]
-                    const insertNode = (index, breaker) => {
-                        const array = cloneDomTree(oldAnchor, split[index], breaker)
-                        topNode.parentNode.insertBefore(array[0], topNode.nextSibling)
-                        if (index === split.length - 1) anchor = array[1]
-                        return array[1]
-                    }
-                    if (split.length === 3)
-                        insertNode(2, it => it === topNode.parentNode)
-                } else {
-                    anchor.textContent = split[1]
-                    const array = cloneDomTree(oldAnchor, split[0], breaker)
-                    topNode.parentNode.insertBefore(array[0], topNode.nextSibling)
-                }
-            }
-        }
-        isFirst = false
-        anchor = nextSiblingText(topNode ?? anchor)
-    } while (anchor && innerRange.intersectsNode(anchor))
+    const tmpBox = document.createElement('div')
+    tmpBox.classList.add('tmp')
+    range.surroundContents(tmpBox)
     range.deserialized(offlineData)
-    return nonAllEdit
-}
-
-/**
- * 判断选取是否完全包含子元素
- * @param range {KRange} 选取
- * @param childNode {Node} 子元素
- */
-function isFullInclusion(range, childNode) {
-    const childRange = KRange.selectNodeContents(childNode).item
-    const parentRange = range.item
-    const startPoint = parentRange.compareBoundaryPoints(Range.START_TO_START, childRange)
-    if (startPoint > 0) return false
-    const endPoint = parentRange.compareBoundaryPoints(Range.END_TO_END, childRange)
-    return endPoint >= 0
+    const {startContainer, startOffset, endContainer, endOffset} = range.item
+    const boxTop = findParentTag(tmpBox, checker)
+    if (boxTop) {
+        if (boxTop.childNodes.length === 1) {
+            removeNodeReserveChild(boxTop)
+            removeNodeReserveChild(tmpBox)
+        } else {
+            const {list, index} = splitElementByContainer(boxTop, startContainer, startOffset, endContainer, endOffset)
+            list.map(it => it.querySelector('div.tmp'))
+                .filter(it => it)
+                .forEach(removeNodeReserveChild)
+            removeNodeReserveChild(list[index])
+        }
+    } else {
+        tmpBox.querySelectorAll(dataId.map(it => `*[${DATA_ID}=${it}]`).join(','))
+            .forEach(removeNodeReserveChild)
+        removeNodeReserveChild(tmpBox)
+    }
+    range.deserialized(offlineData)
+    return !boxTop
 }
 
 /**
@@ -237,134 +209,4 @@ function removeNodeReserveChild(node) {
         parent.insertBefore(node.firstChild, node)
     }
     node.remove()
-}
-
-/**
- * 通过 Range 将一个文本节点切分为多个节点
- * @param range {KRange} 选择的范围
- * @param isFirst {boolean} 是否为开头
- * @return {[string[], boolean]} 返回切分后的节点和填充模式，true 表示第一个元素保留原有效果
- */
-function splitTextNodeAccordingRange(range, isFirst) {
-    /**
-     * 切分节点
-     * @param content {string} 要切分的内容
-     * @param index {number} 切分下标
-     */
-    const splitText = (content, ...index) => {
-        const result = []
-        for (let i = 0; i < index.length; i++) {
-            result.push(content.substring(index[i], index[i + 1]))
-        }
-        return result
-    }
-    const {endContainer, endOffset, startContainer, startOffset} = range.item
-    if (startContainer === endContainer) {
-        const content = endContainer.textContent
-        if (startOffset === 0)
-            return [splitText(content, 0, endOffset), false]
-        if (endOffset === content.length)
-            return [splitText(content, 0, startOffset), true]
-        return [splitText(content, 0, startOffset, endOffset), true]
-    }
-    let node, offset
-    if (isFirst) {
-        node = startContainer
-        offset = startOffset
-    } else {
-        node = endContainer
-        offset = endOffset
-    }
-    const content = node.textContent
-    return [splitText(content, 0, offset), offset !== 0]
-}
-
-/**
- * 优化选中的节点结构
- * @param ranges {KRange[]}
- */
-function optimizeTree(ranges) {
-    /** @param element {HTMLElement} */
-    const nextElementSibling  = element => {
-        const sibling1 = element.nextSibling
-        const sibling2 = element.nextElementSibling
-        return sibling1 === sibling2 && sibling1?.nodeName !== 'BR' ? sibling2 : null
-    }
-    /**
-     * 将 `that` 合并到 `dist` 中并移除 `that`
-     * @param dist {HTMLElement}
-     * @param that {HTMLElement}
-     * @param onHead {boolean} 是否合并到 `dist` 的开头
-     */
-    const mergeElement = (dist, that, onHead) => {
-        dist.insertAdjacentHTML(onHead ? 'afterbegin' : 'beforeend', that.innerHTML)
-        that.remove()
-    }
-    /**
-     * @param element {HTMLElement}
-     * @param recursion {boolean} 是否递归判断子结点
-     * @return {boolean} 是否合并了传入的 `element` 和其下一个兄弟节点
-     */
-    const optimizeNodes = (element, recursion) => {
-        if (element.tagName === 'BR') return false
-        let result = false
-        const sibling = nextElementSibling(element)
-        const eleBehavior = getElementBehavior(element)
-        console.assert(!!eleBehavior, `指定元素没有包含 ${DATA_ID} 字段：`, element)
-        if (sibling && equalsKrichNode(element, sibling)) {
-            mergeElement(element, sibling, false)
-            result = true
-        }
-        if (recursion) {
-            let item = element.firstElementChild
-            while (item) {
-                let subResult = optimizeNodes(item, true)
-                while (subResult)
-                    subResult = optimizeNodes(item, false)
-                item = item.nextElementSibling
-            }
-        }
-        return result
-    }
-    for (let child of KRICH_CONTAINER.getElementsByClassName('krich-editor')[0].children) {
-        if (child.childNodes.length !== 1 && child.lastChild.nodeName === 'BR')
-            child.lastChild.remove()
-    }
-    for (let kRange of ranges) {
-        const range = kRange.item
-        const common = range.commonAncestorContainer
-        let item = common.parentElement
-        if (common.nodeType !== Node.TEXT_NODE) item = item.firstElementChild
-        if (item.tagName !== 'P') {
-            const prev = item.previousSibling
-            if (prev && prev.nodeType !== Node.TEXT_NODE)
-                mergeElement(item, item.previousElementSibling, true)
-            while (item) {
-                optimizeNodes(item, true)
-                item = item.nextElementSibling
-            }
-        }
-        let node = getFirstTextNode(range.startContainer.parentNode)
-        do {
-            if (node.nodeType === Node.TEXT_NODE && node.textContent.length === 0) {
-                let dist = node.parentNode
-                const next = nextSiblingText(node)
-                node.remove()
-                while (!dist.firstChild) {
-                    const parent = dist.parentNode
-                    dist.remove()
-                    dist = parent
-                }
-                node = next
-            } else {
-                let sibling = node.nextSibling
-                while (sibling?.nodeType === Node.TEXT_NODE) {
-                    node.textContent += sibling.textContent
-                    sibling.remove()
-                    sibling = node.nextSibling
-                }
-                node = nextSiblingText(node)
-            }
-        } while (node)
-    }
 }
