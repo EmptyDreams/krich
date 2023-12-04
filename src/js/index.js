@@ -124,10 +124,11 @@ export function initEditor(selector, elements) {
         if (!range.collapsed) {
             const lca = range.commonAncestorContainer
             syncButtonsStatus(editorTools, lca.firstChild ?? lca)
+            prevRange = null
         } else if (range.endContainer !== prevRange?.endContainer) {
             syncButtonsStatus(editorTools, range.startContainer)
+            prevRange = range
         }
-        prevRange = range
     })
     registryBeforeInputEventListener(editorContent, event => {
         // noinspection JSUnresolvedReference
