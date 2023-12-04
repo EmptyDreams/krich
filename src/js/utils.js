@@ -1,4 +1,4 @@
-import {DATA_ID, behaviors, TOP_LIST, DATA_HASH, BUTTON_STATUS, KRICH_CONTAINER, SELECT_VALUE} from './global-fileds'
+import {DATA_ID, behaviors, DATA_HASH, BUTTON_STATUS, KRICH_CONTAINER, SELECT_VALUE} from './global-fileds'
 
 /**
  * 构建一个新的元素
@@ -90,15 +90,6 @@ export function findParentTag(node, checker) {
 export function replaceElement(src, novel) {
     novel.innerHTML = src.innerHTML
     src.replaceWith(novel)
-}
-
-/**
- * 判断指定节点是否是顶层节点
- * @param node {Node}
- * @return {boolean}
- */
-export function isTopElement(node) {
-    return TOP_LIST.includes(node.nodeName)
 }
 
 /**
