@@ -61,11 +61,11 @@ initBehaviors({
     },
     sup: {
         render: () => supStyle,
-        onclick: range => execCommonCommand('sup', 'SUP', range, false, [], ['SUB'])
+        onclick: range => execCommonCommand('sup', 'SUP', range, false, [], ['sub'])
     },
     sub: {
         render: () => subStyle,
-        onclick: range => execCommonCommand('sub', 'SUB', range, false, [], ['SUP'])
+        onclick: range => execCommonCommand('sub', 'SUB', range, false, [], ['sup'])
     },
     clear: {
         noStatus: true,
@@ -116,7 +116,7 @@ initBehaviors({
  * @param range {KRange} 使用的 Range
  * @param removed {boolean} 是否已经移除过元素
  * @param classNames {string[]} 要设置的类名
- * @param conflicts {string[]?} 相互冲突的样式名
+ * @param conflicts {string[]?} 相互冲突的样式的 ID
  */
 export function execCommonCommand(dataId, tagName, range, removed = false, classNames = [], conflicts) {
     if (range.item.collapsed) return true
@@ -127,12 +127,12 @@ export function execCommonCommand(dataId, tagName, range, removed = false, class
     if (!removed) {
         if (conflicts)
             rangeArray.forEach(it => removeStylesInRange(it, ...conflicts))
-        removed = removeStylesInRange(rangeArray[0], tagName) || removed
+        removed = removeStylesInRange(rangeArray[0], dataId) || removed
         if (rangeArray.length > 1) {
             for (let i = 1; i < lastIndex; ++i) {
-                removed = removeStylesInRange(rangeArray[i], tagName) || removed
+                removed = removeStylesInRange(rangeArray[i], dataId) || removed
             }
-            removed = removeStylesInRange(rangeArray[lastIndex], tagName) || removed
+            removed = removeStylesInRange(rangeArray[lastIndex], dataId) || removed
         }
     }
     if (removed)
@@ -168,18 +168,19 @@ export function setStyleInRange(ranges, dataId, tagName, ...classNames) {
 /**
  * 删除选择范围内的指定样式
  * @param range {KRange} 选择范围
- * @param tagNames {string} 要删除的标签名
+ * @param dataId {string} 要删除的标签名
  * @return {boolean} 是否存在元素没有修改
  */
-export function removeStylesInRange(range, ...tagNames) {
+export function removeStylesInRange(range, ...dataId) {
     const offlineData = range.serialization()
     let nonAllEdit = false
     let isFirst = true
-    const breaker = it => tagNames.includes(it.nodeName) || isTopElement(it.nodeName)
+    const checker = it => dataId.includes(it.getAttribute?.(DATA_ID))
+    const breaker = it => checker(it) || isTopElement(it.nodeName)
     const innerRange = range.item
     let anchor = innerRange.startContainer
     do {
-        const topNode = findParentTag(anchor, ...tagNames)
+        const topNode = findParentTag(anchor, checker)
         if (!topNode) {
             nonAllEdit = true
         } else {

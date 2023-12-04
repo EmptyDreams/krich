@@ -273,7 +273,7 @@ export class KRange {
          * @return {[number, number]} 0-横向局部偏移量，2-纵向全局偏移量
          */
         function locateRange(container, offset) {
-            const top = findParentTag(container, ...TOP_LIST)
+            const top = findParentTag(container, TOP_LIST)
             const y = findIndexInCollection(KRICH_EDITOR.children, top)
             if (!top.firstChild) {
                 console.assert(offset === 0, 'offset 应当等于 0', offset)
@@ -344,8 +344,8 @@ export class KRange {
      */
     getAllTopElements() {
         const range = this.item
-        const start = findParentTag(range.startContainer, ...TOP_LIST)
-        const end = findParentTag(range.endContainer, ...TOP_LIST)
+        const start = findParentTag(range.startContainer, TOP_LIST)
+        const end = findParentTag(range.endContainer, TOP_LIST)
         const result = []
         let item = start
         while (true) {

@@ -67,14 +67,17 @@ export function equalsKrichNode(arg0, arg1) {
 /**
  * 判断指定节点是否被某个类型的标签包裹
  * @param node {Node} 指定的节点
- * @param names {string} 标签名称
+ * @param checker {string[]|function(HTMLElement|Node):boolean} 标签名称
  */
-export function findParentTag(node, ...names) {
-    console.assert(names && names.length !== 0, 'names 不应当为空')
-    if (names.includes(node.nodeName)) return node
+export function findParentTag(node, checker) {
+    if (Array.isArray(checker)) {
+        const array = checker
+        checker = it => array.includes(it.nodeName)
+    }
+    if (checker(node)) return node
     let item = node.parentElement
     while (!item.classList.contains('krich-editor')) {
-        if (names.includes(item.nodeName)) return item
+        if (checker(item)) return item
         item = item.parentElement
     }
 }
@@ -220,19 +223,20 @@ export function syncButtonsStatus(buttonContainer, node) {
  * @param node {Node} #text 节点
  * @param text {string} 文本节点的内容
  * @param breaker {function(Node):boolean} 断路器，判断是否终止复制
- * @return {[Node, Text]} 克隆出来的文本节点
+ * @return {[Text|HTMLElement, Text]} 克隆出来的文本节点
  */
 export function cloneDomTree(node, text, breaker) {
     const textNode = document.createTextNode(text)
+    /** @type {Text|HTMLElement} */
     let tree = textNode
     let pos = node
-    node = node.parentNode
+    node = node.parentElement
     while (!breaker(node)) {
         const item = node.cloneNode(false)
         item.appendChild(tree)
         tree = item
         pos = node
-        node = node.parentNode
+        node = node.parentElement
     }
     return [tree, textNode]
 }
