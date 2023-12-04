@@ -13,15 +13,12 @@ import backgroundStyle from '../resources/html/tools/background.html'
 import ulStyle from '../resources/html/tools/ul.html'
 import olStyle from '../resources/html/tools/ol.html'
 import multiStyle from '../resources/html/tools/multi.html'
-import {
-    createElement,
-    findParentTag,
-    splitElementByContainer, zipTree
-} from './utils'
 import {DATA_ID, initBehaviors, TOP_LIST} from './global-fileds'
 import {behaviorHeader} from './behaviors/header'
 import {behaviorBlockquote} from './behaviors/blockquote'
 import {KRange, setCursorPositionAfter} from './range'
+import {findParentTag, splitElementByContainer, zipTree} from './utils/dom'
+import {createElement} from './utils/tools'
 
 initBehaviors({
     headerSelect: {

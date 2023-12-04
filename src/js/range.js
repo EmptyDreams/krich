@@ -1,11 +1,14 @@
+
+import {KRICH_EDITOR, TOP_LIST} from './global-fileds'
 import {
-    findIndexInCollection,
     findParentTag,
     getFirstTextNode,
     getLastTextNode,
-    nextSiblingText, splitElementByContainer, zipTree
-} from './utils'
-import {KRICH_EDITOR, TOP_LIST} from './global-fileds'
+    nextSiblingText,
+    splitElementByContainer,
+    zipTree
+} from './utils/dom'
+import {findIndexInCollection} from './utils/tools'
 
 /**
  * 将鼠标光标移动到指定位置

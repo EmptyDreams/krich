@@ -8,12 +8,13 @@ import {
     KRICH_EDITOR,
     SELECT_VALUE
 } from './global-fileds'
-import {compareBtnListStatusWith, replaceElement, syncButtonsStatus} from './utils'
 import {
     KRange,
     setCursorPosition
 } from './range'
 import {registryBeforeInputEventListener} from './events/before-input'
+import {replaceElement} from './utils/dom'
+import {compareBtnListStatusWith, syncButtonsStatus} from './utils/btn'
 
 export {behaviors}
 

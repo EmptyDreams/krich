@@ -2,7 +2,7 @@ import {
     KRange, setCursorPositionAfter,
     setCursorPositionIn
 } from '../range'
-import {countChar, createElement} from '../utils'
+import {countChar, createElement} from '../utils/tools'
 
 /**
  * 引用按钮的点击事件

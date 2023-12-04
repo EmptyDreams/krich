@@ -1,6 +1,8 @@
 import {SELECT_VALUE} from '../global-fileds'
 import {KRange} from '../range'
-import {createElement} from '../utils'
+
+
+import {createElement} from '../utils/tools'
 
 /**
  * 标题按钮的点击事件
