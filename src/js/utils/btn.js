@@ -2,7 +2,7 @@
     本文件用于放置与操作编辑器工具栏按钮相关的 util 函数
 */
 
-import {behaviors, BUTTON_STATUS, DATA_HASH, DATA_ID, SELECT_VALUE} from '../global-fileds'
+import {behaviors, BUTTON_STATUS, DATA_ID, SELECT_VALUE} from '../global-fileds'
 import {getElementBehavior} from './tools'
 
 /**
@@ -12,21 +12,10 @@ import {getElementBehavior} from './tools'
  * @return {boolean}
  */
 export function compareBtnStatusWith(button, element) {
-    const {verify, hash} = getElementBehavior(element)
-    /**
-     * @param button {HTMLElement}
-     * @param element {HTMLElement}
-     */
-    const defComparator = (button, element) => {
-        const buttonHash = hash?.(button)
-        const elementHash = element.getAttribute(DATA_HASH)
-        return buttonHash === elementHash
-    }
+    const {verify} = getElementBehavior(element)
     if (verify) {
         if (!verify(button, element))
             return false
-    } else if (!defComparator(button, element)) {
-        return false
     }
     return true
 }

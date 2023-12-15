@@ -3,6 +3,7 @@ import {
     setCursorPositionIn
 } from '../range'
 import {countChar, createElement} from '../utils/tools'
+import {behaviors} from '../global-fileds'
 
 /**
  * 引用按钮的点击事件
@@ -31,7 +32,7 @@ export function behaviorBlockquote(kRange) {
     const findLineEndIndex = (blockquote, endOffset) =>
         blockquote.innerHTML.indexOf('\n', endOffset)
     const buildBlockquote = html => {
-        const blockquote = createElement('blockquote', 'blockquote')
+        const blockquote = createElement(behaviors.blockquote, 'blockquote')
         blockquote.innerHTML = html
         return blockquote
     }

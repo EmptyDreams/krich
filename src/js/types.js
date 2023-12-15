@@ -24,29 +24,26 @@ class ButtonBehavior {
      */
     onclick
     /**
-     * 哈希函数，将按钮当前的状态转化为一个哈希值
-     *
-     * 函数的返回值必须保证状态不同时哈希值不同，函数传入的对象是按钮的对象
-     *
-     * @type {undefined|function(HTMLElement): string}
+     * 用于构建一个空的标签
+     * @type {undefined|function(btn: HTMLElement): HTMLElement}
      */
-    hash
+    builder
     /**
-     * 额外需要添加的 attributes
-     * @type {undefined|function(HTMLElement): {[p: string]: string}}
+     * 判断指定元素是否是当前样式
+     * @type {string & keyof HTMLElementTagNameMap | string}
      */
-    extra
+    exp
     /**
      * 验证指定标签和按钮的状态是否一致
      *
      * 函数的两个参数依次为：按钮对象，指定标签的对象
      *
-     * @type {undefined|function(HTMLElement, HTMLElement): boolean}
+     * @type {undefined|function(btn: HTMLElement, item: HTMLElement): boolean}
      */
     verify
     /**
-     * 将当前按钮的样式改为和指定节点一致的状态
-     * @type {undefined|function(btn: HTMLElement, dist: HTMLElement|undefined)}
+     * 将当前按钮的样式改为和指定节点一致的状态，当传入的 item 为 undefined 时表示恢复默认值
+     * @type {undefined|function(btn: HTMLElement, item: HTMLElement|undefined)}
      */
     setter
 }

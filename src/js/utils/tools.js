@@ -2,34 +2,33 @@
     本文件用于放置一些通用的工具函数
  */
 
-import {behaviors, DATA_HASH, DATA_ID, KRICH_CONTAINER} from '../global-fileds'
+import {behaviors, DATA_ID} from '../global-fileds'
 
 /**
  * 构建一个新的元素
- * @param key {string} behavior 中的 key 名
+ * @param behavior {ButtonBehavior} behavior 对象
  * @param tagName {string} 标签名称
  * @param classNames {string} 想要添加的类名
  */
-export function createElement(key, tagName, ...classNames) {
-    console.assert(key in behaviors, `${key} 不存在`)
-    const {hash, extra} = behaviors[key]
+export function createElement(behavior, tagName, ...classNames) {
     const element = document.createElement(tagName)
     element.className = classNames.join(' ')
-    element.setAttribute(DATA_ID, key)
-    const button = KRICH_CONTAINER.querySelector(`.krich-tools>*[${DATA_ID}=${key}]`)
-    if (hash) element.setAttribute(DATA_HASH, hash(button))
-    if (extra) {
-        const attributes = extra(button)
-        for (let key in attributes) {
-            element.setAttribute(key, attributes[key])
-        }
-    }
     return element
 }
 
-/** @param element {HTMLElement} */
+/**
+ * @param element {HTMLElement}
+ * @return {ButtonBehavior|undefined}
+ */
 export function getElementBehavior(element) {
-    return behaviors[element.getAttribute(DATA_ID)]
+    const dataId = element.getAttribute(DATA_ID)
+    if (dataId)
+        return behaviors[dataId]
+    for (let key in behaviors) {
+        const value = behaviors[key]
+        if (element.matches(value.exp))
+            return value
+    }
 }
 
 /**
@@ -39,10 +38,10 @@ export function getElementBehavior(element) {
  */
 export function equalsKrichNode(arg0, arg1) {
     console.assert(!!arg0 && arg1, '参数不能为 null/undefined', arg0, arg1)
+    if (arg0.className !== arg1.className || arg0.attributes) return false
     const h0 = getElementBehavior(arg0)
     const h1 = getElementBehavior(arg1)
-    console.assert(!!h0 && h1, `两个节点有一个不包含 ${DATA_ID} 属性或属性值错误`, arg0, arg1)
-    return h0 === h1 && h0.hash?.(arg0) === h1.hash?.(arg1)
+    return h0 === h1
 }
 
 /**
