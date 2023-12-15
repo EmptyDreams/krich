@@ -15,6 +15,7 @@ import {
 import {registryBeforeInputEventListener} from './events/before-input'
 import {replaceElement} from './utils/dom'
 import {compareBtnListStatusWith, syncButtonsStatus} from './utils/btn'
+import {getElementBehavior} from './utils/tools'
 
 export {behaviors}
 
@@ -83,6 +84,9 @@ export function initEditor(selector, elements) {
             target.setAttribute(SELECT_VALUE, value)
         } else {
             BUTTON_STATUS[dataKey] = target.classList.toggle('active')
+            if (getElementBehavior(target).noStatus) {
+                setTimeout(() => target.classList.remove('active'), 333)
+            }
         }
         const range = KRange.activated()
         const correct = behaviors[dataKey].onclick?.(range, target, event)
