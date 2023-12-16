@@ -13,26 +13,16 @@ import backgroundStyle from '../resources/html/tools/background.html'
 import ulStyle from '../resources/html/tools/ul.html'
 import olStyle from '../resources/html/tools/ol.html'
 import multiStyle from '../resources/html/tools/multi.html'
-import {behaviors, initBehaviors, TOP_LIST} from './global-fileds'
+import {behaviors, initBehaviors, TITLE_LIST, TOP_LIST} from './global-fileds'
 import {behaviorHeader} from './behaviors/header'
 import {behaviorBlockquote} from './behaviors/blockquote'
 import {KRange, setCursorPositionAfter} from './range'
 import {findParentTag, splitElementByContainer, zipTree} from './utils/dom'
 import {createElement} from './utils/tools'
 
-/**
- * 构建一个新的元素
- * @param behavior {ButtonBehavior} behavior 中的 key 名
- * @param tagName {string} 标签名称
- * @param classList {string} 想要添加的类名
- */
-function genBuilder(behavior, tagName, ...classList) {
-    return () => createElement(behavior, tagName, ...classList)
-}
-
 initBehaviors({
     headerSelect: {
-        exp: TOP_LIST.join(','),
+        exp: ['P', ...TITLE_LIST].join(','),
         noStatus: true,
         render: () => headerSelectStyle,
         onclick: behaviorHeader
@@ -47,43 +37,43 @@ initBehaviors({
         exp: 'b',
         render: () => boldStyle,
         onclick: range => execCommonCommand('bold', range),
-        builder: genBuilder(this, 'B')
+        builder: () => createElement('b')
     },
     underline: {
         exp: 'u',
         render: () => underlineStyle,
         onclick: range => execCommonCommand('underline', range),
-        builder: genBuilder(this, 'U')
+        builder: () => createElement('u')
     },
     italic: {
         exp: 'i',
         render: () => italicStyle,
         onclick: range => execCommonCommand('italic', range),
-        builder: genBuilder(this, 'I')
+        builder: () => createElement('i')
     },
     through: {
         exp: 'span.through',
         render: () => throughStyle,
         onclick: range => execCommonCommand('through', range, false, ['through']),
-        builder: genBuilder(this, 'SPAN', 'through')
+        builder: () => createElement('span', 'through')
     },
     inlineCode: {
         exp: 'code',
         render: () => inlineCodeStyle,
         onclick: range => execCommonCommand('inlineCode', range),
-        builder: genBuilder(this, 'CODE')
+        builder: () => createElement('code')
     },
     sup: {
         exp: 'sup',
         render: () => supStyle,
         onclick: range => execCommonCommand('sup', range, false, ['sub']),
-        builder: genBuilder(this, 'SUP')
+        builder: () => createElement('sup')
     },
     sub: {
         exp: 'sub',
         render: () => subStyle,
         onclick: range => execCommonCommand('sub', range, false, ['sup']),
-        builder: genBuilder(this, 'SUB')
+        builder: () => createElement('sub')
     },
     clear: {
         noStatus: true,

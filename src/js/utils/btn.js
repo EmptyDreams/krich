@@ -7,17 +7,12 @@ import {getElementBehavior} from './tools'
 
 /**
  * 比较按钮和标签的状态是否相同
- * @param button {HTMLElement} 按钮对象
  * @param element {HTMLElement} 标签对象
  * @return {boolean}
  */
-export function compareBtnStatusWith(button, element) {
-    const {verify} = getElementBehavior(element)
-    if (verify) {
-        if (!verify(button, element))
-            return false
-    }
-    return true
+export function compareBtnStatusWith(element) {
+    const {verify, button} = getElementBehavior(element)
+    return verify ? verify(button, element) : button.classList.contains('active')
 }
 
 /**
@@ -35,7 +30,7 @@ export function compareBtnListStatusWith(buttonContainer, node) {
         record.add(dataId)
         if (!getElementBehavior(element).noStatus) {
             const button = buttonContainer.querySelector(`&>*[${DATA_ID}=${dataId}]`)
-            if (!compareBtnStatusWith(button, element))
+            if (!compareBtnStatusWith(element))
                 result.push(button)
         }
         element = element.parentElement
@@ -74,19 +69,19 @@ export function syncButtonsStatus(buttonContainer, node) {
         }
     }
     let element = node.parentElement
-    let dataId = element.getAttribute(DATA_ID)
+    let behavior = getElementBehavior(element)
     const record = new Set()
-    while (dataId) {
-        record.add(dataId)
-        const button = buttonContainer.querySelector(`&>*[${DATA_ID}=${dataId}]`)
-        if (!compareBtnStatusWith(button, element)) {
-            syncHelper(button, element)
+    while (behavior) {
+        record.add(behavior)
+        if (!compareBtnStatusWith(element)) {
+            syncHelper(behavior.button, element)
         }
         element = element.parentElement
-        dataId = element?.getAttribute(DATA_ID)
+        if (!element) break
+        behavior = getElementBehavior(element)
     }
     for (let button of buttonContainer.children) {
-        if (!record.has(button.getAttribute(DATA_ID))) {
+        if (!record.has(behaviors[button.getAttribute(DATA_ID)])) {
             syncHelper(button, null)
         }
     }

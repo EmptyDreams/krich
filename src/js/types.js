@@ -46,4 +46,9 @@ class ButtonBehavior {
      * @type {undefined|function(btn: HTMLElement, item: HTMLElement|undefined)}
      */
     setter
+    /**
+     * 该样式的按钮对象
+     * @type {HTMLElement|undefined}
+     */
+    button
 }

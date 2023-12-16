@@ -32,7 +32,7 @@ export function behaviorBlockquote(kRange) {
     const findLineEndIndex = (blockquote, endOffset) =>
         blockquote.innerHTML.indexOf('\n', endOffset)
     const buildBlockquote = html => {
-        const blockquote = createElement(behaviors.blockquote, 'blockquote')
+        const blockquote = createElement('blockquote')
         blockquote.innerHTML = html
         return blockquote
     }

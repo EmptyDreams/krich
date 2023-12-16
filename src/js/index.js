@@ -57,6 +57,10 @@ export function initEditor(selector, elements) {
     initContainerQuery(container)
     const editorTools = container.getElementsByClassName('krich-tools')[0]
     const editorContent = container.getElementsByClassName('krich-editor')[0]
+    for (let child of editorTools.children) {
+        const dataId = child.getAttribute(DATA_ID)
+        behaviors[dataId].button = child
+    }
     // 标记是否已经对比过按钮状态和文本状态
     let statusCheckCache = true
     editorTools.addEventListener('click', event => {

@@ -14,7 +14,7 @@ export function behaviorHeader(range, target) {
     console.assert(value?.length === 1, `${value} 值异常`)
     const data = range.serialization()
     range.getAllTopElements().forEach(item => {
-        const novel = createElement('headerSelect', value === '0' ? 'p' : 'h' + value)
+        const novel = createElement(value === '0' ? 'p' : 'h' + value)
         novel.innerHTML = item.textContent || '<br>'
         item.replaceWith(novel)
     })

@@ -6,11 +6,10 @@ import {behaviors, DATA_ID} from '../global-fileds'
 
 /**
  * 构建一个新的元素
- * @param behavior {ButtonBehavior} behavior 对象
  * @param tagName {string} 标签名称
  * @param classNames {string} 想要添加的类名
  */
-export function createElement(behavior, tagName, ...classNames) {
+export function createElement(tagName, ...classNames) {
     const element = document.createElement(tagName)
     element.className = classNames.join(' ')
     return element
