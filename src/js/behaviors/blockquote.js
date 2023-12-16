@@ -3,7 +3,6 @@ import {
     setCursorPositionIn
 } from '../range'
 import {countChar, createElement} from '../utils/tools'
-import {behaviors} from '../global-fileds'
 
 /**
  * 引用按钮的点击事件
