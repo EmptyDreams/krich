@@ -8,11 +8,6 @@ export let KRICH_CONTAINER
  * @type {HTMLElement}
  */
 export let KRICH_EDITOR
-/**
- * 存储按钮状态
- * @type {{[p:string]: boolean|string}}
- */
-export const BUTTON_STATUS = {}
 
 /** 标签类型的 KEY */
 export const DATA_ID = 'data-id'

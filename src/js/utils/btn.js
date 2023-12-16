@@ -2,8 +2,19 @@
     本文件用于放置与操作编辑器工具栏按钮相关的 util 函数
 */
 
-import {behaviors, BUTTON_STATUS, DATA_ID, SELECT_VALUE} from '../global-fileds'
+import {behaviors, DATA_ID, SELECT_VALUE} from '../global-fileds'
 import {getElementBehavior} from './tools'
+
+/**
+ * 判断指定按钮是否激活
+ * @param button {HTMLElement} 按钮对象
+ * @return {boolean}
+ */
+export function isActive(button) {
+    if (button.hasAttribute(SELECT_VALUE))
+        return button.getAttribute(SELECT_VALUE) !== '0'
+    return button.classList.contains('active')
+}
 
 /**
  * 比较按钮和标签的状态是否相同
@@ -12,7 +23,7 @@ import {getElementBehavior} from './tools'
  */
 export function compareBtnStatusWith(element) {
     const {verify, button} = getElementBehavior(element)
-    return verify ? verify(button, element) : button.classList.contains('active')
+    return verify ? verify(button, element) : isActive(button)
 }
 
 /**
@@ -24,21 +35,22 @@ export function compareBtnStatusWith(element) {
 export function compareBtnListStatusWith(buttonContainer, node) {
     const record = new Set()
     let element = node.parentElement
-    let dataId = element.getAttribute(DATA_ID)
+    let behavior = getElementBehavior(element)
     const result = []
-    while (dataId) {
-        record.add(dataId)
-        if (!getElementBehavior(element).noStatus) {
-            const button = buttonContainer.querySelector(`&>*[${DATA_ID}=${dataId}]`)
+    while (behavior) {
+        record.add(behavior)
+        if (!behavior.noStatus) {
             if (!compareBtnStatusWith(element))
-                result.push(button)
+                result.push(behavior.button)
         }
         element = element.parentElement
-        dataId = element?.getAttribute(DATA_ID)
+        if (!element) break
+        behavior = getElementBehavior(element)
     }
     for (let child of buttonContainer.children) {
-        const id = child.getAttribute(DATA_ID)
-        if (BUTTON_STATUS[id] && !record.has(id) && !behaviors[id].noStatus) result.push(child)
+        behavior = getElementBehavior(child)
+        if (!behavior.noStatus && !record.has(behavior) && isActive(child))
+            result.push(child)
     }
     return result.length === 0 ? null : result
 }
@@ -51,7 +63,6 @@ export function compareBtnListStatusWith(buttonContainer, node) {
 export function syncButtonsStatus(buttonContainer, node) {
     const syncHelper = (button, element) => {
         const setter = element ? getElementBehavior(element).setter : null
-        const key = button.getAttribute(DATA_ID)
         if (setter) {
             setter(button, element)
         } else if (button.classList.contains('select')) {
@@ -59,13 +70,10 @@ export function syncButtonsStatus(buttonContainer, node) {
             button.setAttribute(SELECT_VALUE, value)
             const item = button.querySelector(`.item[${SELECT_VALUE}="${value}"]`)
             button.getElementsByClassName('value')[0].innerHTML = item.innerHTML
-            BUTTON_STATUS[key] = value
         } else if (element) {
             button.classList.add('active')
-            BUTTON_STATUS[key] = true
         } else {
             button.classList.remove('active')
-            delete BUTTON_STATUS[key]
         }
     }
     let element = node.parentElement

@@ -3,7 +3,7 @@ import krichStyle from '../resources/css/main.styl'
 import './behavior'
 import {
     behaviors,
-    BUTTON_STATUS, DATA_ID,
+    DATA_ID,
     initContainerQuery,
     KRICH_EDITOR,
     SELECT_VALUE
@@ -84,10 +84,10 @@ export function initEditor(selector, elements) {
                 return
             }
             target.getElementsByTagName('span')[0].innerHTML = original.innerHTML
-            const value = BUTTON_STATUS[dataKey] = original.getAttribute(SELECT_VALUE)
+            const value = original.getAttribute(SELECT_VALUE)
             target.setAttribute(SELECT_VALUE, value)
         } else {
-            BUTTON_STATUS[dataKey] = target.classList.toggle('active')
+            target.classList.toggle('active')
             if (getElementBehavior(target).noStatus) {
                 setTimeout(() => target.classList.remove('active'), 333)
             }
