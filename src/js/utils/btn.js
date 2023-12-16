@@ -2,7 +2,7 @@
     本文件用于放置与操作编辑器工具栏按钮相关的 util 函数
 */
 
-import {behaviors, DATA_ID, SELECT_VALUE} from '../global-fileds'
+import {SELECT_VALUE} from '../global-fileds'
 import {getElementBehavior} from './tools'
 
 /**
@@ -33,25 +33,8 @@ export function compareBtnStatusWith(element) {
  * @return {null|HTMLElement[]} 返回按钮和节点状态不一致的按钮列表
  */
 export function compareBtnListStatusWith(buttonContainer, node) {
-    const record = new Set()
-    let element = node.parentElement
-    let behavior = getElementBehavior(element)
     const result = []
-    while (behavior) {
-        record.add(behavior)
-        if (!behavior.noStatus) {
-            if (!compareBtnStatusWith(element))
-                result.push(behavior.button)
-        }
-        element = element.parentElement
-        if (!element) break
-        behavior = getElementBehavior(element)
-    }
-    for (let child of buttonContainer.children) {
-        behavior = getElementBehavior(child)
-        if (!behavior.noStatus && !record.has(behavior) && isActive(child))
-            result.push(child)
-    }
+    findDiffButton(buttonContainer, node, (_, item) => result.push(item))
     return result.length === 0 ? null : result
 }
 
@@ -76,21 +59,33 @@ export function syncButtonsStatus(buttonContainer, node) {
             button.classList.remove('active')
         }
     }
-    let element = node.parentElement
-    let behavior = getElementBehavior(element)
+    findDiffButton(buttonContainer, node, syncHelper)
+}
+
+/**
+ * 查找与指定元素包含的样式不相同的所有按钮
+ * @param buttonContainer {HTMLElement} 按钮列表的父级标签
+ * @param node {Node} 文本节点对象
+ * @param consumer {function(btn: HTMLElement, item: HTMLElement?)} 当查询到不同时触发的函数
+ */
+function findDiffButton(buttonContainer, node, consumer) {
+    /** @type {Set<ButtonBehavior>} */
     const record = new Set()
-    while (behavior) {
+    let item = node.parentElement
+    while (item) {
+        const behavior = getElementBehavior(item)
+        if (!behavior) break
         record.add(behavior)
-        if (!compareBtnStatusWith(element)) {
-            syncHelper(behavior.button, element)
+        if (!behavior.noStatus && !compareBtnStatusWith(item)) {
+            consumer(behavior.button, item)
         }
-        element = element.parentElement
-        if (!element) break
-        behavior = getElementBehavior(element)
+        item = item.parentElement
     }
-    for (let button of buttonContainer.children) {
-        if (!record.has(behaviors[button.getAttribute(DATA_ID)])) {
-            syncHelper(button, null)
+    for (let child of buttonContainer.children) {
+        const behavior = getElementBehavior(child)
+        const button = behavior.button
+        if (!behavior.noStatus && !record.has(behavior) && isActive(button)) {
+            consumer(button, null)
         }
     }
 }
