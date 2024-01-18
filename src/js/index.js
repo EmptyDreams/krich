@@ -16,6 +16,7 @@ import {registryBeforeInputEventListener} from './events/before-input'
 import {replaceElement} from './utils/dom'
 import {compareBtnListStatusWith, syncButtonsStatus} from './utils/btn'
 import {getElementBehavior} from './utils/tools'
+import {handleTemplate} from './utils/template'
 
 export {behaviors}
 

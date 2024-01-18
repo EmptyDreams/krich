@@ -1,5 +1,5 @@
-<div data-id="color">
-    <button class="color">
+<div class="color-select" data-id="color">
+    <button>
         <svg class="btn-icon" viewBox="0 0 1024 1024">
             <path d="M810.538667 897.152l-596.181334-3.072 0.512-85.333333 596.181334 3.072-0.512 85.333333z"></path>
             <path d="M492.501333 170.666667h45.653334L305.792 725.589333H213.162667L446.848 170.666667h45.653333z"></path>
@@ -7,5 +7,8 @@
             <path d="M342.016 512h341.333333v85.333333h-341.333333v-85.333333z"></path>
         </svg>
     </button>
-    <div class="panel"></div>
+    <div class="panel">
+        <span class="title">前景色</span>
+        {{ colorSelect }}
+    </div>
 </div>

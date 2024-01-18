@@ -1,0 +1,34 @@
+.color-select
+  .panel
+    display none
+    position absolute
+    top 40px
+    transition all .3s
+    background floralwhite
+    padding 16px
+    border 1px solid black
+    border-radius 10px
+    cursor default
+
+    .list
+      display flex
+
+      span
+        width 14px
+        height 14px
+        margin 5px
+        border 1px solid #66ccff
+        cursor pointer
+
+    .custom
+      display flex
+      justify-content space-between
+      margin-top 16px
+
+      input
+        border-radius 5px
+        padding 0 6px
+
+  &:hover
+    .panel
+      display unset

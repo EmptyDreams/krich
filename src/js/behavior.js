@@ -8,7 +8,9 @@ import inlineCodeStyle from '../resources/html/tools/inlineCode.html'
 import supStyle from '../resources/html/tools/sup.html'
 import subStyle from '../resources/html/tools/sub.html'
 import clearStyle from '../resources/html/tools/clear.html'
+/** @type {string} */
 import colorStyle from '../resources/html/tools/color.html'
+/** @type {string} */
 import backgroundStyle from '../resources/html/tools/background.html'
 import ulStyle from '../resources/html/tools/ul.html'
 import olStyle from '../resources/html/tools/ol.html'
@@ -19,6 +21,7 @@ import {behaviorBlockquote} from './behaviors/blockquote'
 import {KRange, setCursorPositionAfter} from './range'
 import {findParentTag, splitElementByContainer, zipTree} from './utils/dom'
 import {createElement} from './utils/tools'
+import {handleTemplate} from './utils/template'
 
 initBehaviors({
     headerSelect: {
@@ -83,13 +86,14 @@ initBehaviors({
         }
     },
     color: {
-        render: () => colorStyle,
+        exp: 'span[color]',
+        render: () => handleTemplate(colorStyle),
         onclick: () => {
             // TODO
         }
     },
     background: {
-        render: () => backgroundStyle,
+        render: () => handleTemplate(backgroundStyle),
         onclick: () => {
             // TODO
         }
