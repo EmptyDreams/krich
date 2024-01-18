@@ -1,12 +1,20 @@
-.color-select
+.select.color
+  & > button
+    display flex
+    flex-direction column
+
+  .value
+    width 20px
+    height 3px
+    background black
+    border 1px solid black
+
   .panel
     display none
     position absolute
     top 40px
     transition all .3s
-    background floralwhite
     padding 16px
-    border 1px solid black
     border-radius 10px
     cursor default
 
@@ -31,4 +39,6 @@
 
   &:hover
     .panel
-      display unset
+      display block
+      background floralwhite
+      border 1px solid black

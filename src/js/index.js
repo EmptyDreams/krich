@@ -1,22 +1,12 @@
 import krichStyle from '../resources/css/main.styl'
 
 import './behavior'
-import {
-    behaviors,
-    DATA_ID,
-    initContainerQuery,
-    KRICH_EDITOR,
-    SELECT_VALUE
-} from './global-fileds'
-import {
-    KRange,
-    setCursorPosition
-} from './range'
+import {behaviors, DATA_ID, initContainerQuery, KRICH_EDITOR, SELECT_VALUE} from './global-fileds'
+import {KRange, setCursorPosition} from './range'
 import {registryBeforeInputEventListener} from './events/before-input'
 import {replaceElement} from './utils/dom'
 import {compareBtnListStatusWith, syncButtonsStatus} from './utils/btn'
-import {getElementBehavior} from './utils/tools'
-import {handleTemplate} from './utils/template'
+import {getElementBehavior, parseRgbToHex} from './utils/tools'
 
 export {behaviors}
 
@@ -65,6 +55,7 @@ export function initEditor(selector, elements) {
     // 标记是否已经对比过按钮状态和文本状态
     let statusCheckCache = true
     editorTools.addEventListener('click', event => {
+        /** @type {HTMLElement} */
         const original = event.target
         let target = original
         if (target.classList.contains('krich-tools')) return
@@ -79,14 +70,20 @@ export function initEditor(selector, elements) {
         }
         const classList = target.classList
         if (classList.contains('select')) {
-            classList.toggle('show')
-            if (!original.classList.contains('item')) {
-                target.onblur = () => classList.remove('show')
-                return
+            if (original.hasAttribute(SELECT_VALUE)) {
+                target.getElementsByClassName('value')[0].innerHTML = original.innerHTML
+                const value = original.getAttribute(SELECT_VALUE)
+                target.setAttribute(SELECT_VALUE, value)
+            } else if (original.hasAttribute('title')) {
+                target.getElementsByClassName('value')[0].style.background = original.style.background
+            } else if (original.classList.contains('submit')) {
+                const input = original.previousElementSibling
+                const value = input.value
+                    .replaceAll(/\s/g, '')
+                    .replaceAll('，', ',')
+                    .toLowerCase()
+                target.getElementsByClassName('value')[0].style.background = parseRgbToHex(value)
             }
-            target.getElementsByTagName('span')[0].innerHTML = original.innerHTML
-            const value = original.getAttribute(SELECT_VALUE)
-            target.setAttribute(SELECT_VALUE, value)
         } else {
             target.classList.toggle('active')
             if (getElementBehavior(target).noStatus) {
