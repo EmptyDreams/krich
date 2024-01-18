@@ -1,7 +1,7 @@
 import krichStyle from '../resources/css/main.styl'
 
 import './behavior'
-import {behaviors, DATA_ID, initContainerQuery, KRICH_CONTAINER, KRICH_EDITOR, SELECT_VALUE} from './global-fileds'
+import {behaviors, DATA_ID, initContainerQuery, KRICH_CONTAINER, KRICH_EDITOR, SELECT_VALUE, SELECT_OPTION } from './global-fileds'
 import {KRange, setCursorPosition} from './utils/range'
 import {registryBeforeInputEventListener} from './events/before-input'
 import {replaceElement} from './utils/dom'
@@ -75,7 +75,7 @@ export function initEditor(selector, elements) {
         const range = prevRange
         const classList = target.classList
         if (classList.contains('select')) {
-            if (original.hasAttribute(SELECT_VALUE)) {
+            if (original.hasAttribute(SELECT_OPTION)) {
                 target.getElementsByClassName('value')[0].innerHTML = original.innerHTML
                 const value = original.getAttribute(SELECT_VALUE)
                 target.setAttribute(SELECT_VALUE, value)

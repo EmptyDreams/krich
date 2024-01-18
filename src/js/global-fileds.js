@@ -13,6 +13,8 @@ export let KRICH_EDITOR
 export const DATA_ID = 'data-id'
 /** 多选框的 value 的 KEY */
 export const SELECT_VALUE = 'data-value'
+/** 多选框的子选项的 KEY */
+export const SELECT_OPTION = 'data-option'
 
 export const TITLE_LIST = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6']
 export const TOP_LIST = ['P', 'BLOCKQUOTE', ...TITLE_LIST]
