@@ -6,7 +6,7 @@ import {KRange, setCursorPosition} from './utils/range'
 import {registryBeforeInputEventListener} from './events/before-input'
 import {replaceElement} from './utils/dom'
 import {compareBtnListStatusWith, syncButtonsStatus} from './utils/btn'
-import {getElementBehavior, parseRgbToHex} from './utils/tools'
+import {getElementBehavior, parseRgbToHex, readSelectedColor} from './utils/tools'
 
 export {behaviors}
 
@@ -51,6 +51,9 @@ export function initEditor(selector, elements) {
     for (let child of editorTools.children) {
         const dataId = child.getAttribute(DATA_ID)
         behaviors[dataId].button = child
+        if (child.classList.contains('color')) {
+            child.setAttribute(SELECT_VALUE, readSelectedColor(child))
+        }
     }
     // 标记是否已经对比过按钮状态和文本状态
     let statusCheckCache = true

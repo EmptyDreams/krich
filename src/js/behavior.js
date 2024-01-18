@@ -15,12 +15,12 @@ import backgroundStyle from '../resources/html/tools/background.html'
 import ulStyle from '../resources/html/tools/ul.html'
 import olStyle from '../resources/html/tools/ol.html'
 import multiStyle from '../resources/html/tools/multi.html'
-import {behaviors, initBehaviors, TITLE_LIST, TOP_LIST} from './global-fileds'
+import {behaviors, initBehaviors, KRICH_CONTAINER, SELECT_VALUE, TITLE_LIST, TOP_LIST} from './global-fileds'
 import {behaviorHeader} from './behaviors/header'
 import {behaviorBlockquote} from './behaviors/blockquote'
 import {KRange, setCursorPositionAfter} from './utils/range'
 import {findParentTag, splitElementByContainer, zipTree} from './utils/dom'
-import {createElement} from './utils/tools'
+import {createElement, readSelectedColor} from './utils/tools'
 import {handleTemplate} from './utils/template'
 
 initBehaviors({
@@ -58,7 +58,7 @@ initBehaviors({
         exp: 'span.through',
         render: () => throughStyle,
         onclick: range => execCommonCommand('through', range, false, ['through']),
-        builder: () => createElement('span', 'through')
+        builder: () => createElement('span', ['through'])
     },
     inlineCode: {
         exp: 'code',
@@ -86,17 +86,16 @@ initBehaviors({
         }
     },
     color: {
-        exp: 'span[color]',
+        exp: 'span[style^="color:"]',
         render: () => handleTemplate(colorStyle),
-        onclick: () => {
-            // TODO
-        }
+        onclick: (range, btn) => colorOnclick(range, btn, 'color'),
+        builder: btn => createElement('span', {style: 'color:' + readSelectedColor(btn)})
     },
     background: {
+        exp: 'span[style^="background:"]',
         render: () => handleTemplate(backgroundStyle),
-        onclick: () => {
-            // TODO
-        }
+        onclick: (range, btn) => colorOnclick(range, btn, 'background'),
+        builder: btn => createElement('span', {style: 'background:' + readSelectedColor(btn)})
     },
     ul: {
         noStatus: true,
@@ -127,9 +126,10 @@ initBehaviors({
  * @param range {KRange} 使用的 Range
  * @param removed {boolean} 是否已经移除过元素
  * @param conflicts {string[]?} 相互冲突的样式的 ID
+ * @param type {0|1|2} 任务模式，0-默认，1-强制添加，2-仅删除
  */
 export function execCommonCommand(
-    key, range, removed = false, conflicts
+    key, range, removed = false, conflicts, type = 0
 ) {
     if (range.item.collapsed) return true
     const behavior = behaviors[key]
@@ -148,8 +148,8 @@ export function execCommonCommand(
             removed = removeStylesInRange(rangeArray[lastIndex], behavior) || removed
         }
     }
-    if (removed)
-        rangeArray = setStyleInRange(rangeArray, behavior)
+    if (type !== 2 && (removed || type === 1))
+        rangeArray = setStyleInRange(key, rangeArray, behavior)
     let offline = isEquals ? KRange.join(rangeArray).serialization() : null
     const lastItem = rangeArray[lastIndex].item.endContainer
     for (let kRange of rangeArray) {
@@ -164,14 +164,15 @@ export function execCommonCommand(
 
 /**
  * 为指定区域内的文本设置样式
+ * @param key {string} 样式的 key
  * @param ranges {KRange|KRange[]} 选择的区域，如果为数组区域必须连续
  * @param behavior {ButtonBehavior} 按钮对象
  * @return {KRange[]} 设置后的选择范围
  */
-export function setStyleInRange(ranges, behavior) {
+export function setStyleInRange(key, ranges, behavior) {
     const rangeArray = Array.isArray(ranges) ? ranges : ranges.splitLine()
     for (let i = 0; i < rangeArray.length; i++) {
-        const element = behavior.builder()
+        const element = behavior.builder(KRICH_CONTAINER.querySelector(`*[data-id="${key}"]`))
         rangeArray[i].surroundContents(element)
         rangeArray[i] = KRange.selectNodeContents(element)
     }
@@ -220,4 +221,16 @@ function removeNodeReserveChild(node) {
         parent.insertBefore(node.firstChild, node)
     }
     node.remove()
+}
+
+/**
+ * 颜色选择器点击事件
+ * @param range {KRange} 选择范围
+ * @param btn {HTMLElement} 按钮对象
+ * @param key {string} 样式名称
+ * @return {boolean}
+ */
+function colorOnclick(range, btn, key) {
+    const isDef = readSelectedColor(btn) === btn.getAttribute(SELECT_VALUE)
+    return execCommonCommand(key, range, false, null, isDef ? 2 : 1)
 }

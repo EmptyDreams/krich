@@ -46,17 +46,23 @@ export function compareBtnListStatusWith(buttonContainer, node) {
 export function syncButtonsStatus(buttonContainer, node) {
     const syncHelper = (button, element) => {
         const setter = element ? getElementBehavior(element).setter : null
+        const buttonClassList = button.classList
         if (setter) {
             setter(button, element)
-        } else if (button.classList.contains('select')) {
-            const value = element?.getAttribute(SELECT_VALUE) ?? '0'
-            button.setAttribute(SELECT_VALUE, value)
-            const item = button.querySelector(`.item[${SELECT_VALUE}="${value}"]`)
-            button.getElementsByClassName('value')[0].innerHTML = item.innerHTML
+        } else if (buttonClassList.contains('select')) {
+            const value = button.getElementsByClassName('value')[0]
+            if (buttonClassList.contains('color')) {
+                value.style.background = element?.getAttribute?.('style') ?? button.getAttribute(SELECT_VALUE)
+            } else {
+                const selectValue = element?.getAttribute(SELECT_VALUE) ?? '0'
+                button.setAttribute(SELECT_VALUE, selectValue)
+                const item = button.querySelector(`.item[${SELECT_VALUE}="${selectValue}"]`)
+                value.innerHTML = item.innerHTML
+            }
         } else if (element) {
-            button.classList.add('active')
+            buttonClassList.add('active')
         } else {
-            button.classList.remove('active')
+            buttonClassList.remove('active')
         }
     }
     findDiffButton(buttonContainer, node, syncHelper)

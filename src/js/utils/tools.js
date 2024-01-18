@@ -7,11 +7,17 @@ import {behaviors, DATA_ID} from '../global-fileds'
 /**
  * 构建一个新的元素
  * @param tagName {string} 标签名称
- * @param classNames {string} 想要添加的类名
+ * @param optional {(string[]|{[p:string]:string})?} 类名数组或属性键值对
  */
-export function createElement(tagName, ...classNames) {
+export function createElement(tagName, optional) {
     const element = document.createElement(tagName)
-    element.className = classNames.join(' ')
+    if (Array.isArray(optional))
+        element.className = optional.join(' ')
+    if (optional) {
+        for (let key in optional) {
+            element.setAttribute(key, optional[key])
+        }
+    }
     return element
 }
 
@@ -92,4 +98,13 @@ export function parseRgbToHex(src) {
     if (/^#([0-9a-f])\1([0-9a-f])\2([0-9a-f])\3$/.test(src))
         src = '#' + src[1] + src[2] + src[4]
     return src
+}
+
+/**
+ * 获取一个颜色选择器选择的结果
+ * @param btn {HTMLElement} 按钮对象
+ * @return {string} 16 进制的 RGB 色码
+ */
+export function readSelectedColor(btn) {
+    return btn.getElementsByClassName('value')[0].style.background
 }
