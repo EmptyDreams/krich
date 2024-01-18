@@ -152,6 +152,8 @@ export function splitElementByContainer(
     }
     const left = cloneFromEnd(startContainer, startOffset)
     element.parentNode.insertBefore(left, element)
+    if (startContainer === endContainer)
+        endOffset -= startOffset
     if (endContainer && endOffset === 0) {
         endContainer = prevSiblingText(endContainer, element)
         endOffset = endContainer.textContent.length
@@ -159,7 +161,7 @@ export function splitElementByContainer(
     if (!endContainer) return buildResult([left, element])
     const next = nextSiblingText(endContainer, element)
     if (!next && endOffset === endContainer.textContent.length) return buildResult([left, element])
-    const mid = cloneFromEnd(endContainer, endOffset - startOffset)
+    const mid = cloneFromEnd(endContainer, endOffset)
     element.parentNode.insertBefore(mid, element)
     return buildResult([left, mid, element])
 }
