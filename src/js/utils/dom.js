@@ -231,6 +231,10 @@ export function zipTree(container) {
                     if (equalsKrichNode(item, sibling)) {
                         while (sibling.firstChild)
                             item.appendChild(sibling.firstChild)
+                    } else {
+                        item = sibling
+                        sibling = nextSibling
+                        continue
                     }
                 }
                 sibling.remove()
