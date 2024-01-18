@@ -37,10 +37,11 @@ export function getElementBehavior(element) {
  */
 export function equalsKrichNode(arg0, arg1) {
     console.assert(!!arg0 && arg1, '参数不能为 null/undefined', arg0, arg1)
-    if (arg0.className !== arg1.className || arg0.attributes) return false
-    const h0 = getElementBehavior(arg0)
-    const h1 = getElementBehavior(arg1)
-    return h0 === h1
+    return arg0.nodeName === arg1.nodeName &&
+        arg0.classList.length === arg1.classList.length &&
+        arg0.attributes.length !== arg1.attributes.length &&
+        Array.from(arg0.classList).every(it => arg1.classList.contains(it)) &&
+        Array.from(arg0.attributes).every(it => it.value === arg1.getAttribute(it.name))
 }
 
 /**
