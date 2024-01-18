@@ -11,9 +11,9 @@ import {behaviors, DATA_ID} from '../global-fileds'
  */
 export function createElement(tagName, optional) {
     const element = document.createElement(tagName)
-    if (Array.isArray(optional))
+    if (Array.isArray(optional)) {
         element.className = optional.join(' ')
-    if (optional) {
+    } else if (optional) {
         for (let key in optional) {
             element.setAttribute(key, optional[key])
         }
@@ -106,5 +106,5 @@ export function parseRgbToHex(src) {
  * @return {string} 16 进制的 RGB 色码
  */
 export function readSelectedColor(btn) {
-    return btn.getElementsByClassName('value')[0].style.background
+    return btn.getElementsByClassName('value')[0].getAttribute('style').substring(11)
 }
