@@ -1,7 +1,7 @@
 import krichStyle from '../resources/css/main.styl'
 
 import './behavior'
-import {behaviors, DATA_ID, initContainerQuery, KRICH_EDITOR, SELECT_VALUE} from './global-fileds'
+import {behaviors, DATA_ID, initContainerQuery, KRICH_CONTAINER, KRICH_EDITOR, SELECT_VALUE} from './global-fileds'
 import {KRange, setCursorPosition} from './utils/range'
 import {registryBeforeInputEventListener} from './events/before-input'
 import {replaceElement} from './utils/dom'
@@ -53,6 +53,7 @@ export function initEditor(selector, elements) {
         behaviors[dataId].button = child
         if (child.classList.contains('color')) {
             child.setAttribute(SELECT_VALUE, readSelectedColor(child))
+            child.getElementsByTagName('input')[0].onblur = () => prevRange?.active?.()
         }
     }
     // 标记是否已经对比过按钮状态和文本状态
@@ -71,6 +72,7 @@ export function initEditor(selector, elements) {
             }
             target = target.parentNode
         }
+        const range = prevRange
         const classList = target.classList
         if (classList.contains('select')) {
             if (original.hasAttribute(SELECT_VALUE)) {
@@ -86,18 +88,22 @@ export function initEditor(selector, elements) {
                     .replaceAll(/\s/g, '')
                     .replaceAll('，', ',')
                     .toLowerCase()
-                target.getElementsByClassName('value')[0]
-                    .setAttribute('style', 'background:' + parseRgbToHex(value))
-            }
+                const color = parseRgbToHex(value)
+                if (color) {
+                    input.classList.remove('error')
+                    target.getElementsByClassName('value')[0]
+                        .setAttribute('style', 'background:' + color)
+                } else {
+                    return input.classList.add('error')
+                }
+            } else return
         } else {
             target.classList.toggle('active')
             if (getElementBehavior(target).noStatus) {
                 setTimeout(() => target.classList.remove('active'), 333)
             }
         }
-        const range = KRange.activated()
         const correct = behaviors[dataKey].onclick?.(range, target, event)
-        editorContent.focus()
         if (correct) range.active()
         statusCheckCache = false
     })
@@ -129,17 +135,21 @@ export function initEditor(selector, elements) {
                 break
         }
     })
+    /** @type {KRange|undefined} */
     let prevRange
     document.addEventListener('selectionchange', () => {
-        const range = KRange.activated().item
+        if (!KRICH_CONTAINER.contains(document.activeElement)) return prevRange = null
+        if (KRICH_EDITOR !== document.activeElement) return
+        const kRange = KRange.activated()
+        const range = kRange.item
+        const prev = prevRange?.item
         if (!range.collapsed) {
             const lca = range.commonAncestorContainer
             syncButtonsStatus(editorTools, lca.firstChild ?? lca)
-            prevRange = null
-        } else if (range.endContainer !== prevRange?.endContainer) {
+        } else if (!prev?.collapsed || range.endContainer !== prev?.endContainer) {
             syncButtonsStatus(editorTools, range.startContainer)
-            prevRange = range
         }
+        prevRange = kRange
     })
     registryBeforeInputEventListener(editorContent, event => {
         // noinspection JSUnresolvedReference
