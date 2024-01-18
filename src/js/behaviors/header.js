@@ -1,5 +1,5 @@
 import {SELECT_VALUE} from '../global-fileds'
-import {KRange} from '../range'
+import {KRange} from '../utils/range'
 
 
 import {createElement} from '../utils/tools'

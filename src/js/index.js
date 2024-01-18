@@ -2,7 +2,7 @@ import krichStyle from '../resources/css/main.styl'
 
 import './behavior'
 import {behaviors, DATA_ID, initContainerQuery, KRICH_EDITOR, SELECT_VALUE} from './global-fileds'
-import {KRange, setCursorPosition} from './range'
+import {KRange, setCursorPosition} from './utils/range'
 import {registryBeforeInputEventListener} from './events/before-input'
 import {replaceElement} from './utils/dom'
 import {compareBtnListStatusWith, syncButtonsStatus} from './utils/btn'

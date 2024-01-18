@@ -1,5 +1,5 @@
 
-import {KRICH_EDITOR, TOP_LIST} from './global-fileds'
+import {KRICH_EDITOR, TOP_LIST} from '../global-fileds'
 import {
     findParentTag,
     getFirstTextNode,
@@ -7,8 +7,8 @@ import {
     nextSiblingText,
     splitElementByContainer,
     zipTree
-} from './utils/dom'
-import {findIndexInCollection} from './utils/tools'
+} from './dom'
+import {findIndexInCollection} from './tools'
 
 /**
  * 将鼠标光标移动到指定位置

@@ -1,7 +1,7 @@
 import {
     KRange, setCursorPositionAfter,
     setCursorPositionIn
-} from '../range'
+} from '../utils/range'
 import {countChar, createElement} from '../utils/tools'
 
 /**
