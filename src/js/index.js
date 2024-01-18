@@ -78,14 +78,16 @@ export function initEditor(selector, elements) {
                 const value = original.getAttribute(SELECT_VALUE)
                 target.setAttribute(SELECT_VALUE, value)
             } else if (original.hasAttribute('title')) {
-                target.getElementsByClassName('value')[0].style.background = original.style.background
+                target.getElementsByClassName('value')[0]
+                    .setAttribute('style', original.getAttribute('style'))
             } else if (original.classList.contains('submit')) {
                 const input = original.previousElementSibling
                 const value = input.value
                     .replaceAll(/\s/g, '')
                     .replaceAll('，', ',')
                     .toLowerCase()
-                target.getElementsByClassName('value')[0].style.background = parseRgbToHex(value)
+                target.getElementsByClassName('value')[0]
+                    .setAttribute('style', 'background:' + parseRgbToHex(value))
             }
         } else {
             target.classList.toggle('active')
