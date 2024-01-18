@@ -326,7 +326,14 @@ export class KRange {
      * @return {KRange}
      */
     static activated() {
-        return new KRange(getSelection().getRangeAt(0))
+        const selection = getSelection()
+        if (selection.rangeCount !== 0)
+            return new KRange(selection.getRangeAt(0))
+        const node = getLastTextNode(KRICH_EDITOR)
+        const range = new KRange()
+        range.setStart(node, node.textContent.length)
+        range.item.collapse(true)
+        return range
     }
 
     /**
