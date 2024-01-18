@@ -191,16 +191,11 @@ export function removeStylesInRange(range, ...behaviors) {
     const {startContainer, startOffset, endContainer, endOffset} = range.item
     const boxTop = findParentTag(tmpBox, checker)
     if (boxTop) {
-        if (boxTop.childNodes.length === 1) {
-            removeNodeReserveChild(boxTop)
-            removeNodeReserveChild(tmpBox)
-        } else {
-            const {list, index} = splitElementByContainer(boxTop, startContainer, startOffset, endContainer, endOffset)
-            list.map(it => it.querySelector('div.tmp'))
-                .filter(it => it)
-                .forEach(removeNodeReserveChild)
-            removeNodeReserveChild(list[index])
-        }
+        const {list, index} = splitElementByContainer(boxTop, startContainer, startOffset, endContainer, endOffset)
+        list.map(it => it.querySelector('div.tmp'))
+            .filter(it => it)
+            .forEach(removeNodeReserveChild)
+        removeNodeReserveChild(list[index])
     } else {
         tmpBox.querySelectorAll(
             behaviors.map(it => it.exp).join(',')
