@@ -205,18 +205,14 @@ export function removeStylesInRange(range, ...behaviors) {
     const boxTop = findParentTag(tmpBox, checker)
     if (boxTop) {
         const {list, index} = splitElementByContainer(boxTop, startContainer, startOffset, endContainer, endOffset)
-        list.map(it => it.querySelector('div.tmp'))
-            .filter(it => it)
-            .forEach(removeNodeReserveChild)
         removeNodeReserveChild(list[index])
     } else {
         tmpBox.querySelectorAll(
             behaviors.map(it => it.exp).join(',')
         ).forEach(removeNodeReserveChild)
     }
-    for (let tmp of KRICH_EDITOR.getElementsByClassName('tmp')) {
-        removeNodeReserveChild(tmp)
-    }
+    Array.from(KRICH_EDITOR.getElementsByClassName('tmp'))
+        .forEach(removeNodeReserveChild)
     range.deserialized(offlineData)
     return !boxTop
 }

@@ -64,6 +64,7 @@ function initContainer(optional) {
             .map(it => behaviors[it].render())
             .join('')
     }</div><div class="krich-editor" spellcheck contenteditable><p><br></p></div>`
+    container.classList.add('krich')
     initContainerQuery(container)
     for (let child of KRICH_TOOL_BAR.children) {
         const dataId = child.getAttribute(DATA_ID)
