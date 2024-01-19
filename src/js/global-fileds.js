@@ -8,6 +8,11 @@ export let KRICH_CONTAINER
  * @type {HTMLElement}
  */
 export let KRICH_EDITOR
+/**
+ * 编辑器工具栏
+ * @type {HTMLElement}
+ */
+export let KRICH_TOOL_BAR
 
 /** 标签类型的 KEY */
 export const DATA_ID = 'data-id'
@@ -24,6 +29,12 @@ export const TOP_LIST = ['P', 'BLOCKQUOTE', ...TITLE_LIST]
 export let behaviors
 
 /**
+ * 标记是否已经对比过按钮状态和文本状态
+ * @type {boolean}
+ */
+export let statusCheckCache = true
+
+/**
  * 初始化 behaviors
  * @param value {{[p:string]: ButtonBehavior}}
  */
@@ -35,4 +46,10 @@ export function initBehaviors(value) {
 export function initContainerQuery(container) {
     KRICH_CONTAINER = container
     KRICH_EDITOR = container.getElementsByClassName('krich-editor')[0]
+    KRICH_TOOL_BAR = container.getElementsByClassName('krich-tools')[0]
+}
+
+/** 标记状态检查缓存过时 */
+export function markStatusCacheInvalid() {
+    statusCheckCache = false
 }
