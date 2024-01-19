@@ -65,7 +65,7 @@ initBehaviors({
     through: {
         exp: 'span.through',
         render: () => throughStyle,
-        onclick: range => execCommonCommand('through', range, false, ['through']),
+        onclick: range => execCommonCommand('through', range, false),
         builder: () => createElement('span', ['through'])
     },
     inlineCode: {
