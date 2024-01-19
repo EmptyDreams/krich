@@ -1,11 +1,12 @@
 import {behaviors, DATA_ID, KRICH_TOOL_BAR, markStatusCacheInvalid, SELECT_VALUE} from '../global-fileds'
 import {getElementBehavior, parseRgbToHex} from '../utils/tools'
 import {editorRange} from './range-monitor'
+import {findParentTag} from '../utils/dom'
 
 export function registryMouseClickEvent() {
     KRICH_TOOL_BAR.addEventListener('click', event => {
         /** @type {HTMLElement} */
-        const original = event.target
+        let original = event.target
         let target = original
         if (target.classList.contains('krich-tools')) return
         let type, dataKey
@@ -21,7 +22,12 @@ export function registryMouseClickEvent() {
         const classList = target.classList
         if (classList.contains('select')) {
             if (original === target) return
-            if (original.hasAttribute(SELECT_VALUE)) {
+            const selectValueChecker = it => it.hasAttribute(SELECT_VALUE)
+            // 判断是否需要修正点击区域（点击到选择框的选项的子标签时需要进行修正）
+            const needFix = findParentTag(original, item => item.classList?.contains('items')) && !selectValueChecker(original)
+            if (needFix)
+                original = findParentTag(original, selectValueChecker)
+            if (selectValueChecker(original)) {
                 target.getElementsByClassName('value')[0].innerHTML = original.innerHTML
                 const value = original.getAttribute(SELECT_VALUE)
                 target.setAttribute(SELECT_VALUE, value)
