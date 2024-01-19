@@ -1,4 +1,4 @@
-import {KRICH_EDITOR, statusCheckCache} from '../global-fileds'
+import {KRICH_EDITOR, markStatusCacheInvalid, statusCheckCache} from '../global-fileds'
 import {replaceElement} from '../utils/dom'
 import {KRange, setCursorPosition} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
@@ -12,7 +12,7 @@ export function registryKeyboardEvent() {
             case 'Backspace': case 'Delete':
                 return () => {
                     if (KRICH_EDITOR.children.length === 1 && KRICH_EDITOR.firstChild.textContent.length === 0) {
-                        statusCheckCache = false
+                        markStatusCacheInvalid()
                     }
                     syncButtonsStatus(KRange.activated().item.startContainer)
                 }
