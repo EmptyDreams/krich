@@ -1,6 +1,3 @@
-import {readSelectedColor} from './utils/tools'
-import {editorRange} from './events/range-monitor'
-
 /**
  * 编辑器容器
  * @type {HTMLElement}
@@ -50,14 +47,6 @@ export function initContainerQuery(container) {
     KRICH_CONTAINER = container
     KRICH_EDITOR = container.getElementsByClassName('krich-editor')[0]
     KRICH_TOOL_BAR = container.getElementsByClassName('krich-tools')[0]
-    for (let child of KRICH_TOOL_BAR.children) {
-        const dataId = child.getAttribute(DATA_ID)
-        behaviors[dataId].button = child
-        if (child.classList.contains('color')) {
-            child.setAttribute(SELECT_VALUE, readSelectedColor(child))
-            child.getElementsByTagName('input')[0].onblur = () => editorRange?.active?.()
-        }
-    }
 }
 
 /** 标记状态检查缓存过时 */

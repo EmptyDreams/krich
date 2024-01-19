@@ -6,7 +6,7 @@ import {
     DATA_ID,
     initContainerQuery,
     KRICH_TOOL_BAR,
-    markStatusCacheInvalid,
+    markStatusCacheInvalid, SELECT_VALUE,
     statusCheckCache
 } from './global-fileds'
 import {KRange} from './utils/range'
@@ -14,7 +14,8 @@ import {registryBeforeInputEventListener} from './events/before-input'
 import {compareBtnListStatusWith} from './utils/btn'
 import {registryKeyboardEvent} from './events/keyboard-event'
 import {registryMouseClickEvent} from './events/mouse-click-event'
-import {registryRangeMonitor} from './events/range-monitor'
+import {editorRange, registryRangeMonitor} from './events/range-monitor'
+import {readSelectedColor} from './utils/tools'
 
 export {behaviors}
 
@@ -25,15 +26,7 @@ export {behaviors}
  * @param optional {string|Element} 元素选择器或容器
  */
 export function initEditor(optional) {
-    const container = typeof optional === 'string' ? document.querySelector(optional) : optional
-    console.assert(!!container.firstChild, "指定的容器内容不为空：", container)
-    container.insertAdjacentHTML('beforebegin', `<style>${krichStyle}</style>`)
-    container.innerHTML = `<div class="krich-tools">${
-        Object.getOwnPropertyNames(behaviors)
-            .map(it => behaviors[it].render())
-            .join('')
-    }</div><div class="krich-editor" spellcheck contenteditable><p><br></p></div>`
-    initContainerQuery(container)
+    initContainer(optional)
     registryMouseClickEvent()
     registryKeyboardEvent()
     registryRangeMonitor()
@@ -60,4 +53,28 @@ export function initEditor(optional) {
             }
         }, 0)
     })
+}
+
+/**
+ * 初始化容器
+ * @param optional {string|Element} 元素选择器或容器
+ */
+function initContainer(optional) {
+    const container = typeof optional === 'string' ? document.querySelector(optional) : optional
+    console.assert(!!container.firstChild, "指定的容器内容不为空：", container)
+    container.insertAdjacentHTML('beforebegin', `<style>${krichStyle}</style>`)
+    container.innerHTML = `<div class="krich-tools">${
+        Object.getOwnPropertyNames(behaviors)
+            .map(it => behaviors[it].render())
+            .join('')
+    }</div><div class="krich-editor" spellcheck contenteditable><p><br></p></div>`
+    initContainerQuery(container)
+    for (let child of KRICH_TOOL_BAR.children) {
+        const dataId = child.getAttribute(DATA_ID)
+        behaviors[dataId].button = child
+        if (child.classList.contains('color')) {
+            child.setAttribute(SELECT_VALUE, readSelectedColor(child))
+            child.getElementsByTagName('input')[0].onblur = () => editorRange?.active?.()
+        }
+    }
 }
