@@ -5,6 +5,14 @@ import config from './rollup.config.common.mjs'
 
 // noinspection SpellCheckingInspection
 config.plugins.push(
+    replace({
+        preventAssignment: true,
+        values: {
+            'const ': 'let ',
+            '!==': '!=',
+            '===': '=='
+        }
+    }),
     terser({
         compress: {
             sequences: true,
@@ -16,14 +24,6 @@ config.plugins.push(
             drop_console: true,
             passes: 2,
             ecma: 2015
-        }
-    }),
-    replace({
-        preventAssignment: true,
-        values: {
-            'const ': 'let ',
-            '!==': '!=',
-            '===': '=='
         }
     })
 )
