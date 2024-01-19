@@ -23,12 +23,11 @@ export const optional = {
                             `var ${outputOptions.name} = function(_optional) {\n    const exports = {}`
                         ).replace(/}\)\({}\);\n$/, '}')
                     } else {
-                        const startIndex = code.lastIndexOf('// ESM：封装起点')
                         const endIndex = code.lastIndexOf('// ESM：封装终点')
-                        const subCode = code.substring(startIndex, endIndex)
+                        const subCode = code.substring(0, endIndex)
                         const exportList = code.substring(endIndex + 11)
                             .match(/export\s*{\s*([^}]*)\s*}/)[1]
-                        value.code = code.substring(0, startIndex) + `
+                        value.code = `
                             const ${outputOptions.name} = function(_optional) {
                                 ${subCode}
                                 return {
