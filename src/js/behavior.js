@@ -15,7 +15,15 @@ import backgroundStyle from '../resources/html/tools/background.html'
 import ulStyle from '../resources/html/tools/ul.html'
 import olStyle from '../resources/html/tools/ol.html'
 import multiStyle from '../resources/html/tools/multi.html'
-import {behaviors, initBehaviors, KRICH_CONTAINER, SELECT_VALUE, TITLE_LIST, TOP_LIST} from './global-fileds'
+import {
+    behaviors,
+    initBehaviors,
+    KRICH_CONTAINER,
+    KRICH_EDITOR,
+    SELECT_VALUE,
+    TITLE_LIST,
+    TOP_LIST
+} from './global-fileds'
 import {behaviorHeader} from './behaviors/header'
 import {behaviorBlockquote} from './behaviors/blockquote'
 import {KRange, setCursorPositionAfter} from './utils/range'
@@ -205,7 +213,9 @@ export function removeStylesInRange(range, ...behaviors) {
         tmpBox.querySelectorAll(
             behaviors.map(it => it.exp).join(',')
         ).forEach(removeNodeReserveChild)
-        removeNodeReserveChild(tmpBox)
+    }
+    for (let tmp of KRICH_EDITOR.getElementsByClassName('tmp')) {
+        removeNodeReserveChild(tmp)
     }
     range.deserialized(offlineData)
     return !boxTop
