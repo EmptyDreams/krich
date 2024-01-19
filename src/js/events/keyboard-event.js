@@ -1,4 +1,4 @@
-import {KRICH_EDITOR, markStatusCacheInvalid, statusCheckCache} from '../global-fileds'
+import {KRICH_EDITOR, markStatusCacheInvalid} from '../global-fileds'
 import {replaceElement} from '../utils/dom'
 import {KRange, setCursorPosition} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'

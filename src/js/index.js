@@ -5,16 +5,17 @@ import {
     behaviors,
     DATA_ID,
     initContainerQuery,
-    KRICH_CONTAINER,
-    KRICH_EDITOR, KRICH_TOOL_BAR,
+    KRICH_TOOL_BAR,
     markStatusCacheInvalid,
     SELECT_VALUE, statusCheckCache
 } from './global-fileds'
 import {KRange} from './utils/range'
 import {registryBeforeInputEventListener} from './events/before-input'
-import {compareBtnListStatusWith, syncButtonsStatus} from './utils/btn'
-import {getElementBehavior, parseRgbToHex, readSelectedColor} from './utils/tools'
+import {compareBtnListStatusWith} from './utils/btn'
+import {readSelectedColor} from './utils/tools'
 import {registryKeyboardEvent} from './events/keyboard-event'
+import {registryMouseClickEvent} from './events/mouse-click-event'
+import {editorRange, registryRangeMonitor} from './events/range-monitor'
 
 export {behaviors}
 
@@ -59,76 +60,12 @@ export function initEditor(selector, elements) {
         behaviors[dataId].button = child
         if (child.classList.contains('color')) {
             child.setAttribute(SELECT_VALUE, readSelectedColor(child))
-            child.getElementsByTagName('input')[0].onblur = () => prevRange?.active?.()
+            child.getElementsByTagName('input')[0].onblur = () => editorRange?.active?.()
         }
     }
-    KRICH_TOOL_BAR.addEventListener('click', event => {
-        /** @type {HTMLElement} */
-        const original = event.target
-        let target = original
-        if (target.classList.contains('krich-tools')) return
-        let type, dataKey
-        while (true) {
-            dataKey = target.getAttribute(DATA_ID)
-            if (dataKey) {
-                type = dataKey
-                break
-            }
-            target = target.parentNode
-        }
-        const range = prevRange
-        const classList = target.classList
-        if (classList.contains('select')) {
-            if (original === target) return
-            if (original.hasAttribute(SELECT_VALUE)) {
-                target.getElementsByClassName('value')[0].innerHTML = original.innerHTML
-                const value = original.getAttribute(SELECT_VALUE)
-                target.setAttribute(SELECT_VALUE, value)
-            } else if (original.hasAttribute('title')) {
-                target.getElementsByClassName('value')[0]
-                    .setAttribute('style', original.getAttribute('style'))
-            } else if (original.classList.contains('submit')) {
-                const input = original.previousElementSibling
-                const value = input.value
-                    .replaceAll(/\s/g, '')
-                    .replaceAll('，', ',')
-                    .toLowerCase()
-                const color = parseRgbToHex(value)
-                if (color) {
-                    input.classList.remove('error')
-                    target.getElementsByClassName('value')[0]
-                        .setAttribute('style', 'background:' + color)
-                } else {
-                    return input.classList.add('error')
-                }
-            } else return
-        } else {
-            target.classList.toggle('active')
-            if (getElementBehavior(target).noStatus) {
-                setTimeout(() => target.classList.remove('active'), 333)
-            }
-        }
-        const correct = behaviors[dataKey].onclick?.(range, target, event)
-        if (correct) range.active()
-        markStatusCacheInvalid()
-    })
+    registryMouseClickEvent()
     registryKeyboardEvent()
-    /** @type {KRange|undefined} */
-    let prevRange
-    document.addEventListener('selectionchange', () => {
-        if (!KRICH_CONTAINER.contains(document.activeElement)) return prevRange = null
-        if (KRICH_EDITOR !== document.activeElement) return
-        const kRange = KRange.activated()
-        const range = kRange.item
-        const prev = prevRange?.item
-        if (!range.collapsed) {
-            const lca = range.commonAncestorContainer
-            syncButtonsStatus(lca.firstChild ?? lca)
-        } else if (!prev?.collapsed || range.endContainer !== prev?.endContainer) {
-            syncButtonsStatus(range.startContainer)
-        }
-        prevRange = kRange
-    })
+    registryRangeMonitor()
     registryBeforeInputEventListener(KRICH_TOOL_BAR, event => {
         // noinspection JSUnresolvedReference
         const data = event.data
