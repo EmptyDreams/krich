@@ -1,4 +1,4 @@
-import {KRICH_EDITOR, KRICH_TOOL_BAR, statusCheckCache} from '../global-fileds'
+import {KRICH_EDITOR, statusCheckCache} from '../global-fileds'
 import {replaceElement} from '../utils/dom'
 import {KRange, setCursorPosition} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
@@ -14,7 +14,7 @@ export function registryKeyboardEvent() {
                     if (KRICH_EDITOR.children.length === 1 && KRICH_EDITOR.firstChild.textContent.length === 0) {
                         statusCheckCache = false
                     }
-                    syncButtonsStatus(KRICH_TOOL_BAR, KRange.activated().item.startContainer)
+                    syncButtonsStatus(KRange.activated().item.startContainer)
                 }
         }
     }

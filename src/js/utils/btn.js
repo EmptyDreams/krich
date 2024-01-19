@@ -2,7 +2,7 @@
     本文件用于放置与操作编辑器工具栏按钮相关的 util 函数
 */
 
-import {SELECT_VALUE} from '../global-fileds'
+import {KRICH_TOOL_BAR, SELECT_VALUE} from '../global-fileds'
 import {getElementBehavior} from './tools'
 
 /**
@@ -28,22 +28,20 @@ export function compareBtnStatusWith(element) {
 
 /**
  * 判断一个节点持有的样式和按钮列表的样式是否相同
- * @param buttonContainer {HTMLElement} 按钮的父级控件
  * @param node {Node} 节点
  * @return {null|HTMLElement[]} 返回按钮和节点状态不一致的按钮列表
  */
-export function compareBtnListStatusWith(buttonContainer, node) {
+export function compareBtnListStatusWith(node) {
     const result = []
-    findDiffButton(buttonContainer, node, (_, item) => result.push(item))
+    findDiffButton(node, (_, item) => result.push(item))
     return result.length === 0 ? null : result
 }
 
 /**
  * 同步按钮和指定节点的状态
- * @param buttonContainer {HTMLElement} 按钮的父级标签
  * @param node {Node} 文本节点
  */
-export function syncButtonsStatus(buttonContainer, node) {
+export function syncButtonsStatus(node) {
     const syncHelper = (button, element) => {
         const setter = element ? getElementBehavior(element).setter : null
         const buttonClassList = button.classList
@@ -65,16 +63,15 @@ export function syncButtonsStatus(buttonContainer, node) {
             buttonClassList.remove('active')
         }
     }
-    findDiffButton(buttonContainer, node, syncHelper)
+    findDiffButton(node, syncHelper)
 }
 
 /**
  * 查找与指定元素包含的样式不相同的所有按钮
- * @param buttonContainer {HTMLElement} 按钮列表的父级标签
  * @param node {Node} 文本节点对象
  * @param consumer {function(btn: HTMLElement, item: HTMLElement?)} 当查询到不同时触发的函数
  */
-function findDiffButton(buttonContainer, node, consumer) {
+function findDiffButton(node, consumer) {
     /** @type {Set<ButtonBehavior>} */
     const record = new Set()
     let item = node.parentElement
@@ -87,7 +84,7 @@ function findDiffButton(buttonContainer, node, consumer) {
         }
         item = item.parentElement
     }
-    for (let child of buttonContainer.children) {
+    for (let child of KRICH_TOOL_BAR.children) {
         const behavior = getElementBehavior(child)
         const button = behavior.button
         if (!behavior.noStatus && !record.has(behavior) && isActive(button)) {

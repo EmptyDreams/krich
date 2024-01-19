@@ -6,7 +6,7 @@ import {
     DATA_ID,
     initContainerQuery,
     KRICH_CONTAINER,
-    KRICH_EDITOR,
+    KRICH_EDITOR, KRICH_TOOL_BAR,
     markStatusCacheInvalid,
     SELECT_VALUE, statusCheckCache
 } from './global-fileds'
@@ -54,9 +54,7 @@ export function initEditor(selector, elements) {
             .join('')
     }</div><div class="krich-editor" spellcheck contenteditable><p><br></p></div>`
     initContainerQuery(container)
-    const editorTools = container.getElementsByClassName('krich-tools')[0]
-    const editorContent = container.getElementsByClassName('krich-editor')[0]
-    for (let child of editorTools.children) {
+    for (let child of KRICH_TOOL_BAR.children) {
         const dataId = child.getAttribute(DATA_ID)
         behaviors[dataId].button = child
         if (child.classList.contains('color')) {
@@ -64,7 +62,7 @@ export function initEditor(selector, elements) {
             child.getElementsByTagName('input')[0].onblur = () => prevRange?.active?.()
         }
     }
-    editorTools.addEventListener('click', event => {
+    KRICH_TOOL_BAR.addEventListener('click', event => {
         /** @type {HTMLElement} */
         const original = event.target
         let target = original
@@ -125,13 +123,13 @@ export function initEditor(selector, elements) {
         const prev = prevRange?.item
         if (!range.collapsed) {
             const lca = range.commonAncestorContainer
-            syncButtonsStatus(editorTools, lca.firstChild ?? lca)
+            syncButtonsStatus(lca.firstChild ?? lca)
         } else if (!prev?.collapsed || range.endContainer !== prev?.endContainer) {
-            syncButtonsStatus(editorTools, range.startContainer)
+            syncButtonsStatus(range.startContainer)
         }
         prevRange = kRange
     })
-    registryBeforeInputEventListener(editorContent, event => {
+    registryBeforeInputEventListener(KRICH_TOOL_BAR, event => {
         // noinspection JSUnresolvedReference
         const data = event.data
         if (statusCheckCache || !data) return
@@ -141,7 +139,7 @@ export function initEditor(selector, elements) {
             let range = kRange.item
             if (!range.collapsed) return
             const {startContainer, startOffset} = range
-            const buttonList = compareBtnListStatusWith(editorTools, startContainer)
+            const buttonList = compareBtnListStatusWith(startContainer)
             if (!buttonList) return
             const newRange = new KRange()
             newRange.setStart(startContainer, startOffset - data.length)
