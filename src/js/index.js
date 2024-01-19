@@ -22,34 +22,13 @@ export {behaviors}
 /**
  * 在指定元素内初始化编辑器
  *
- * 内置支持以下选项：
- *
- * ```
- * headerSelect: 标题或正文选择器
- * blockquote: 引用
- * bold: 加粗
- * underline: 下划线
- * italic: 斜体
- * through: 删除线
- * code: 行内代码
- * sup: 上标
- * sub: 下标
- * clear: 清除格式
- * color: 文本颜色
- * background: 文本背景色
- * ul: 无序列表
- * ol: 有序列表
- * multi: 多选列表
- * ```
- *
  * @param selector {string} 元素选择器
- * @param elements {{[key: string]: (boolean | any)}} 要显示的选项元素，key 表示选项名称，填 true 或 false 表示启用或禁用，填其他值表示具体配置
  */
-export function initEditor(selector, elements) {
+export function initEditor(selector) {
     const container = document.querySelector(selector)
     container.insertAdjacentHTML('beforebegin', `<style>${krichStyle}</style>`)
     container.innerHTML = `<div class="krich-tools">${
-        Object.getOwnPropertyNames(elements)
+        Object.getOwnPropertyNames(behaviors)
             .map(it => behaviors[it].render())
             .join('')
     }</div><div class="krich-editor" spellcheck contenteditable><p><br></p></div>`
