@@ -1,8 +1,9 @@
 import serve from 'rollup-plugin-serve'
+import {esmOutput, iifeOutput, optional} from './rollup.config.common.mjs'
 
-import config from './rollup.config.common.mjs'
+const customOptional = {...optional}
 
-config.plugins.push(
+customOptional.plugins.push(
     serve({
         open: false,
         contentBase: 'dist',
@@ -13,4 +14,10 @@ config.plugins.push(
 )
 
 // noinspection JSUnusedGlobalSymbols
-export default config
+export default [{
+    output: iifeOutput,
+    ...customOptional
+}, {
+    output: esmOutput,
+    ...customOptional
+}]

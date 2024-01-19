@@ -3,17 +3,8 @@ import resolve from '@rollup/plugin-node-resolve'
 import postcss from 'rollup-plugin-postcss'
 import postcssImport from 'postcss-import'
 
-// noinspection JSUnusedGlobalSymbols
-export default {
+export const optional = {
     input: 'src/js/index.js',
-    output: {
-        file: 'dist/krich.js',
-        format: 'iife',
-        name: 'krich',
-        generatedCode: {
-            constBindings: true
-        }
-    },
     plugins: [
         resolve({
             browser: true
@@ -23,13 +14,29 @@ export default {
             generateBundle(outputOptions, bundle) {
                 for (let fileName in bundle) {
                     const value = bundle[fileName]
-                    if (value.type === 'chunk') {
-                        /** @type {string} */
-                        const code = value.code
+                    if (value.type !== 'chunk') continue
+                    /** @type {string} */
+                    const code = value.code
+                    if (outputOptions.format === 'iife') {
                         value.code = code.replace(
                             new RegExp(`^(var\\s${outputOptions.name}\\s=\\s\\(function\\s\\(exports\\)\\s{)`),
-                            `var KRich = function(_optional) {\n    const exports = {}`
+                            `var ${outputOptions.name} = function(_optional) {\n    const exports = {}`
                         ).replace(/}\)\({}\);\n$/, '}')
+                    } else {
+                        const startIndex = code.lastIndexOf('// ESM：封装起点')
+                        const endIndex = code.lastIndexOf('// ESM：封装终点')
+                        const subCode = code.substring(startIndex, endIndex)
+                        const exportList = code.substring(endIndex + 11)
+                            .match(/export\s*{\s*([^}]*)\s*}/)[1]
+                        value.code = code.substring(0, startIndex) + `
+                            const ${outputOptions.name} = function(_optional) {
+                                ${subCode}
+                                return {
+                                    ${exportList}
+                                }
+                            }
+                            export {${outputOptions.name}}
+                        `
                     }
                 }
             }
@@ -56,4 +63,24 @@ export default {
             plugins: [postcssImport()]
         })
     ]
+}
+
+export const iifeOutput = {
+    dir: 'dist/',
+    entryFileNames: 'krich.js',
+    format: 'iife',
+    name: 'KRich',
+    generatedCode: {
+        constBindings: true
+    }
+}
+
+export const esmOutput = {
+    dir: 'dist/',
+    entryFileNames: 'krich-es.js',
+    format: 'es',
+    name: 'KRich',
+    generatedCode: {
+        constBindings: true
+    }
 }

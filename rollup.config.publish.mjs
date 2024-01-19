@@ -1,10 +1,13 @@
 import terser from '@rollup/plugin-terser'
 import replace from '@rollup/plugin-replace'
+import {esmOutput, iifeOutput, optional} from './rollup.config.common.mjs'
 
-import config from './rollup.config.common.mjs'
+const customOptional = {
+    ...optional
+}
 
 // noinspection SpellCheckingInspection
-config.plugins.push(
+customOptional.plugins.push(
     replace({
         preventAssignment: true,
         values: {
@@ -29,4 +32,10 @@ config.plugins.push(
 )
 
 // noinspection JSUnusedGlobalSymbols
-export default config
+export default [{
+    output: iifeOutput,
+    ...customOptional
+}, {
+    output: esmOutput,
+    ...customOptional
+}]
