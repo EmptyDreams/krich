@@ -20,12 +20,13 @@ export {behaviors}
 
 // noinspection JSUnusedGlobalSymbols
 /**
- * 在指定元素内初始化编辑器
+ * 在指定容器内初始化编辑器，该容器应当是一个内容为空的标签
  *
- * @param selector {string} 元素选择器
+ * @param optional {string|Element} 元素选择器或容器
  */
-export function initEditor(selector) {
-    const container = document.querySelector(selector)
+export function initEditor(optional) {
+    const container = typeof optional === 'string' ? document.querySelector(optional) : optional
+    console.assert(!container.firstChild, "指定的容器内容不为空：", container)
     container.insertAdjacentHTML('beforebegin', `<style>${krichStyle}</style>`)
     container.innerHTML = `<div class="krich-tools">${
         Object.getOwnPropertyNames(behaviors)
