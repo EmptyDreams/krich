@@ -1,5 +1,6 @@
 import {behaviors, DATA_ID, KRICH_TOOL_BAR, markStatusCacheInvalid, SELECT_VALUE} from '../global-fileds'
 import {getElementBehavior, parseRgbToHex} from '../utils/tools'
+import {editorRange} from './range-monitor'
 
 export function registryMouseClickEvent() {
     KRICH_TOOL_BAR.addEventListener('click', event => {
@@ -16,7 +17,7 @@ export function registryMouseClickEvent() {
             }
             target = target.parentNode
         }
-        const range = prevRange
+        const range = editorRange
         const classList = target.classList
         if (classList.contains('select')) {
             if (original === target) return
