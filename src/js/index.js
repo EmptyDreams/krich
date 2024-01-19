@@ -17,15 +17,18 @@ import {registryMouseClickEvent} from './events/mouse-click-event'
 import {editorRange, registryRangeMonitor} from './events/range-monitor'
 import {readSelectedColor} from './utils/tools'
 
-export {behaviors}
-
 // noinspection JSUnusedGlobalSymbols
+export const _tmp_obj = {}
+
+// noinspection JSUnresolvedReference
+init(_optional)
+
 /**
  * 在指定容器内初始化编辑器，该容器应当是一个内容为空的标签
  *
  * @param optional {string|Element} 元素选择器或容器
  */
-export function initEditor(optional) {
+function init(optional) {
     initContainer(optional)
     registryMouseClickEvent()
     registryKeyboardEvent()

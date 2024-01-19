@@ -9,7 +9,10 @@ export default {
     output: {
         file: 'dist/krich.js',
         format: 'iife',
-        name: 'krich'
+        name: 'krich',
+        generatedCode: {
+            constBindings: true
+        }
     },
     plugins: [
         resolve({
@@ -25,7 +28,7 @@ export default {
                         const code = value.code
                         value.code = code.replace(
                             new RegExp(`^(var\\s${outputOptions.name}\\s=\\s\\(function\\s\\(exports\\)\\s{)`),
-                            `var KRich = function() {\n    const exports = {}`
+                            `var KRich = function(_optional) {\n    const exports = {}`
                         ).replace(/}\)\({}\);\n$/, '}')
                     }
                 }
