@@ -75,6 +75,7 @@ export function initEditor(selector, elements) {
         const range = prevRange
         const classList = target.classList
         if (classList.contains('select')) {
+            if (original === target) return
             if (original.hasAttribute(SELECT_VALUE)) {
                 target.getElementsByClassName('value')[0].innerHTML = original.innerHTML
                 const value = original.getAttribute(SELECT_VALUE)
