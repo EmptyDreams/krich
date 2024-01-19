@@ -7,15 +7,14 @@ import {
     initContainerQuery,
     KRICH_TOOL_BAR,
     markStatusCacheInvalid,
-    SELECT_VALUE, statusCheckCache
+    statusCheckCache
 } from './global-fileds'
 import {KRange} from './utils/range'
 import {registryBeforeInputEventListener} from './events/before-input'
 import {compareBtnListStatusWith} from './utils/btn'
-import {readSelectedColor} from './utils/tools'
 import {registryKeyboardEvent} from './events/keyboard-event'
 import {registryMouseClickEvent} from './events/mouse-click-event'
-import {editorRange, registryRangeMonitor} from './events/range-monitor'
+import {registryRangeMonitor} from './events/range-monitor'
 
 export {behaviors}
 
@@ -55,14 +54,6 @@ export function initEditor(selector, elements) {
             .join('')
     }</div><div class="krich-editor" spellcheck contenteditable><p><br></p></div>`
     initContainerQuery(container)
-    for (let child of KRICH_TOOL_BAR.children) {
-        const dataId = child.getAttribute(DATA_ID)
-        behaviors[dataId].button = child
-        if (child.classList.contains('color')) {
-            child.setAttribute(SELECT_VALUE, readSelectedColor(child))
-            child.getElementsByTagName('input')[0].onblur = () => editorRange?.active?.()
-        }
-    }
     registryMouseClickEvent()
     registryKeyboardEvent()
     registryRangeMonitor()
