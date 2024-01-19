@@ -25,7 +25,7 @@ export default {
                         const code = value.code
                         value.code = code.replace(
                             new RegExp(`^(var\\s${outputOptions.name}\\s=\\s\\(function\\s\\(exports\\)\\s{)`),
-                            `var ${outputOptions.name} = function() {\n    const exports = {}`
+                            `var KRich = function() {\n    const exports = {}`
                         ).replace(/}\)\({}\);\n$/, '}')
                     }
                 }
