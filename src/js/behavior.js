@@ -25,7 +25,6 @@ import {
     TOP_LIST
 } from './global-fileds'
 import {behaviorHeader} from './behaviors/header'
-import {behaviorBlockquote} from './behaviors/blockquote'
 import {KRange, setCursorPositionAfter} from './utils/range'
 import {findParentTag, splitElementByContainer, zipTree} from './utils/dom'
 import {createElement, readSelectedColor} from './utils/tools'
@@ -110,16 +109,14 @@ initBehaviors({
     ul: {
         noStatus: true,
         render: () => ulStyle,
-        onclick: () => {
-            // TODO
-        }
+        onclick: range => onclickMultiElementStructure(range, 'ul', '<li>', '</li>', '<br>'),
+        builder: () => createElement('ul')
     },
     ol: {
         noStatus: true,
         render: () => olStyle,
-        onclick: () => {
-            // TODO
-        }
+        onclick: range => onclickMultiElementStructure(range, 'ol', '<li>', '</li>', '<br>'),
+        builder: () => createElement('ol')
     },
     multi: {
         noStatus: true,
