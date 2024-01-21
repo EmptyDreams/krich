@@ -68,9 +68,9 @@ export function onclickMultiElementStructure(range, key, lineHead, lineTail, emp
         const selectHtml = (start, end) => {
             const array = html.substring(start, end)
                 .split(lineTail)
-                .map(it => `<p>${it.substring(it.indexOf(lineHead) + headLength)}</p>`)
+            array.pop()
             prevSelectedLine = array.length
-            return array.join('')
+            return array.map(it => `<p>${it.substring(it.indexOf(lineHead) + headLength)}</p>`).join('')
         }
         /** 清除整个结构 */
         const removeAll = () => {
