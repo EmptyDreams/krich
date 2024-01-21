@@ -1,7 +1,12 @@
 {
   "name": "krich",
   "version": "0.0.1",
-  "main": "dist/krich.js",
+  "exports": {
+    ".": {
+      "import": "./dist/krich-es.js",
+      "require": "./dist/krich.js"
+    }
+  },
   "scripts": {
     "build": "npx rollup -c -w",
     "prepublishOnly": "npx rollup -c rollup.config.publish.mjs"
