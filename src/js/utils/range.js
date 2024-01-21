@@ -93,9 +93,7 @@ export class KRange {
                     newRange.setStart(startContainer, startOffset)
                 }
                 if (endStatus) {
-                    const end = (endOffset === 0) ?
-                        prevSiblingText(endContainer) :
-                        endContainer.childNodes[endOffset - 1]
+                    const end = endOffset === 0 ? prevSiblingText(endContainer) : endContainer.childNodes[endOffset - 1]
                     setEndAfter(end)
                 } else {
                     newRange.setEnd(endContainer, endOffset)
