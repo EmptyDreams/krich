@@ -34,7 +34,7 @@ export const optional = {
                                     ${exportList}
                                 }
                             }
-                            export {${outputOptions.name}}
+                            export default {${outputOptions.name}}
                         `
                     }
                 }
