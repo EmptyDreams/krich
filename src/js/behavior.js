@@ -107,12 +107,14 @@ initBehaviors({
         builder: btn => createElement('span', {style: 'background:' + readSelectedColor(btn)})
     },
     ul: {
+        exp: 'ul',
         noStatus: true,
         render: () => ulStyle,
         onclick: range => onclickMultiElementStructure(range, 'ul', '<li>', '</li>', '<br>'),
         builder: () => createElement('ul')
     },
     ol: {
+        exp: 'ol',
         noStatus: true,
         render: () => olStyle,
         onclick: range => onclickMultiElementStructure(range, 'ol', '<li>', '</li>', '<br>'),
