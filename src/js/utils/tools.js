@@ -64,18 +64,20 @@ export function findIndexInCollection(children, item) {
 }
 
 /**
- * 查找指定字符在字符串指定区域中出现的次数
- * @param item {string} 指定字符
+ * 查找指定字符串在字符串指定区域中出现的次数
  * @param str {string} 字符串
+ * @param item {string} 指定字符串
  * @param startIndex {number} 起始下标（包含）
  * @param endIndex {number?} 终止下标（不包含，缺省查询到结尾）
  */
-export function countChar(item, str, startIndex, endIndex) {
-    console.assert(item.length === 1, '[item] 的长度应当等于 1', item)
+export function countCharacters(str, item, startIndex, endIndex) {
     const end = endIndex ?? str.length
     let count = 0
-    for (let i = startIndex; i < end; ++i) {
-        if (str[i] === item) ++count
+    for (let i = startIndex; i < end;) {
+        const next = str.indexOf(item, i)
+        if (next < 0) break
+        ++count
+        i += item.length
     }
     return count
 }

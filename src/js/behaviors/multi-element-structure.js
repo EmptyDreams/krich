@@ -1,6 +1,6 @@
 import {findParentTag} from '../utils/dom'
 import {behaviors, KRICH_TOOL_BAR} from '../global-fileds'
-import {countChar} from '../utils/tools'
+import {countCharacters} from '../utils/tools'
 import {setCursorPositionAfter, setCursorPositionIn} from '../utils/range'
 /**
  *
@@ -75,7 +75,7 @@ export function onclickMultiElementStructure(range, key, lineHead, lineTail, emp
         }
         /** 清除整个结构 */
         const removeAll = () => {
-            const index = startOffset - countChar(lineTail, html, 0, startOffset)
+            const index = startOffset - countCharacters(html, lineTail, 0, startOffset)
             startTopContainer.insertAdjacentHTML('afterend', selectHtml(0))
             const next = startTopContainer.nextSibling
             startTopContainer.remove()
