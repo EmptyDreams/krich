@@ -3,6 +3,7 @@ import resolve from '@rollup/plugin-node-resolve'
 import postcss from 'rollup-plugin-postcss'
 import postcssImport from 'postcss-import'
 
+// noinspection JSUnusedGlobalSymbols
 export const optional = {
     input: 'src/js/index.js',
     plugins: [
@@ -34,7 +35,7 @@ export const optional = {
                                     ${exportList}
                                 }
                             }
-                            export default {${outputOptions.name}}
+                            export default ${outputOptions.name}
                         `
                     }
                 }
