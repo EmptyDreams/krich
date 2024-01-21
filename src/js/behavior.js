@@ -41,7 +41,7 @@ initBehaviors({
     blockquote: {
         exp: 'blockquote',
         render: () => blockquoteStyle,
-        onclick: range => onclickMultiElementStructure(range, 'blockquote', '', '\n', ''),
+        onclick: range => onclickMultiElementStructure(range, 'blockquote', '<p>', '</p>', '<br>'),
         verify: () => true,
         builder: () => createElement('blockquote')
     },
@@ -110,14 +110,14 @@ initBehaviors({
         exp: 'ul',
         noStatus: true,
         render: () => ulStyle,
-        onclick: range => onclickMultiElementStructure(range, 'ul', '<li>', '</li>', '<br>'),
+        onclick: range => onclickMultiElementStructure(range, 'ul', '<li><p>', '</p></li>', '<br>'),
         builder: () => createElement('ul')
     },
     ol: {
         exp: 'ol',
         noStatus: true,
         render: () => olStyle,
-        onclick: range => onclickMultiElementStructure(range, 'ol', '<li>', '</li>', '<br>'),
+        onclick: range => onclickMultiElementStructure(range, 'ol', '<li><p>', '</p></li>', '<br>'),
         builder: () => createElement('ol')
     },
     multi: {

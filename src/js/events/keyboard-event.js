@@ -1,7 +1,8 @@
 import {KRICH_EDITOR, markStatusCacheInvalid} from '../global-fileds'
-import {replaceElement} from '../utils/dom'
-import {KRange, setCursorPosition} from '../utils/range'
+import {findParentTag, getLastTextNode, replaceElement} from '../utils/dom'
+import {KRange, setCursorPosition, setCursorPositionAfter} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
+import {createElement} from '../utils/tools'
 
 export function registryKeyboardEvent() {
     const switchTask = key => {
@@ -67,48 +68,37 @@ function deleteEvent(event) {
 }
 
 /**
- * 回车事件，用于在引用中按下回车时代替浏览器默认动作
- * @param event {Event}
+ * 回车事件
+ * @param event {KeyboardEvent}
  */
 function enterEvent(event) {
     const kRange = KRange.activated()
     const range = kRange.item
-    const lines = kRange.getAllTopElements()
-    const firstBlockquote = lines.find(it => it.nodeName === 'BLOCKQUOTE')
-    if (!firstBlockquote) return
-    event.preventDefault()
-    const {startOffset} = range
-    if (range.collapsed) {  // 如果没有选中任何内容，则直接键入换行
-        let textContent = firstBlockquote.textContent
-        if (startOffset >= textContent.length - 1 && textContent.endsWith('\n\n')) {
-            firstBlockquote.textContent = textContent.substring(0, textContent.length - 1)
-            const p = document.createElement('p')
-            p.innerHTML = '<br>'
-            firstBlockquote.insertAdjacentElement('afterend', p)
-            return setCursorPosition(p.firstChild, 0)
-        }
-        let interval = ''
-        if (!textContent.endsWith('\n')) interval = '\n'
-        firstBlockquote.textContent = textContent.substring(0, startOffset) + '\n' + textContent.substring(startOffset) + interval
-        setCursorPosition(firstBlockquote.firstChild, startOffset + 1)
-    } else if (lines.length === 1) {    // 如果是范围选择并且限制在一个引用内，则删除选中的部分并替换为换行符
-        const textContent = firstBlockquote.textContent
-        firstBlockquote.textContent = textContent.substring(0, startOffset) + '\n' + textContent.substring(range.endOffset)
-        setCursorPosition(firstBlockquote.firstChild, startOffset + 1)
-    } else {    // 如果是范围选择并且跨越了多个标签
-        const first = lines[0]
-        if (first.nodeName === 'BLOCKQUOTE') {
-            first.textContent += first.textContent.endsWith('\n') ? '\n' : '\n\n'
-            setCursorPosition(first.firstChild, first.textContent.length)
-        } else if (startOffset === 0) {
-            first.insertAdjacentHTML('beforebegin', '<p><br></p>')
-            first.innerHTML = '<br>'
-            setCursorPosition(first.firstChild, 0)
-        } else {
-            first.insertAdjacentHTML('afterend', '<p><br></p>')
-            setCursorPosition(first.nextSibling.firstChild, 0)
-        }
-        for (let i = 1; i < lines.length; i++)
-            lines[i].remove()
+    if (!range.collapsed) return
+    const {startContainer} = range
+    let element
+    const createLine = () => {
+        element = createElement('p')
+        element.innerHTML = '<br>'
     }
+    if (event.shiftKey) {
+        const pElement = findParentTag(startContainer, ['P'])
+        if (pElement) { // 如果在 p 标签中按下 Shift + Enter，则直接创建新行且不将输入指针后的内容放置在新的一行中
+            event.preventDefault()
+            createLine()
+            pElement.insertAdjacentElement('afterend', element)
+        }
+    } else {
+        const blockquote = findParentTag(startContainer, ['BLOCKQUOTE'])
+        if (blockquote) {   // 如果指针指向了引用结尾空行
+            if (getLastTextNode(blockquote) === startContainer && !startContainer.textContent) {
+                event.preventDefault()
+                createLine()
+                blockquote.insertAdjacentElement('afterend', element)
+                blockquote.lastChild.remove()
+            }
+        }
+    }
+    if (element)
+        setCursorPositionAfter(element)
 }

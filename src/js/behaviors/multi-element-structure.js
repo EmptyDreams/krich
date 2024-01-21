@@ -2,6 +2,7 @@ import {findParentTag} from '../utils/dom'
 import {behaviors, KRICH_TOOL_BAR} from '../global-fileds'
 import {countCharacters} from '../utils/tools'
 import {setCursorPositionAfter, setCursorPositionIn} from '../utils/range'
+
 /**
  *
  * @param range {KRange} 选择范围
