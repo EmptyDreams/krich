@@ -1,6 +1,6 @@
-import {KRICH_EDITOR, markStatusCacheInvalid} from '../global-fileds'
-import {findParentTag, getLastTextNode, replaceElement} from '../utils/dom'
-import {KRange, setCursorPosition, setCursorPositionAfter} from '../utils/range'
+import {behaviors, KRICH_EDITOR, markStatusCacheInvalid} from '../global-fileds'
+import {findParentTag, getFirstTextNode, getLastTextNode, replaceElement} from '../utils/dom'
+import {KRange, setCursorPosition, setCursorPositionAfter, setCursorPositionIn} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
 import {createElement} from '../utils/tools'
 
@@ -36,35 +36,26 @@ export function registryKeyboardEvent() {
 }
 
 /**
- * 删除事件，用于在引用中按下 backspace 时代替浏览器默认动作
- * @param event {Event}
+ * 删除事件
+ * @param event {KeyboardEvent}
  */
 function deleteEvent(event) {
     const range = KRange.activated().item
-    if (!range.collapsed) return
-    const {startOffset, startContainer} = range
-    const blockquote = startContainer.parentElement
-    // 当在编辑器开头按下删除键时阻止该动作，防止删掉空的 p 标签
-    if (startOffset === 0 && KRICH_EDITOR.firstChild === blockquote && blockquote.textContent.length === 0) {
+    if (!range.collapsed || range.startOffset !== 0) return
+    const {startContainer} = range
+    const topElement = findParentTag(startContainer, ['UL', 'OL', 'BLOCKQUOTE'])
+    if (topElement && getFirstTextNode(topElement) === startContainer) {
+        // 在引用、列表开头使用删除键时直接取消当前行的样式
         event.preventDefault()
-        if (blockquote.nodeName !== 'P')
-            blockquote.outerHTML = '<p><br></p>'
-        return
+        const element = topElement.firstElementChild
+        topElement.insertAdjacentElement('beforebegin', element)
+        element.outerHTML = element.outerHTML.match(/<p>.*<\/p>/)[0]
+        setCursorPositionIn(topElement.previousSibling, 0)
+        if (!topElement.firstChild) topElement.remove()
+    } else if (getFirstTextNode(KRICH_EDITOR) === startContainer) {
+        // 在编辑器开头按下删除键时屏蔽此次按键
+        event.preventDefault()
     }
-    // 如果光标不在引用开头则直接退出
-    if (startOffset !== 0 || blockquote.nodeName !== 'BLOCKQUOTE') return
-    event.preventDefault()
-    const html = blockquote.innerHTML
-    const endIndex = html.indexOf('\n')
-    const p = document.createElement('p')
-    if (endIndex < 0) { // 如果引用只有一行，则直接取消引用
-        replaceElement(blockquote, p)
-    } else {
-        p.innerHTML = endIndex === 0 ? '<br>' : html.substring(0, endIndex)
-        blockquote.innerHTML = html.substring(endIndex + 1)
-        blockquote.insertAdjacentElement('beforebegin', p)
-    }
-    setCursorPosition(p.firstChild, 0)
 }
 
 /**
@@ -72,8 +63,7 @@ function deleteEvent(event) {
  * @param event {KeyboardEvent}
  */
 function enterEvent(event) {
-    const kRange = KRange.activated()
-    const range = kRange.item
+    const range = KRange.activated().item
     if (!range.collapsed) return
     const {startContainer} = range
     let element
