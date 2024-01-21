@@ -30,6 +30,7 @@ import {KRange, setCursorPositionAfter} from './utils/range'
 import {findParentTag, splitElementByContainer, zipTree} from './utils/dom'
 import {createElement, readSelectedColor} from './utils/tools'
 import {handleTemplate} from './utils/template'
+import {onclickMultiElementStructure} from './behaviors/multi-element-structure'
 
 initBehaviors({
     headerSelect: {
@@ -41,8 +42,9 @@ initBehaviors({
     blockquote: {
         exp: 'blockquote',
         render: () => blockquoteStyle,
-        onclick: behaviorBlockquote,
-        verify: () => true
+        onclick: range => onclickMultiElementStructure(range, 'blockquote', '', '\n', ''),
+        verify: () => true,
+        builder: () => createElement('blockquote')
     },
     bold: {
         exp: 'b',
