@@ -23,25 +23,26 @@ export function onclickMultiElementStructure(range, key, lineHead, lineTail, emp
      */
     const structureChecker = item => item.matches?.(behavior.exp)
     /**
-     * 查找最近一行的起点
+     * 查找最近一行的起点或终点
      * @param structure {Element} 结构对象
-     * @param offset {number} 偏移量
+     * @param textNode {Node} 选区所在文本节点
+     * @param indexType {Boolean} 起点（false）或终点（true）
      * @return {number}
      */
-    const findLineStartIndex = (structure, offset) => {
-        const index = structure.innerHTML.lastIndexOf(lineTail, offset)
-        return index + headLength + (index < 0 ? 0 : tailLength)
-    }
-    /**
-     * 查找最近一行的终点（下标指向 tail 后面的第一个字符）
-     * @param structure {Element} 结构对象
-     * @param offset {number} 偏移量
-     * @return {number}
-     */
-    const findLineEndIndex = (structure, offset) => {
-        const html = structure.innerHTML
-        const index = html.indexOf(lineTail, offset)
-        return index < 0 ? html.length : index + tailLength
+    const findLineIndex = (structure, textNode, indexType) => {
+        let lineNode
+        for (let node = textNode; node !== structure; node = node.parentNode) {
+            lineNode = node
+        }
+        let index = 0
+        for (const line of structure.childNodes) {
+            if (line !== lineNode) {
+                index += line.outerHTML.length
+            }
+            else break
+        }
+        if (indexType) return index + lineNode.outerHTML.length
+        else return index
     }
     /**
      * 构建一个结构
@@ -84,8 +85,8 @@ export function onclickMultiElementStructure(range, key, lineHead, lineTail, emp
         }
         // 如果没有范围选中则判定为选中了全部
         if (range.item.collapsed) return removeAll()
-        const start = findLineStartIndex(startTopContainer, startOffset)
-        const end = findLineEndIndex(startTopContainer, endOffset)
+        const start = findLineIndex(startTopContainer, startContainer, false)
+        const end = findLineIndex(startTopContainer, endContainer, true)
         if (start === 0 && end === html.length) {   // 如果选中了所有行
             removeAll()
         } else if (start === 0) {   // 如果选区包含第一行
