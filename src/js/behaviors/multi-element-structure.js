@@ -6,26 +6,21 @@ import {KRange} from '../utils/range'
  * 多元素结构的点击事件
  * @param range {KRange} 选择范围
  * @param key {string} 在 behaviors 中的 key
- * @param lineHead {string} 每行打头的 HTML 语句
- * @param lineTail {string} 每行结尾的 HTML 语句
- * @param emptyBody {string} 当某一行为空时使用什么填充该行内容
+ * @param lineTagName {string?} 每行使用指定标签包裹时使用的标签名称
  */
-export function onclickMultiElementStructure(range, key, lineHead, lineTail, emptyBody) {
-    const offlineData = range.serialization()
-    console.assert(lineTail.length !== 0, 'lineTail 的值不能为空')
-    helper(range, key, lineHead, lineTail, emptyBody)
-    KRange.deserialized(offlineData).active()
+export function onclickMultiElementStructure(range, key, lineTagName) {
+    //const offlineData = range.serialization()
+    helper(range, key, lineTagName)
+    //KRange.deserialized(offlineData).active()
 }
 
 /**
  * 辅助函数，承载实际功能
  * @param range {KRange} 选择范围
  * @param key {string} 在 behaviors 中的 key
- * @param lineHead {string} 每行打头的 HTML 语句
- * @param lineTail {string} 每行结尾的 HTML 语句
- * @param emptyBody {string} 当某一行为空时使用什么填充该行内容
+ * @param lineTagName {string?} 每行使用指定标签包裹时使用的标签名称
  */
-function helper(range, key, lineHead, lineTail, emptyBody) {
+function helper(range, key, lineTagName) {
     const behavior = behaviors[key]
     /**
      * 检查指定标签是否是结构对象
@@ -35,14 +30,10 @@ function helper(range, key, lineHead, lineTail, emptyBody) {
     const structureChecker = item => item.matches?.(behavior.exp)
     /**
      * 构建一个结构
-     * @param html {string} 内嵌在结构当中的 HTML 代码
      * @return {HTMLElement}
      */
-    const buildStructure = html => {
-        const structure = behavior.builder(KRICH_TOOL_BAR.querySelector(`*[data-id="${key}"]`))
-        structure.innerHTML = html
-        return structure
-    }
+    const buildStructure = () =>
+        behavior.builder(KRICH_TOOL_BAR.querySelector(`*[data-id="${key}"]`))
     const {startContainer, endContainer} = range.item
     const startTopContainer = findParentTag(startContainer, structureChecker)
     const endTopContainer = findParentTag(endContainer, structureChecker)
@@ -99,7 +90,7 @@ function helper(range, key, lineHead, lineTail, emptyBody) {
         } else {    // 如果选区夹在中间
             const middle = selectLines(start, end)
             const bottom = selectLines(end.nextSibling)
-            const bottomStructure = buildStructure('')
+            const bottomStructure = buildStructure()
             bottomStructure.append(...bottom)
             startTopContainer.insertAdjacentElement('afterend', bottomStructure)
             insertAll('afterend', middle)
@@ -108,18 +99,22 @@ function helper(range, key, lineHead, lineTail, emptyBody) {
     }
     const lines = range.getAllTopElements()
     const existing = lines.find(structureChecker)
-    const newHtml =
-        lines.map(it => it.innerHTML)
-            .map(it => `${lineHead}${it === '<br>' ? emptyBody : it}${lineTail}`)
-            .join('') || `${lineHead}${emptyBody}${lineTail}`
-    const structure = existing ?? buildStructure(newHtml)
-    if (existing) {
-        structure.innerHTML = newHtml
-    } else {
-        lines[0].insertAdjacentElement('afterend', structure)
-    }
-    for (let item of lines) {
-        if (item !== existing)
-            item.remove()
+    if (existing) { // 如果顶层元素中包含一个同样的多元素结构，那么就将内容合并到其中
+        let i = 0
+        for (; i < lines.length && lines[i] !== existing; ++i) {
+            existing.insertBefore(lines[i], existing.firstChild)
+        }
+        for (++i; i < lines.length; ++i) {
+            existing.append(lines[i])
+        }
+    } else {    // 否则新建一个结构容纳所有内容
+        const structure = buildStructure()
+        lines[0].parentNode.insertBefore(structure, lines[0])
+        const list = lineTagName ? lines.map(it => {
+            const box = document.createElement(lineTagName)
+            box.append(it)
+            return box
+        }) : lines
+        structure.append(...list)
     }
 }
