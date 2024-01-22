@@ -113,8 +113,17 @@ export function onclickMultiElementStructure(range, key, lineHead, lineTail, emp
     }
     const lines = range.getAllTopElements()
     const existing = lines.find(structureChecker)
+    const simpleLineFormat = /<p>(.*?)<\/p>/g;
     const newHtml =
-        lines.map(it => it.innerHTML)
+        lines.map(it => it.outerHTML.matchAll(simpleLineFormat))
+            .map(it => {
+                const res = []
+                for (const match of it) {
+                    res.push(match[1])
+                }
+                return res
+            })
+            .flat(1)
             .map(it => `${lineHead}${it === '<br>' ? emptyBody : it}${lineTail}`)
             .join('') || `${lineHead}${emptyBody}${lineTail}`
     const structure = existing ?? buildStructure(newHtml)
