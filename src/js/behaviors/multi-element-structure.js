@@ -99,22 +99,28 @@ function helper(range, key, lineTagName) {
     }
     const lines = range.getAllTopElements()
     const existing = lines.find(structureChecker)
+    /**
+     * 对行进行打包，在外部封装上 [lineTag]
+     * @param item {HTMLElement}
+     * @return {HTMLElement}
+     */
+    const pack = item => {
+        if (!lineTagName) return item
+        const packing = document.createElement(lineTagName)
+        packing.append(item)
+        return packing
+    }
     if (existing) { // 如果顶层元素中包含一个同样的多元素结构，那么就将内容合并到其中
         let i = 0
         for (; i < lines.length && lines[i] !== existing; ++i) {
-            existing.insertBefore(lines[i], existing.firstChild)
+            existing.insertBefore(pack(lines[i]), existing.firstChild)
         }
         for (++i; i < lines.length; ++i) {
-            existing.append(lines[i])
+            existing.append(pack(lines[i]))
         }
     } else {    // 否则新建一个结构容纳所有内容
         const structure = buildStructure()
         lines[0].parentNode.insertBefore(structure, lines[0])
-        const list = lineTagName ? lines.map(it => {
-            const box = document.createElement(lineTagName)
-            box.append(it)
-            return box
-        }) : lines
-        structure.append(...list)
+        structure.append(...lines.map(pack))
     }
 }
