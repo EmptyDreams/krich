@@ -310,7 +310,7 @@ export class KRange {
             如果 LCA 不是顶层元素，那么返回选区的首个顶层标签父节点
          */
         const checker =
-            (top && top !== commonAncestorContainer) ? TOP_LIST : it => it.parentNode === top
+            (top && top !== commonAncestorContainer) ? TOP_LIST : it => it.parentNode === commonAncestorContainer
         const start = findParentTag(startContainer, checker)
         const end = findParentTag(endContainer, checker)
         const result = []
