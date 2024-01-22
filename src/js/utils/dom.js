@@ -37,9 +37,9 @@ export function findParentTag(node, checker) {
         const array = checker
         checker = it => array.includes(it.nodeName)
     }
-    if (checker(node)) return node
-    let item = node.parentElement
-    while (!item.classList.contains('krich')) {
+    /** @type {Node|Element} */
+    let item = node
+    while (!item.classList?.contains?.('krich')) {
         if (checker(item)) return item
         item = item.parentElement
     }
