@@ -31,6 +31,7 @@ export function getLastTextNode(node) {
  * 查找距离当前节点最近的满足指定要求的节点
  * @param node {Node} 指定的节点
  * @param checker {string[]|function(HTMLElement|Node):boolean} 标签名称或判断表达式
+ * @return {Element|undefined}
  */
 export function findParentTag(node, checker) {
     if (Array.isArray(checker)) {
