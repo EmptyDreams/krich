@@ -9,9 +9,9 @@ import {KRange} from '../utils/range'
  * @param lineTagName {string?} 每行使用指定标签包裹时使用的标签名称
  */
 export function onclickMultiElementStructure(range, key, lineTagName) {
-    //const offlineData = range.serialization()
+    const offlineData = range.serialization()
     helper(range, key, lineTagName)
-    //KRange.deserialized(offlineData).active()
+    KRange.deserialized(offlineData).active()
 }
 
 /**
