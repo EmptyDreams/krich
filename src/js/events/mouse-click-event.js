@@ -18,7 +18,6 @@ export function registryMouseClickEvent() {
             }
             target = target.parentNode
         }
-        const range = editorRange
         const classList = target.classList
         if (classList.contains('select')) {
             if (original === target) return
@@ -55,8 +54,11 @@ export function registryMouseClickEvent() {
                 setTimeout(() => target.classList.remove('active'), 333)
             }
         }
-        const correct = behaviors[dataKey].onclick?.(range, target, event)
-        if (correct) range.active()
+        const range = editorRange
+        if (range) {
+            const correct = behaviors[dataKey].onclick?.(range, target, event)
+            if (correct) range.active()
+        }
         markStatusCacheInvalid()
     })
 }
