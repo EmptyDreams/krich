@@ -12,32 +12,24 @@ export const optional = {
         }),
         {
             name: 'ReplaceHeaderAndFooter',
-            generateBundle(outputOptions, bundle) {
-                for (let fileName in bundle) {
-                    const value = bundle[fileName]
-                    if (value.type !== 'chunk') continue
-                    /** @type {string} */
-                    const code = value.code
-                    if (outputOptions.format === 'iife') {
-                        value.code = code.replace(
-                            new RegExp(`^(var\\s${outputOptions.name}\\s=\\s\\(function\\s\\(exports\\)\\s{)`),
-                            `var ${outputOptions.name} = function(_optional) {\n    const exports = {}`
-                        ).replace(/}\)\({}\);\n$/, '}')
-                    } else {
-                        const endIndex = code.lastIndexOf('// ESM：封装终点')
-                        const subCode = code.substring(0, endIndex)
-                        const exportList = code.substring(endIndex + 11)
-                            .match(/export\s*{\s*([^}]*)\s*}/)[1]
-                        value.code = `
-                            const ${outputOptions.name} = function(_optional) {
-                                ${subCode}
-                                return {
-                                    ${exportList}
-                                }
+            renderChunk: function (code, chunk, options, _) {
+                if (chunk.type !== 'chunk') return
+                if (options.format === 'iife') {
+                    return code.replace(
+                        new RegExp(`^(var\\s${options.name}\\s=\\s\\(function\\s\\(exports\\)\\s{)`),
+                        `var ${options.name} = function(_optional) {\n    const exports = {}`
+                    ).replace(/^\s*}\)\({\s*}\);\s*$/m, '}')
+                } else {
+                    const endIndex = code.lastIndexOf('// ESM：封装终点')
+                    const subCode = code.substring(0, endIndex)
+                    return `
+                        export default function(_optional) {
+                            ${subCode}
+                            return {
+                                ${chunk.exports.join(',')}
                             }
-                            export default ${outputOptions.name}
-                        `
-                    }
+                        }
+                    `
                 }
             }
         },

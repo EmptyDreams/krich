@@ -26,7 +26,7 @@ customOptional.plugins.push(
             booleans_as_integers: true,
             drop_console: true,
             passes: 2,
-            ecma: 2015
+            ecma: 2016
         }
     })
 )
