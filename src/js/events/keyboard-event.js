@@ -1,6 +1,6 @@
-import {behaviors, KRICH_EDITOR, markStatusCacheInvalid} from '../global-fileds'
+import {KRICH_EDITOR, markStatusCacheInvalid} from '../global-fileds'
 import {findParentTag, getFirstTextNode, getLastTextNode, replaceElement} from '../utils/dom'
-import {KRange, setCursorPosition, setCursorPositionAfter, setCursorPositionIn} from '../utils/range'
+import {KRange, setCursorPositionAfter, setCursorPositionIn} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
 import {createElement} from '../utils/tools'
 

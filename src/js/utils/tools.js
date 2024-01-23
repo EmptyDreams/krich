@@ -51,38 +51,6 @@ export function equalsKrichNode(arg0, arg1) {
 }
 
 /**
- * 查找指定元素在 Collection 中的下标
- * @param children {HTMLCollection}
- * @param item {HTMLElement}
- * @return {number}
- */
-export function findIndexInCollection(children, item) {
-    for (let i = 0; i < children.length; i++) {
-        if (children[i] === item) return i
-    }
-    return -1
-}
-
-/**
- * 查找指定字符串在字符串指定区域中出现的次数
- * @param str {string} 字符串
- * @param item {string} 指定字符串
- * @param startIndex {number} 起始下标（包含）
- * @param endIndex {number?} 终止下标（不包含，缺省查询到结尾）
- */
-export function countCharacters(str, item, startIndex, endIndex) {
-    const end = endIndex ?? str.length
-    let count = 0
-    for (let i = startIndex; i < end;) {
-        const next = str.indexOf(item, i)
-        if (next < 0) break
-        ++count
-        i += item.length
-    }
-    return count
-}
-
-/**
  * 将一个“#abc”“#abcdef”或“0,1,2”格式的字符串转化为十六进制形式，并尽可能减少字符串长度
  * @param src {string}
  * @return {string|null} 转换失败时返回 null
