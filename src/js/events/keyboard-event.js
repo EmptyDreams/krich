@@ -67,15 +67,12 @@ function enterEvent(event) {
     if (!range.collapsed) return
     const {startContainer} = range
     let element
-    const createLine = () => {
-        element = createElement('p')
-        element.innerHTML = '<br>'
-    }
     if (event.shiftKey) {
         const pElement = findParentTag(startContainer, ['P'])
         if (pElement) { // 如果在 p 标签中按下 Shift + Enter，则直接创建新行且不将输入指针后的内容放置在新的一行中
             event.preventDefault()
-            createLine()
+            element = document.createElement('p')
+            element.innerHTML = '<br>'
             pElement.insertAdjacentElement('afterend', element)
         }
     } else {    // 在多元素结构最后一个空行按下回车时自动退出
@@ -84,15 +81,13 @@ function enterEvent(event) {
         if (structure && startContainer === getLastTextNode(structure) && !lastChild.textContent) {
             event.preventDefault()
             if (structure.nodeName[0] === 'B') {
-                createLine()
+                element = lastChild
             } else {
                 element = lastChild.firstChild
+                lastChild.remove()
             }
             structure.insertAdjacentElement('afterend', element)
-            if (structure.childElementCount === 1)
-                structure.remove()
-            else
-                lastChild.remove()
+            if (!structure.firstChild) structure.remove()
         }
     }
     if (element)
