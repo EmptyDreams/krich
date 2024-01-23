@@ -68,7 +68,7 @@ function helper(range, key, lineTagName) {
         }
         /** 清除整个结构 */
         const removeAll = () => {
-            insertAll('afterend', Array.from(startTopContainer.children))
+            insertAll('afterend', Array.from(startTopContainer.children).reverse())
             startTopContainer.remove()
         }
         // 如果没有范围选中则判定为选中了全部
@@ -86,14 +86,14 @@ function helper(range, key, lineTagName) {
         } else if (isStart) {   // 如果选区包含第一行
             insertAll('beforebegin', selectLines(start, end))
         } else if (isEnd) {   // 如果选区包含最后一行
-            insertAll('afterend', selectLines(start))
+            insertAll('afterend', selectLines(start).reverse())
         } else {    // 如果选区夹在中间
             const middle = selectLines(start, end)
             const bottom = selectLines(end.nextSibling)
             const bottomStructure = buildStructure()
             bottomStructure.append(...bottom)
             startTopContainer.insertAdjacentElement('afterend', bottomStructure)
-            insertAll('afterend', middle)
+            insertAll('afterend', middle.reverse())
         }
         return
     }
