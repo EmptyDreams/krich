@@ -5,6 +5,8 @@ import {findParentTag} from '../utils/dom'
 
 export function registryMouseClickEvent() {
     KRICH_TOOL_BAR.addEventListener('click', event => {
+        const range = editorRange
+        if (!range) return
         /** @type {HTMLElement} */
         let original = event.target
         let target = original
@@ -54,11 +56,8 @@ export function registryMouseClickEvent() {
                 setTimeout(() => target.classList.remove('active'), 333)
             }
         }
-        const range = editorRange
-        if (range) {
-            const correct = behaviors[dataKey].onclick?.(range, target, event)
-            if (correct) range.active()
-        }
+        const correct = behaviors[dataKey].onclick?.(range, target, event)
+        if (correct) range.active()
         markStatusCacheInvalid()
     })
 }
