@@ -60,7 +60,7 @@ function helper(range, key, lineTagName) {
             const array = []
             let item = start
             while (item) {
-                array.push(item)
+                array.push(lineTagName ? item.firstChild : item)
                 if (item === end) break
                 item = item.nextElementSibling
             }
@@ -68,7 +68,7 @@ function helper(range, key, lineTagName) {
         }
         /** 清除整个结构 */
         const removeAll = () => {
-            insertAll('afterend', Array.from(startTopContainer.children).reverse())
+            insertAll('afterend', selectLines(startTopContainer.firstChild).reverse())
             startTopContainer.remove()
         }
         // 如果没有范围选中则判定为选中了全部
