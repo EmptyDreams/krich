@@ -14,7 +14,7 @@ import colorStyle from '../resources/html/tools/color.html'
 import backgroundStyle from '../resources/html/tools/background.html'
 import ulStyle from '../resources/html/tools/ul.html'
 import olStyle from '../resources/html/tools/ol.html'
-import multiStyle from '../resources/html/tools/multi.html'
+import todoStyle from '../resources/html/tools/todo.html'
 import {
     behaviors,
     initBehaviors,
@@ -30,6 +30,12 @@ import {findParentTag, splitElementByContainer, zipTree} from './utils/dom'
 import {createElement, readSelectedColor} from './utils/tools'
 import {handleTemplate} from './utils/template'
 import {onclickMultiElementStructure} from './behaviors/multi-element-structure'
+
+/** 代办列表的 marker */
+const TODO_MARKER = createElement('input', {
+    class: 'marker',
+    type: 'checkbox'
+})
 
 initBehaviors({
     headerSelect: {
@@ -108,24 +114,21 @@ initBehaviors({
     },
     ul: {
         exp: 'ul',
-        noStatus: true,
         render: () => ulStyle,
         onclick: range => onclickMultiElementStructure(range, 'ul', 'li'),
         builder: () => createElement('ul')
     },
     ol: {
         exp: 'ol',
-        noStatus: true,
         render: () => olStyle,
         onclick: range => onclickMultiElementStructure(range, 'ol', 'li'),
         builder: () => createElement('ol')
     },
-    multi: {
-        noStatus: true,
-        render: () => multiStyle,
-        onclick: () => {
-            // TODO
-        }
+    todo: {
+        exp: 'div.todo',
+        render: () => todoStyle,
+        onclick: range => onclickMultiElementStructure(range, 'todo', 'li', TODO_MARKER),
+        builder: () => createElement('div', ['todo'])
     }
 })
 

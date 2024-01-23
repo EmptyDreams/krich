@@ -8,7 +8,7 @@ export function registryKeyboardEvent() {
     const switchTask = key => {
         switch (key) {
             case 'Enter':   // 将顶层的 div 替换为 p
-                return () => KRICH_EDITOR.querySelectorAll('&>div:not([data-id])')
+                return () => KRICH_EDITOR.querySelectorAll('div:not([class])')
                     .forEach(it => replaceElement(it, document.createElement('p')))
             case 'Backspace': case 'Delete':
                 return () => {
@@ -88,6 +88,11 @@ function enterEvent(event) {
             }
             structure.insertAdjacentElement('afterend', element)
             if (!structure.firstChild) structure.remove()
+        } else {
+            const todoList = findParentTag(startContainer, item => item.classList.contains('todo'))
+            if (todoList) {
+                // TODO
+            }
         }
     }
     if (element)

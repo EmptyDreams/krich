@@ -10,10 +10,13 @@ import {equalsKrichNode} from './tools'
  * @return {Node}
  */
 export function getFirstTextNode(node) {
-    while (!['#text', 'BR'].includes(node.nodeName)) {
-        node = node.firstChild
+    let item = node
+    while (!['#text', 'BR'].includes(item.nodeName)) {
+        const next = item.firstChild
+        if (!next) return nextSiblingText(item, node)
+        item = next
     }
-    return node
+    return item
 }
 
 /**

@@ -7,10 +7,11 @@ import {KRange} from '../utils/range'
  * @param range {KRange} 选择范围
  * @param key {string} 在 behaviors 中的 key
  * @param lineTagName {string?} 每行使用指定标签包裹时使用的标签名称
+ * @param simulateMarker {HTMLElement?} 每行开头用于模拟 ::marker 的元素，传入的对象不会被修改和插入到 DOM 中
  */
-export function onclickMultiElementStructure(range, key, lineTagName) {
+export function onclickMultiElementStructure(range, key, lineTagName, simulateMarker) {
     const offlineData = range.serialization()
-    helper(range, key, lineTagName)
+    helper(range, key, lineTagName, simulateMarker)
     KRange.deserialized(offlineData).active()
 }
 
@@ -19,8 +20,9 @@ export function onclickMultiElementStructure(range, key, lineTagName) {
  * @param range {KRange} 选择范围
  * @param key {string} 在 behaviors 中的 key
  * @param lineTagName {string?} 每行使用指定标签包裹时使用的标签名称
+ * @param simulateMarker {HTMLElement?} 每行开头用于模拟 ::marker 的元素，传入的对象不会被修改和插入到 DOM 中
  */
-function helper(range, key, lineTagName) {
+function helper(range, key, lineTagName, simulateMarker) {
     const behavior = behaviors[key]
     /**
      * 检查指定标签是否是结构对象
@@ -60,7 +62,7 @@ function helper(range, key, lineTagName) {
             const array = []
             let item = start
             while (item) {
-                array.push(lineTagName ? item.firstChild : item)
+                array.push(lineTagName ? item.lastChild : item)
                 if (item === end) break
                 item = item.nextElementSibling
             }
@@ -110,6 +112,7 @@ function helper(range, key, lineTagName) {
         packing.append(item)
         return packing
     }
+    let structure = existing
     if (existing) { // 如果顶层元素中包含一个同样的多元素结构，那么就将内容合并到其中
         let i = 0
         for (; i < lines.length && lines[i] !== existing; ++i) {
@@ -119,8 +122,13 @@ function helper(range, key, lineTagName) {
             existing.append(pack(lines[i]))
         }
     } else {    // 否则新建一个结构容纳所有内容
-        const structure = buildStructure()
+        structure = buildStructure()
         lines[0].parentNode.insertBefore(structure, lines[0])
         structure.append(...lines.map(pack))
+    }
+    if (simulateMarker) {
+        for (let child of structure.children) {
+            child.insertBefore(simulateMarker.cloneNode(true), child.firstChild)
+        }
     }
 }
