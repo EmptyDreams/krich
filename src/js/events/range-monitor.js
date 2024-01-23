@@ -1,4 +1,4 @@
-import {KRICH_CONTAINER, KRICH_EDITOR} from '../global-fileds'
+import {KRICH_CONTAINER, KRICH_EDITOR, KRICH_TOOL_BAR} from '../global-fileds'
 import {KRange} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
 
@@ -10,8 +10,13 @@ export let editorRange
 
 export function registryRangeMonitor() {
     document.addEventListener('selectionchange', () => {
-        if (!KRICH_CONTAINER.contains(document.activeElement)) return editorRange = null
+        if (!KRICH_CONTAINER.contains(document.activeElement)) {
+            editorRange = null
+            KRICH_TOOL_BAR.classList.add('disable')
+            return
+        }
         if (KRICH_EDITOR !== document.activeElement) return
+        KRICH_TOOL_BAR.classList.remove('disable')
         const kRange = KRange.activated()
         const range = kRange.item
         const prev = editorRange?.item
