@@ -53,3 +53,8 @@ export function initContainerQuery(container) {
 export function markStatusCacheInvalid() {
     statusCheckCache = false
 }
+
+/** 标记缓存生效 */
+export function markStatusCacheEffect() {
+    statusCheckCache = true
+}

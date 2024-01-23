@@ -5,14 +5,14 @@ import {registryBeforeInputEventListener} from '../events/before-input'
 import {
     behaviors,
     DATA_ID,
-    initContainerQuery,
-    KRICH_TOOL_BAR,
+    initContainerQuery, KRICH_EDITOR,
+    KRICH_TOOL_BAR, markStatusCacheEffect,
     markStatusCacheInvalid, SELECT_VALUE,
     statusCheckCache
 } from '../global-fileds'
 import {compareBtnListStatusWith} from './btn'
 import {KRange} from './range'
-import {readSelectedColor} from './tools'
+import {getElementBehavior, readSelectedColor} from './tools'
 
 import krichStyle from '../../resources/css/main.styl'
 
@@ -26,11 +26,12 @@ export function initKrich(optional) {
     registryMouseClickEvent()
     registryKeyboardEvent()
     registryRangeMonitor()
-    registryBeforeInputEventListener(KRICH_TOOL_BAR, event => {
+    // 当用户输入位置所在文本与按钮列表不同时，将新输入的文本样式与按钮状态同步
+    registryBeforeInputEventListener(KRICH_EDITOR, event => {
         // noinspection JSUnresolvedReference
         const data = event.data
         if (statusCheckCache || !data) return
-        markStatusCacheInvalid()
+        markStatusCacheEffect()
         setTimeout(() => {
             let kRange = KRange.activated()
             let range = kRange.item
@@ -43,10 +44,12 @@ export function initKrich(optional) {
             newRange.setEnd(startContainer, startOffset)
             const offline = newRange.serialization()
             for (let child of buttonList) {
-                const dataId = child.getAttribute(DATA_ID)
-                const behavior = behaviors[dataId]
+                const behavior = getElementBehavior(child)
                 behavior.onclick(KRange.deserialized(offline), child, null)
             }
+            newRange.deserialized(offline)
+            newRange.item.collapse(false)
+            newRange.active()
         }, 0)
     })
 }
