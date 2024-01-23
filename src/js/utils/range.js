@@ -305,14 +305,15 @@ export class KRange {
      */
     getAllTopElements() {
         const {commonAncestorContainer, startContainer, endContainer} = this.item
-        const top = findParentTag(commonAncestorContainer, TOP_LIST)
-        /*
-            三元表达式表达式为 true 时表明选区最近公共祖先不是顶层标签。
-            如果 LCA 是顶层元素，那么就返回选区在 LCA 下的直接子标签；
-            如果 LCA 不是顶层元素，那么返回选区的首个顶层标签父节点
+        const firstChild = commonAncestorContainer.firstChild
+        /**
+         * 三元表达式表达式为 true 时表明选区最近公共祖先不是顶层标签。
+         * 如果 LCA 的子节点是顶层元素，那么就返回选区在 LCA 下的直接子标签；
+         * 否则返回选区的首个顶层标签父节点。
+         * @type {string[]|function(Node|HTMLElement):boolean}
          */
-        const checker =
-            (top && top !== commonAncestorContainer) ? TOP_LIST : it => it.parentNode === commonAncestorContainer
+        const checker = !firstChild || findParentTag(firstChild, TOP_LIST) !== firstChild ?
+            TOP_LIST : it => it.parentNode === commonAncestorContainer
         const start = findParentTag(startContainer, checker)
         const end = findParentTag(endContainer, checker)
         const result = []
