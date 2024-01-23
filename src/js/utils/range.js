@@ -9,7 +9,6 @@ import {
     splitElementByContainer,
     zipTree
 } from './dom'
-import {findIndexInCollection} from './tools'
 
 /**
  * 将鼠标光标移动到指定位置
@@ -222,23 +221,27 @@ export class KRange {
 
     /**
      * 将 Range 信息序列化
-     * @return {[number,number]|[number, number, number, number]}
+     * @return {[number, number]|[number]}
      */
     serialization() {
         /**
          * 获取指定
          * @param container {Text} 所在节点
          * @param offset {number} 偏移量
-         * @return {[number, number]} 0-横向局部偏移量，2-纵向全局偏移量
+         * @return {number} 0-横向局部偏移量，2-纵向全局偏移量
          */
         function locateRange(container, offset) {
             const top = findParentTag(
                 container, item => item.parentElement === KRICH_EDITOR
             )
-            const y = findIndexInCollection(KRICH_EDITOR.children, top)
+            let yOffset = 0
+            for (let item of KRICH_EDITOR.children) {
+                if (item === top) break
+                yOffset += item.textContent.length
+            }
             if (!top.firstChild) {
                 console.assert(offset === 0, 'offset 应当等于 0', offset)
-                return [0, y]
+                return yOffset
             }
             let x = 0
             let node = getFirstTextNode(top)
@@ -246,14 +249,14 @@ export class KRange {
                 x += node.textContent.length
                 node = nextSiblingText(node)
             }
-            return [x + offset, y]
+            return yOffset + x + offset
         }
         const range = this.item
         const {startContainer, startOffset, endContainer, endOffset} = range
         const startLocation = locateRange(startContainer, startOffset)
-        if (range.collapsed) return startLocation
+        if (range.collapsed) return [startLocation]
         const endLocation = locateRange(endContainer, endOffset)
-        return [...startLocation, ...endLocation]
+        return [startLocation, endLocation]
     }
 
     /**
@@ -261,16 +264,13 @@ export class KRange {
      * @param data {[number,number]|[number, number, number, number]}
      */
     deserialized(data) {
-        const [startX, startY] = data
-        const topChildren = KRICH_EDITOR.children
-        this.setStart(topChildren[startY], startX)
-        if (data.length === 2) {
+        const [start, end] = data
+        this.setStart(KRICH_EDITOR, start)
+        if (data.length === 1) {
             this.item.collapse(true)
-            return
+        } else {
+            this.setEnd(KRICH_EDITOR, end)
         }
-        const endX = data[2]
-        const endY = data[3]
-        this.setEnd(topChildren[endY], endX)
     }
 
     /**
