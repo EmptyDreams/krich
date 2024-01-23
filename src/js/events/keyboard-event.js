@@ -78,15 +78,21 @@ function enterEvent(event) {
             createLine()
             pElement.insertAdjacentElement('afterend', element)
         }
-    } else {
-        const blockquote = findParentTag(startContainer, ['BLOCKQUOTE'])
-        if (blockquote) {   // 如果指针指向了引用结尾空行
-            if (getLastTextNode(blockquote) === startContainer && !startContainer.textContent) {
-                event.preventDefault()
+    } else {    // 在多元素结构最后一个空行按下回车时自动退出
+        const structure = findParentTag(startContainer, ['BLOCKQUOTE', 'UL', 'OL'])
+        const lastChild = structure?.lastChild
+        if (structure && startContainer === getLastTextNode(structure) && !lastChild.textContent) {
+            event.preventDefault()
+            if (structure.nodeName[0] === 'B') {
                 createLine()
-                blockquote.insertAdjacentElement('afterend', element)
-                blockquote.lastChild.remove()
+            } else {
+                element = lastChild.firstChild
             }
+            structure.insertAdjacentElement('afterend', element)
+            if (structure.childElementCount === 1)
+                structure.remove()
+            else
+                lastChild.remove()
         }
     }
     if (element)
