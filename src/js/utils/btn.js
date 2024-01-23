@@ -33,7 +33,7 @@ export function compareBtnStatusWith(element) {
  */
 export function compareBtnListStatusWith(node) {
     const result = []
-    findDiffButton(node, (_, item) => result.push(item))
+    findDiffButton(node, (btn) => result.push(btn))
     return result.length === 0 ? null : result
 }
 
