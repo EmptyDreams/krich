@@ -25,7 +25,8 @@
 1. 使用 git 指令克隆仓库：`git clone https://github.com/EmptyDreams/krich.git`
 2. 在仓库根目录下启动命令提示符
 3. 执行 `npm install`
-4. 执行 `npx rollup -c -w`
-5. 在浏览器中打开 `http://localhost:3000`
+4. 执行 `npm install rollup -g`
+5. 执行 `rollup -c -w`
+6. 在浏览器中打开 `http://localhost:3000`
 
 如果 `3000` 与您的其它应用的端口号冲突，可以在 rollup 配置文件中修改这个端口号。
