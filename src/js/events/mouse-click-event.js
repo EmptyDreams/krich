@@ -1,4 +1,10 @@
-import {behaviors, DATA_ID, KRICH_TOOL_BAR, markStatusCacheInvalid, SELECT_VALUE} from '../global-fileds'
+import {
+    behaviors,
+    DATA_ID,
+    KRICH_TOOL_BAR,
+    markStatusCacheInvalid,
+    SELECT_VALUE
+} from '../global-fileds'
 import {getElementBehavior, parseRgbToHex} from '../utils/tools'
 import {editorRange} from './range-monitor'
 import {findParentTag} from '../utils/dom'

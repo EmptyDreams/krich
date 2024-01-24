@@ -28,15 +28,14 @@ export function initKrich(optional) {
     registryMouseClickEvent()
     registryKeyboardEvent()
     registryRangeMonitor()
-    registryBeforeInputEventListener(KRICH_EDITOR, event => {
+    registryBeforeInputEventListener(KRICH_EDITOR, event => new Promise(resolve => {
         setTimeout(() => {
             const {data, inputType} = event
             let kRange = KRange.activated()
             let range = kRange.item
             const {startContainer, startOffset} = range
-            if (inputType === 'insertText' && range.collapsed) {
-                /* 当用户输入位置所在文本与按钮列表不同时，将新输入的文本样式与按钮状态同步 */
-                if (statusCheckCache || !data) return
+            /* 当用户输入位置所在文本与按钮列表不同时，将新输入的文本样式与按钮状态同步 */
+            if (data && !statusCheckCache && range.collapsed) {
                 markStatusCacheEffect()
                 const buttonList = compareBtnListStatusWith(startContainer)
                 if (!buttonList) return
@@ -52,16 +51,17 @@ export function initKrich(optional) {
                 newRange.item.collapse(false)
                 newRange.active()
             }
+            /* 在代办列表中换行时自动在 li 中插入 <input> */
             if (inputType === 'insertParagraph') {
-                /* 在代办列表中换行时自动在 li 中插入 <input> */
                 const todoList = findParentTag(startContainer, item => item.classList?.contains?.('todo'))
                 if (todoList) {
                     const item = todoList.querySelector('&>li>p:first-child')
                     if (item) item.insertAdjacentElement('beforebegin', TODO_MARKER.cloneNode(true))
                 }
             }
+            resolve()
         }, 0)
-    })
+    }))
 }
 
 /**
