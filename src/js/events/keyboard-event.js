@@ -2,7 +2,6 @@ import {KRICH_EDITOR, markStatusCacheInvalid} from '../global-fileds'
 import {findParentTag, getFirstTextNode, getLastTextNode, replaceElement} from '../utils/dom'
 import {KRange, setCursorPositionAfter, setCursorPositionIn} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
-import {createElement} from '../utils/tools'
 
 export function registryKeyboardEvent() {
     const switchTask = key => {
@@ -67,18 +66,27 @@ function enterEvent(event) {
     if (!range.collapsed) return
     const {startContainer} = range
     let element
+    const createLine = () => {
+        const result = document.createElement('p')
+        result.innerHTML = '<br>'
+        return result
+    }
     if (event.shiftKey) {
         const pElement = findParentTag(startContainer, ['P'])
         if (pElement) { // 如果在 p 标签中按下 Shift + Enter，则直接创建新行且不将输入指针后的内容放置在新的一行中
             event.preventDefault()
-            element = document.createElement('p')
-            element.innerHTML = '<br>'
+            element = createLine()
             pElement.insertAdjacentElement('afterend', element)
         }
-    } else {    // 在多元素结构最后一个空行按下回车时自动退出
-        const structure = findParentTag(startContainer, ['BLOCKQUOTE', 'UL', 'OL'])
-        const lastChild = structure?.lastChild
-        if (structure && startContainer === getLastTextNode(structure) && !lastChild.textContent) {
+    } else {
+        const structure = findParentTag(
+            startContainer,
+            item => ['BLOCKQUOTE', 'UL', 'OL'].includes(item.nodeName) || item.classList?.contains?.('todo')
+        )
+        if (!structure) return
+        const lastChild = structure.lastChild
+        if (startContainer === getLastTextNode(structure) && !lastChild.textContent) {
+            /* 在多元素结构最后一个空行按下回车时自动退出 */
             event.preventDefault()
             if (structure.nodeName[0] === 'B') {
                 element = lastChild
@@ -88,11 +96,6 @@ function enterEvent(event) {
             }
             structure.insertAdjacentElement('afterend', element)
             if (!structure.firstChild) structure.remove()
-        } else {
-            const todoList = findParentTag(startContainer, item => item.classList.contains('todo'))
-            if (todoList) {
-                // TODO
-            }
         }
     }
     if (element)

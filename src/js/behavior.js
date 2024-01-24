@@ -32,7 +32,7 @@ import {handleTemplate} from './utils/template'
 import {onclickMultiElementStructure} from './behaviors/multi-element-structure'
 
 /** 代办列表的 marker */
-const TODO_MARKER = createElement('input', {
+export const TODO_MARKER = createElement('input', {
     class: 'marker',
     type: 'checkbox'
 })

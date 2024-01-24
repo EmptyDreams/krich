@@ -7,7 +7,7 @@ import {
     DATA_ID,
     initContainerQuery, KRICH_EDITOR,
     KRICH_TOOL_BAR, markStatusCacheEffect,
-    markStatusCacheInvalid, SELECT_VALUE,
+    SELECT_VALUE,
     statusCheckCache
 } from '../global-fileds'
 import {compareBtnListStatusWith} from './btn'
@@ -15,6 +15,8 @@ import {KRange} from './range'
 import {getElementBehavior, readSelectedColor} from './tools'
 
 import krichStyle from '../../resources/css/main.styl'
+import {findParentTag} from './dom'
+import {TODO_MARKER} from '../behavior'
 
 /**
  * 在指定容器内初始化编辑器，该容器应当是一个内容为空的标签
@@ -26,30 +28,38 @@ export function initKrich(optional) {
     registryMouseClickEvent()
     registryKeyboardEvent()
     registryRangeMonitor()
-    // 当用户输入位置所在文本与按钮列表不同时，将新输入的文本样式与按钮状态同步
     registryBeforeInputEventListener(KRICH_EDITOR, event => {
-        // noinspection JSUnresolvedReference
-        const data = event.data
-        if (statusCheckCache || !data) return
-        markStatusCacheEffect()
         setTimeout(() => {
+            const {data, inputType} = event
             let kRange = KRange.activated()
             let range = kRange.item
-            if (!range.collapsed) return
             const {startContainer, startOffset} = range
-            const buttonList = compareBtnListStatusWith(startContainer)
-            if (!buttonList) return
-            const newRange = new KRange()
-            newRange.setStart(startContainer, startOffset - data.length)
-            newRange.setEnd(startContainer, startOffset)
-            const offline = newRange.serialization()
-            for (let child of buttonList) {
-                const behavior = getElementBehavior(child)
-                behavior.onclick(KRange.deserialized(offline), child, null)
+            if (inputType === 'insertText' && range.collapsed) {
+                /* 当用户输入位置所在文本与按钮列表不同时，将新输入的文本样式与按钮状态同步 */
+                if (statusCheckCache || !data) return
+                markStatusCacheEffect()
+                const buttonList = compareBtnListStatusWith(startContainer)
+                if (!buttonList) return
+                const newRange = new KRange()
+                newRange.setStart(startContainer, startOffset - data.length)
+                newRange.setEnd(startContainer, startOffset)
+                const offline = newRange.serialization()
+                for (let child of buttonList) {
+                    const behavior = getElementBehavior(child)
+                    behavior.onclick(KRange.deserialized(offline), child, null)
+                }
+                newRange.deserialized(offline)
+                newRange.item.collapse(false)
+                newRange.active()
             }
-            newRange.deserialized(offline)
-            newRange.item.collapse(false)
-            newRange.active()
+            if (inputType === 'insertParagraph') {
+                /* 在代办列表中换行时自动在 li 中插入 <input> */
+                const todoList = findParentTag(startContainer, item => item.classList?.contains?.('todo'))
+                if (todoList) {
+                    const item = todoList.querySelector('&>li>p:first-child')
+                    if (item) item.insertAdjacentElement('beforebegin', TODO_MARKER.cloneNode(true))
+                }
+            }
         }, 0)
     })
 }
