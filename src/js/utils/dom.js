@@ -25,9 +25,13 @@ export function getFirstTextNode(node) {
  * @return {Node}
  */
 export function getLastTextNode(node) {
-    while (!['#text', 'BR'].includes(node.nodeName))
-        node = node.lastChild
-    return node
+    let item = node
+    while (!['#text', 'BR'].includes(item.nodeName)) {
+        const next = item.lastChild
+        if (!next) return prevSiblingText(item, node)
+        item = next
+    }
+    return item
 }
 
 /**
