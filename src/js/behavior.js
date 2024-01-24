@@ -112,7 +112,11 @@ initBehaviors({
         noStatus: true,
         render: () => clearStyle,
         onclick: () => {
-            // TODO
+            for (let line of KRICH_EDITOR.children) {
+                if (!line.querySelector('img,pre')) {
+                    line.innerHTML = line.textContent
+                }
+            }
         }
     },
     color: {
