@@ -16,11 +16,10 @@ class ButtonBehavior {
      *
      * 1. 选中的区域
      * 2. 被点击的按钮的对象
-     * 3. 点击事件的原始 Event 对象
      *
      * 返回值用于告知调用者函数是否需要外部还原光标位置
      *
-     * @type {function(KRange, HTMLElement, Event|undefined): boolean|undefined|void}
+     * @type {function(KRange, HTMLElement): boolean|undefined|void}
      */
     onclick
     /**

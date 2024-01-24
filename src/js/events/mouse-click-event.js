@@ -62,7 +62,7 @@ export function registryMouseClickEvent() {
                 setTimeout(() => target.classList.remove('active'), 333)
             }
         }
-        const correct = behaviors[dataKey].onclick?.(range, target, event)
+        const correct = behaviors[dataKey].onclick?.(range, target)
         if (correct) range.active()
         markStatusCacheInvalid()
     })

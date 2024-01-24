@@ -45,7 +45,7 @@ export function initKrich(optional) {
                 const offline = newRange.serialization()
                 for (let child of buttonList) {
                     const behavior = getElementBehavior(child)
-                    behavior.onclick(KRange.deserialized(offline), child, null)
+                    behavior.onclick(KRange.deserialized(offline), child)
                 }
                 newRange.deserialized(offline)
                 newRange.item.collapse(false)
