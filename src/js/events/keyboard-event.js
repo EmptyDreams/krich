@@ -85,13 +85,13 @@ function enterEvent(event) {
         )
         if (!structure) return
         const lastChild = structure.lastChild
-        if (startContainer === getLastTextNode(structure) && !lastChild.textContent) {
+        if (!lastChild.textContent && startContainer === getLastTextNode(structure)) {
             /* 在多元素结构最后一个空行按下回车时自动退出 */
             event.preventDefault()
             if (structure.nodeName[0] === 'B') {
                 element = lastChild
             } else {
-                element = lastChild.firstChild
+                element = lastChild.lastChild
                 lastChild.remove()
             }
             structure.insertAdjacentElement('afterend', element)
