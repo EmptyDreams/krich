@@ -1,3 +1,4 @@
+import krichStyle from '../../resources/css/main.styl'
 import {registryMouseClickEvent} from '../events/mouse-click-event'
 import {registryKeyboardEvent} from '../events/keyboard-event'
 import {editorRange, registryRangeMonitor} from '../events/range-monitor'
@@ -13,8 +14,6 @@ import {
 import {compareBtnListStatusWith} from './btn'
 import {KRange} from './range'
 import {getElementBehavior, readSelectedColor} from './tools'
-
-import krichStyle from '../../resources/css/main.styl'
 import {findParentTag} from './dom'
 import {TODO_MARKER} from '../behavior'
 

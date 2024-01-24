@@ -1,4 +1,3 @@
-
 import {EMPTY_BODY_NODE_LIST, KRICH_EDITOR, TOP_LIST} from '../global-fileds'
 import {
     findParentTag,

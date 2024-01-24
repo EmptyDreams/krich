@@ -1,19 +1,3 @@
-import {
-    behaviors,
-    initBehaviors,
-    KRICH_CONTAINER,
-    KRICH_EDITOR,
-    SELECT_VALUE,
-    TITLE_LIST,
-    TOP_LIST
-} from './global-fileds'
-import {behaviorHeader} from './behaviors/header'
-import {KRange, setCursorPositionAfter} from './utils/range'
-import {findParentTag, splitElementByContainer, zipTree} from './utils/dom'
-import {createElement, readSelectedColor} from './utils/tools'
-import {handleTemplate} from './utils/template'
-import {onclickMultiElementStructure} from './behaviors/multi-element-structure'
-
 /** @type {string} */
 import headerSelectStyle from '../resources/html/tools/headerSelect.html'
 /** @type {string} */
@@ -46,6 +30,21 @@ import olStyle from '../resources/html/tools/ol.html'
 import todoStyle from '../resources/html/tools/todo.html'
 /** @type {string} */
 import hrStyle from '../resources/html/tools/hr.html'
+import {
+    behaviors,
+    initBehaviors,
+    KRICH_CONTAINER,
+    KRICH_EDITOR,
+    SELECT_VALUE,
+    TITLE_LIST,
+    TOP_LIST
+} from './global-fileds'
+import {behaviorHeader} from './behaviors/header'
+import {KRange, setCursorPositionAfter} from './utils/range'
+import {findParentTag, splitElementByContainer, zipTree} from './utils/dom'
+import {createElement, readSelectedColor} from './utils/tools'
+import {handleTemplate} from './utils/template'
+import {onclickMultiElementStructure} from './behaviors/multi-element-structure'
 import {onclickHr} from './behaviors/hr'
 
 /** 代办列表的 marker */
