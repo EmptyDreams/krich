@@ -84,7 +84,8 @@ export class KRange {
                 newRange.collapse(false)
             } else {
                 if (startStatus) {
-                    const start = startContainer.childNodes[startOffset]
+                    let start = startContainer.childNodes[startOffset]
+                    if (start.nodeName === 'INPUT') start = start.nextSibling
                     newRange.setStart(getFirstTextNode(start), 0)
                 } else if (startContainer.textContent.length === startOffset) {
                     newRange.setStart(nextSiblingText(startContainer), 0)
