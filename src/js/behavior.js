@@ -1,20 +1,3 @@
-import headerSelectStyle from '../resources/html/tools/headerSelect.html'
-import blockquoteStyle from '../resources/html/tools/blockquote.html'
-import boldStyle from '../resources/html/tools/bold.html'
-import underlineStyle from '../resources/html/tools/underline.html'
-import italicStyle from '../resources/html/tools/italic.html'
-import throughStyle from '../resources/html/tools/through.html'
-import inlineCodeStyle from '../resources/html/tools/inlineCode.html'
-import supStyle from '../resources/html/tools/sup.html'
-import subStyle from '../resources/html/tools/sub.html'
-import clearStyle from '../resources/html/tools/clear.html'
-/** @type {string} */
-import colorStyle from '../resources/html/tools/color.html'
-/** @type {string} */
-import backgroundStyle from '../resources/html/tools/background.html'
-import ulStyle from '../resources/html/tools/ul.html'
-import olStyle from '../resources/html/tools/ol.html'
-import todoStyle from '../resources/html/tools/todo.html'
 import {
     behaviors,
     initBehaviors,
@@ -30,6 +13,37 @@ import {findParentTag, splitElementByContainer, zipTree} from './utils/dom'
 import {createElement, readSelectedColor} from './utils/tools'
 import {handleTemplate} from './utils/template'
 import {onclickMultiElementStructure} from './behaviors/multi-element-structure'
+
+/** @type {string} */
+import headerSelectStyle from '../resources/html/tools/headerSelect.html'
+/** @type {string} */
+import blockquoteStyle from '../resources/html/tools/blockquote.html'
+/** @type {string} */
+import boldStyle from '../resources/html/tools/bold.html'
+/** @type {string} */
+import underlineStyle from '../resources/html/tools/underline.html'
+/** @type {string} */
+import italicStyle from '../resources/html/tools/italic.html'
+/** @type {string} */
+import throughStyle from '../resources/html/tools/through.html'
+/** @type {string} */
+import inlineCodeStyle from '../resources/html/tools/inlineCode.html'
+/** @type {string} */
+import supStyle from '../resources/html/tools/sup.html'
+/** @type {string} */
+import subStyle from '../resources/html/tools/sub.html'
+/** @type {string} */
+import clearStyle from '../resources/html/tools/clear.html'
+/** @type {string} */
+import colorStyle from '../resources/html/tools/color.html'
+/** @type {string} */
+import backgroundStyle from '../resources/html/tools/background.html'
+/** @type {string} */
+import ulStyle from '../resources/html/tools/ul.html'
+/** @type {string} */
+import olStyle from '../resources/html/tools/ol.html'
+/** @type {string} */
+import todoStyle from '../resources/html/tools/todo.html'
 
 /** 代办列表的 marker */
 export const TODO_MARKER = createElement('input', {
