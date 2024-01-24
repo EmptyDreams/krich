@@ -32,7 +32,7 @@ export function getElementBehavior(element) {
         return behaviors[dataId]
     for (let key in behaviors) {
         const value = behaviors[key]
-        if (element.matches(value.exp))
+        if (value.exp && element.matches(value.exp))
             return value
     }
 }

@@ -1,6 +1,6 @@
 class ButtonBehavior {
     /**
-     * 是否需要保存状态（顶层元素该项一定为 true）
+     * 是否需要保存状态
      * @type {true|undefined}
      */
     noStatus
@@ -29,7 +29,7 @@ class ButtonBehavior {
     builder
     /**
      * 判断指定元素是否是当前样式
-     * @type {string & keyof HTMLElementTagNameMap | string}
+     * @type {string & keyof HTMLElementTagNameMap | string | undefined}
      */
     exp
     /**
