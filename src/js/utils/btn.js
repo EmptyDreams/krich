@@ -3,7 +3,7 @@
 */
 
 import {KRICH_TOOL_BAR, SELECT_VALUE} from '../global-fileds'
-import {getElementBehavior} from './tools'
+import {getElementBehavior, readSelectedColor} from './tools'
 
 /**
  * 判断指定按钮是否激活
@@ -11,8 +11,11 @@ import {getElementBehavior} from './tools'
  * @return {boolean}
  */
 export function isActive(button) {
-    if (button.hasAttribute(SELECT_VALUE))
-        return button.getAttribute(SELECT_VALUE) !== '0'
+    const selectValue = button.getAttribute(SELECT_VALUE)
+    if (button.classList.contains('color'))
+        return readSelectedColor(button) !== selectValue
+    if (selectValue)
+        return selectValue !== '0'
     return button.classList.contains('active')
 }
 
