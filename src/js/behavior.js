@@ -105,13 +105,23 @@ initBehaviors({
         exp: 'span[style^="color:"]',
         render: () => handleTemplate(colorStyle),
         onclick: (range, btn) => colorOnclick(range, btn, 'color'),
-        builder: btn => createElement('span', {style: 'color:' + readSelectedColor(btn)})
+        builder: btn => createElement('span', {style: 'color:' + readSelectedColor(btn)}),
+        verify: (btn, item) => readSelectedColor(btn) === item.getAttribute('style').substring(6),
+        setter: (btn, item) => {
+            const value = item ? item.getAttribute('style').substring(6) : btn.getAttribute(SELECT_VALUE)
+            btn.getElementsByClassName('value')[0].setAttribute('style', `background:${value}`)
+        }
     },
     background: {
         exp: 'span[style^="background:"]',
         render: () => handleTemplate(backgroundStyle),
         onclick: (range, btn) => colorOnclick(range, btn, 'background'),
-        builder: btn => createElement('span', {style: 'background:' + readSelectedColor(btn)})
+        builder: btn => createElement('span', {style: 'background:' + readSelectedColor(btn)}),
+        verify: (btn, item) => readSelectedColor(btn) === item.getAttribute('style').substring(11),
+        setter: (btn, item) => {
+            const value = item ? item.getAttribute('style').substring(11) : btn.getAttribute(SELECT_VALUE)
+            btn.getElementsByClassName('value')[0].setAttribute('style', `background:${value}`)
+        }
     },
     ul: {
         multi: true,
