@@ -30,6 +30,7 @@ export function initKrich(optional) {
     registryRangeMonitor()
     registryBeforeInputEventListener(KRICH_EDITOR, event => new Promise(resolve => {
         setTimeout(() => {
+            resolve()
             const {data, inputType} = event
             let kRange = KRange.activated()
             let range = kRange.item
@@ -59,7 +60,6 @@ export function initKrich(optional) {
                     if (item) item.insertAdjacentElement('beforebegin', TODO_MARKER.cloneNode(true))
                 }
             }
-            resolve()
         }, 0)
     }))
 }

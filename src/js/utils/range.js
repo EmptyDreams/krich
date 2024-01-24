@@ -1,5 +1,5 @@
 
-import {KRICH_EDITOR, TOP_LIST} from '../global-fileds'
+import {EMPTY_BODY_NODE_LIST, KRICH_EDITOR, TOP_LIST} from '../global-fileds'
 import {
     findParentTag,
     getFirstTextNode,
@@ -52,7 +52,10 @@ export function setCursorPositionAfter(node) {
 
 export class KRange {
 
-    /** @type {Range} */
+    /**
+     * 内部 Range 对象
+     * @type {Range}
+     */
     item
 
     /**
@@ -77,7 +80,10 @@ export class KRange {
             }
             if (range.collapsed) {
                 if (startStatus) {
-                    setEndAfter(startContainer.childNodes[startOffset])
+                    let point = startContainer.childNodes[startOffset]
+                    while (EMPTY_BODY_NODE_LIST.includes(point.nodeName))
+                        point = prevSiblingText(point)
+                    setEndAfter(point)
                 } else {
                     newRange.setEnd(startContainer, startOffset)
                 }
@@ -85,7 +91,8 @@ export class KRange {
             } else {
                 if (startStatus) {
                     let start = startContainer.childNodes[startOffset]
-                    if (start.nodeName === 'INPUT') start = nextSiblingText(start)
+                    while (EMPTY_BODY_NODE_LIST.includes(start.nodeName))
+                        start = nextSiblingText(start)
                     newRange.setStart(getFirstTextNode(start), 0)
                 } else if (startContainer.textContent.length === startOffset) {
                     newRange.setStart(nextSiblingText(startContainer), 0)
@@ -94,7 +101,8 @@ export class KRange {
                 }
                 if (endStatus) {
                     let end = endOffset === 0 ? prevSiblingText(endContainer) : endContainer.childNodes[endOffset - 1]
-                    if (end.nodeName === 'INPUT') end = prevSiblingText(end)
+                    while (EMPTY_BODY_NODE_LIST.includes(end.nodeName))
+                        end = prevSiblingText(end)
                     setEndAfter(end)
                 } else {
                     newRange.setEnd(endContainer, endOffset)

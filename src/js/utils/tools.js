@@ -7,7 +7,7 @@ import {behaviors, DATA_ID} from '../global-fileds'
 /**
  * 构建一个新的元素
  * @param tagName {string} 标签名称
- * @param optional {(string[]|{[p:string]:string})?} 类名数组或属性键值对
+ * @param optional {(string[]|{[p:string]:(string|boolean)})?} 类名数组或属性键值对
  * @return {HTMLElement}
  */
 export function createElement(tagName, optional) {

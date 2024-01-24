@@ -44,6 +44,9 @@ import ulStyle from '../resources/html/tools/ul.html'
 import olStyle from '../resources/html/tools/ol.html'
 /** @type {string} */
 import todoStyle from '../resources/html/tools/todo.html'
+/** @type {string} */
+import hrStyle from '../resources/html/tools/hr.html'
+import {onclickHr} from './behaviors/hr'
 
 /** 代办列表的 marker */
 export const TODO_MARKER = createElement('input', {
@@ -108,17 +111,6 @@ initBehaviors({
         onclick: range => execCommonCommand('sub', range, false, ['sup']),
         builder: () => createElement('sub')
     },
-    clear: {
-        noStatus: true,
-        render: () => clearStyle,
-        onclick: () => {
-            for (let line of KRICH_EDITOR.children) {
-                if (!line.querySelector('img,pre')) {
-                    line.innerHTML = line.textContent
-                }
-            }
-        }
-    },
     color: {
         exp: 'span[style^="color:"]',
         render: () => handleTemplate(colorStyle),
@@ -140,6 +132,23 @@ initBehaviors({
             const value = item ? item.getAttribute('style').substring(11) : btn.getAttribute(SELECT_VALUE)
             btn.getElementsByClassName('value')[0].setAttribute('style', `background:${value}`)
         }
+    },
+    clear: {
+        noStatus: true,
+        render: () => clearStyle,
+        onclick: () => {
+            for (let line of KRICH_EDITOR.children) {
+                if (!line.querySelector('img,pre')) {
+                    line.innerHTML = line.textContent
+                }
+            }
+        }
+    },
+    hr: {
+        exp: 'hr',
+        noStatus: true,
+        render: () => hrStyle,
+        onclick: onclickHr
     },
     ul: {
         multi: true,

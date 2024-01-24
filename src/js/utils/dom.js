@@ -3,6 +3,7 @@
  */
 
 import {equalsKrichNode} from './tools'
+import {EMPTY_BODY_NODE_LIST} from '../global-fileds'
 
 /**
  * 获取指定节点的第一个文本子节点
@@ -75,7 +76,7 @@ function getSiblingText(node, limit, varName, fun) {
     let dist = node
     while (true) {
         let sibling = dist[varName]
-        while (sibling?.nodeName === 'INPUT') {
+        while (sibling && EMPTY_BODY_NODE_LIST.includes(sibling.nodeName)) {
             sibling = sibling[varName]
         }
         if (sibling) return fun(sibling)
