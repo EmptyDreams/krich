@@ -1,6 +1,7 @@
 import {findParentTag} from '../utils/dom'
 import {behaviors, KRICH_TOOL_BAR} from '../global-fileds'
 import {KRange} from '../utils/range'
+import {getElementBehavior} from '../utils/tools'
 
 /**
  * 多元素结构的点击事件
@@ -16,6 +17,15 @@ export function onclickMultiElementStructure(range, key, lineTagName, simulateMa
 }
 
 /**
+ * 判断指定节点是否是多元素结构
+ * @param node {Node}
+ * @return {boolean|undefined}
+ */
+export function isMultiElementStructure(node) {
+    return node instanceof Element ? getElementBehavior(node)?.multi : false
+}
+
+/**
  * 辅助函数，承载实际功能
  * @param range {KRange} 选择范围
  * @param key {string} 在 behaviors 中的 key
@@ -25,21 +35,15 @@ export function onclickMultiElementStructure(range, key, lineTagName, simulateMa
 function helper(range, key, lineTagName, simulateMarker) {
     const behavior = behaviors[key]
     /**
-     * 检查指定标签是否是结构对象
-     * @param item {Element}
-     * @return {boolean}
-     */
-    const structureChecker = item => item.matches?.(behavior.exp)
-    /**
      * 构建一个结构
      * @return {HTMLElement}
      */
     const buildStructure = () =>
         behavior.builder(KRICH_TOOL_BAR.querySelector(`*[data-id="${key}"]`))
     const {startContainer, endContainer} = range.item
-    const startTopContainer = findParentTag(startContainer, structureChecker)
-    const endTopContainer = findParentTag(endContainer, structureChecker)
-    if (startTopContainer && startTopContainer === endTopContainer) {
+    const startTopContainer = findParentTag(startContainer, isMultiElementStructure)
+    const endTopContainer = findParentTag(endContainer, isMultiElementStructure)
+    if (startTopContainer && startTopContainer === endTopContainer && startTopContainer.matches(behavior.exp)) {
         /* 如果选择范围在目标结构当中，且仅选中了一个结构的部分或全部内容 */
         /**
          * 将列表中所有元素插入到指定位置
@@ -100,7 +104,7 @@ function helper(range, key, lineTagName, simulateMarker) {
         return
     }
     const lines = range.getAllTopElements()
-    const existing = lines.find(structureChecker)
+    const existing = lines.find(it => it.matches(behavior.exp))
     /**
      * 对行进行打包，在外部封装上 [lineTag]
      * @param item {HTMLElement}

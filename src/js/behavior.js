@@ -45,6 +45,7 @@ initBehaviors({
         onclick: behaviorHeader
     },
     blockquote: {
+        multi: true,
         exp: 'blockquote',
         render: () => blockquoteStyle,
         onclick: range => onclickMultiElementStructure(range, 'blockquote'),
@@ -113,18 +114,21 @@ initBehaviors({
         builder: btn => createElement('span', {style: 'background:' + readSelectedColor(btn)})
     },
     ul: {
+        multi: true,
         exp: 'ul',
         render: () => ulStyle,
         onclick: range => onclickMultiElementStructure(range, 'ul', 'li'),
         builder: () => createElement('ul')
     },
     ol: {
+        multi: true,
         exp: 'ol',
         render: () => olStyle,
         onclick: range => onclickMultiElementStructure(range, 'ol', 'li'),
         builder: () => createElement('ol')
     },
     todo: {
+        multi: true,
         exp: 'div.todo',
         render: () => todoStyle,
         onclick: range => onclickMultiElementStructure(range, 'todo', 'li', TODO_MARKER),

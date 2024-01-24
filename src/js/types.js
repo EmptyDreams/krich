@@ -47,6 +47,11 @@ class ButtonBehavior {
      */
     setter
     /**
+     * 标记当前样式是否是多元素结构
+     * @type {true|undefined}
+     */
+    multi
+    /**
      * 该样式的按钮对象
      * @type {HTMLElement|undefined}
      */
