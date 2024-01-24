@@ -74,15 +74,14 @@ function getSiblingText(node, limit, varName, fun) {
     if (node === limit) return null
     let dist = node
     while (true) {
-        const sibling = dist[varName]
-        if (sibling) {
-            dist = sibling
-            break
+        let sibling = dist[varName]
+        while (sibling?.nodeName === 'INPUT') {
+            sibling = sibling[varName]
         }
+        if (sibling) return fun(sibling)
         dist = dist.parentNode
         if (!dist || dist === limit) return null
     }
-    return fun(dist)
 }
 
 /**
