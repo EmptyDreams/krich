@@ -1,15 +1,23 @@
 import {
     behaviors,
-    DATA_ID,
+    DATA_ID, KRICH_EDITOR,
     KRICH_TOOL_BAR,
     markStatusCacheInvalid,
     SELECT_VALUE
 } from '../global-fileds'
-import {getElementBehavior, parseRgbToHex} from '../utils/tools'
+import {getElementBehavior, isEmptyBodyElement, parseRgbToHex} from '../utils/tools'
 import {editorRange} from './range-monitor'
 import {findParentTag} from '../utils/dom'
+import {KRange} from '../utils/range'
 
 export function registryMouseClickEvent() {
+    KRICH_EDITOR.addEventListener('click', event => {
+        const {target} = event
+        if (isEmptyBodyElement(target)) {
+            event.preventDefault()
+            new KRange(target).active()
+        }
+    })
     KRICH_TOOL_BAR.addEventListener('click', event => {
         const range = editorRange
         if (!range || range.body) return
