@@ -23,6 +23,16 @@ export function createElement(tagName, optional) {
 }
 
 /**
+ * 构建一个新的空行
+ * @return {HTMLElement}
+ */
+export function createNewLine() {
+    const line = createElement('p')
+    line.innerHTML = '<br>'
+    return line
+}
+
+/**
  * @param element {HTMLElement}
  * @return {ButtonBehavior|undefined}
  */

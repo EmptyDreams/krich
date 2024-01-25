@@ -3,6 +3,7 @@ import {findParentTag, getFirstTextNode, getLastTextNode, replaceElement} from '
 import {KRange, setCursorPositionAfter, setCursorPositionBefore, setCursorPositionIn} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
 import {editorRange} from './range-monitor'
+import {createNewLine} from '../utils/tools'
 
 export function registryKeyboardEvent() {
     const switchTask = key => {
@@ -25,9 +26,10 @@ export function registryKeyboardEvent() {
     })
     KRICH_EDITOR.addEventListener('keydown', event => {
         const body = editorRange?.body
+        const {key} = event
         if (body) {
             event.preventDefault()
-            switch (event.key) {
+            switch (key) {
                 case 'ArrowLeft': case 'ArrowUp':
                     if (body.previousSibling)
                         setCursorPositionAfter(body.previousSibling)
@@ -36,15 +38,30 @@ export function registryKeyboardEvent() {
                     if (body.nextSibling)
                         setCursorPositionBefore(body.nextSibling)
                     break
+                case 'Backspace': case 'Delete':
+                    if (key[0] === 'B' && body.previousSibling) {
+                        setCursorPositionAfter(body.previousSibling)
+                    } else {
+                        setCursorPositionBefore(body.nextSibling)
+                    }
+                    body.remove()
+                    break
+                case 'Enter':
+                    const line = createNewLine()
+                    const where = event.shiftKey ? 'afterend' : 'beforebegin'
+                    body.insertAdjacentElement(where, line)
+                    setCursorPositionAfter(line)
+                    break
             }
-        }
-        switch (event.key) {
-            case 'Enter':
-                enterEvent(event)
-                break
-            case 'Backspace':
-                deleteEvent(event)
-                break
+        } else {
+            switch (key) {
+                case 'Enter':
+                    enterEvent(event)
+                    break
+                case 'Backspace':
+                    deleteEvent(event)
+                    break
+            }
         }
     })
 }
