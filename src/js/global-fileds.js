@@ -21,7 +21,6 @@ export const SELECT_VALUE = 'data-value'
 
 export const TITLE_LIST = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6']
 export const TOP_LIST = ['P', 'BLOCKQUOTE', 'UL', 'OL', 'HR', ...TITLE_LIST]
-export const EMPTY_BODY_NODE_LIST = ['INPUT', 'HR']
 
 /**
  * 工具栏上的按钮的样式

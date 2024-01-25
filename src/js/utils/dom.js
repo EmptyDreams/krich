@@ -2,8 +2,7 @@
     本文件用于放置与操作 DOM 有关的 util 函数
  */
 
-import {equalsKrichNode} from './tools'
-import {EMPTY_BODY_NODE_LIST} from '../global-fileds'
+import {equalsKrichNode, isEmptyBodyElement} from './tools'
 
 /**
  * 获取指定节点的第一个文本子节点
@@ -76,7 +75,7 @@ function getSiblingText(node, limit, varName, fun) {
     let dist = node
     while (true) {
         let sibling = dist[varName]
-        while (sibling && EMPTY_BODY_NODE_LIST.includes(sibling.nodeName)) {
+        while (sibling && isEmptyBodyElement(sibling)) {
             sibling = sibling[varName]
         }
         if (sibling) return fun(sibling)

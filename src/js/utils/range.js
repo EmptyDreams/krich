@@ -1,4 +1,4 @@
-import {EMPTY_BODY_NODE_LIST, KRICH_EDITOR, TOP_LIST} from '../global-fileds'
+import {KRICH_EDITOR, TOP_LIST} from '../global-fileds'
 import {
     findParentTag,
     getFirstTextNode,
@@ -24,6 +24,7 @@ export function setCursorPosition(node, index) {
     selection.addRange(range)
 }
 
+// noinspection JSUnusedGlobalSymbols
 /**
  * 将光标移动到指定位置（会一直向后查找直到找到满足条件的位置）
  * @param node {Node}
@@ -109,7 +110,7 @@ export class KRange extends Range {
                     // noinspection JSValidateTypes
                     this.body = point
                 } else {
-                    while (EMPTY_BODY_NODE_LIST.includes(point.nodeName))
+                    while (isEmptyBodyElement(point))
                         point = prevSiblingText(point)
                     setEndAfter(point)
                 }
@@ -121,7 +122,7 @@ export class KRange extends Range {
         } else {
             if (startStatus) {
                 let start = startContainer.childNodes[startOffset]
-                while (EMPTY_BODY_NODE_LIST.includes(start.nodeName))
+                while (isEmptyBodyElement(start))
                     start = nextSiblingText(start)
                 super.setStart(getFirstTextNode(start), 0)
             } else if (startContainer.textContent.length === startOffset) {
@@ -131,7 +132,7 @@ export class KRange extends Range {
             }
             if (endStatus) {
                 let end = endOffset === 0 ? prevSiblingText(endContainer) : endContainer.childNodes[endOffset - 1]
-                while (EMPTY_BODY_NODE_LIST.includes(end.nodeName))
+                while (isEmptyBodyElement(end))
                     end = prevSiblingText(end)
                 setEndAfter(end)
             } else {
