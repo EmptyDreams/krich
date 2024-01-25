@@ -1,6 +1,6 @@
 import {KRICH_EDITOR, markStatusCacheInvalid} from '../global-fileds'
 import {findParentTag, getFirstTextNode, getLastTextNode, replaceElement} from '../utils/dom'
-import {KRange, setCursorPositionAfter, setCursorPositionBefore, setCursorPositionIn} from '../utils/range'
+import {KRange, setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
 import {editorRange} from './range-monitor'
 import {createNewLine} from '../utils/tools'
@@ -81,7 +81,7 @@ function deleteEvent(event) {
         const element = topElement.firstElementChild
         topElement.insertAdjacentElement('beforebegin', element)
         element.outerHTML = element.outerHTML.match(/<p>.*<\/p>/)[0]
-        setCursorPositionIn(topElement.previousSibling, 0)
+        setCursorPositionBefore(topElement.previousSibling)
         if (!topElement.firstChild) topElement.remove()
     } else if (getFirstTextNode(KRICH_EDITOR) === startContainer) {
         // 在编辑器开头按下删除键时屏蔽此次按键

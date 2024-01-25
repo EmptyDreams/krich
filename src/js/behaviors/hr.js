@@ -1,7 +1,7 @@
 import {findParentTag} from '../utils/dom'
 import {TOP_LIST} from '../global-fileds'
 import {createElement, createNewLine} from '../utils/tools'
-import {setCursorPositionIn} from '../utils/range'
+import {setCursorPositionBefore} from '../utils/range'
 
 /**
  * 分割线的点击事件
@@ -18,5 +18,5 @@ export function onclickHr(range) {
     } else {
         posLine.insertAdjacentElement('afterend', hr)
     }
-    setCursorPositionIn(hr.nextSibling, 0)
+    setCursorPositionBefore(hr.nextSibling)
 }
