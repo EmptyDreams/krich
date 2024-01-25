@@ -352,7 +352,7 @@ export class KRange extends Range {
         const selection = getSelection()
         if (selection.rangeCount !== 0) {
             const range = selection.getRangeAt(0)
-            return 'text' in range ? range : new KRange(selection.getRangeAt(0))
+            return 'body' in range ? range : new KRange(selection.getRangeAt(0))
         }
         const node = getLastTextNode(KRICH_EDITOR)
         const range = new KRange()

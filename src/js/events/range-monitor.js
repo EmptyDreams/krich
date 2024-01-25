@@ -18,12 +18,16 @@ export function registryRangeMonitor() {
             return
         }
         if (KRICH_EDITOR !== document.activeElement) return
-        KRICH_TOOL_BAR.classList.remove('disable')
         const kRange = KRange.activated()
         if (kRange.body) {
             kRange.active()
+            KRICH_TOOL_BAR.classList.add('disable')
+            console.log('a')
             return
+        } else {
+            KRICH_TOOL_BAR.classList.remove('disable')
         }
+        console.log('b')
         const range = kRange
         const prev = editorRange
         if (!range.collapsed) {

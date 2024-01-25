@@ -12,7 +12,7 @@ import {findParentTag} from '../utils/dom'
 export function registryMouseClickEvent() {
     KRICH_TOOL_BAR.addEventListener('click', event => {
         const range = editorRange
-        if (!range) return
+        if (!range || range.body) return
         /** @type {HTMLElement} */
         let original = event.target
         let target = original
