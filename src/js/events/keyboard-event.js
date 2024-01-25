@@ -98,16 +98,11 @@ function enterEvent(event) {
     if (!range.collapsed) return
     const {startContainer} = range
     let element
-    const createLine = () => {
-        const result = document.createElement('p')
-        result.innerHTML = '<br>'
-        return result
-    }
     if (event.shiftKey) {
         const pElement = findParentTag(startContainer, ['P'])
         if (pElement) { // 如果在 p 标签中按下 Shift + Enter，则直接创建新行且不将输入指针后的内容放置在新的一行中
             event.preventDefault()
-            element = createLine()
+            element = createNewLine()
             pElement.insertAdjacentElement('afterend', element)
         }
     } else {
