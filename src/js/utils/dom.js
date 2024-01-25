@@ -75,7 +75,7 @@ function getSiblingText(node, limit, varName, fun) {
     let dist = node
     while (true) {
         let sibling = dist[varName]
-        while (sibling && isEmptyBodyElement(sibling)) {
+        while (isEmptyBodyElement(sibling)) {
             sibling = sibling[varName]
         }
         if (sibling) return fun(sibling)

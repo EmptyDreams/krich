@@ -103,9 +103,9 @@ export class KRange extends Range {
         if (optional.collapsed) {
             if (startStatus) {
                 let point = startContainer.childNodes[startOffset]
-                if (point.previousSibling?.nodeName === 'HR')
+                if (isEmptyBodyElement(point.previousSibling))
                     point = point.previousSibling
-                if (point.nodeName === 'HR') {
+                if (isEmptyBodyElement(point)) {
                     this.selectNode(point)
                     // noinspection JSValidateTypes
                     this.body = point

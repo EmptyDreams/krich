@@ -49,11 +49,11 @@ export function getElementBehavior(element) {
 
 /**
  * 判断一个标签是否是不包含子元素的标签
- * @param element {HTMLElement|Node}
+ * @param element {HTMLElement|Node?}
  * @return {boolean}
  */
 export function isEmptyBodyElement(element) {
-    return element.classList && !element.firstChild && element.nodeName !== 'BR'
+    return element && element.classList && !element.firstChild && element.nodeName !== 'BR'
 }
 
 /**
