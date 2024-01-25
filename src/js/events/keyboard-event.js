@@ -14,7 +14,7 @@ export function registryKeyboardEvent() {
                     if (KRICH_EDITOR.children.length === 1 && KRICH_EDITOR.firstChild.textContent.length === 0) {
                         markStatusCacheInvalid()
                     }
-                    syncButtonsStatus(KRange.activated().item.startContainer)
+                    syncButtonsStatus(KRange.activated().startContainer)
                 }
         }
     }
@@ -39,7 +39,7 @@ export function registryKeyboardEvent() {
  * @param event {KeyboardEvent}
  */
 function deleteEvent(event) {
-    const range = KRange.activated().item
+    const range = KRange.activated()
     if (!range.collapsed || range.startOffset !== 0) return
     const {startContainer} = range
     const topElement = findParentTag(startContainer, ['UL', 'OL', 'BLOCKQUOTE'])
@@ -62,7 +62,7 @@ function deleteEvent(event) {
  * @param event {KeyboardEvent}
  */
 function enterEvent(event) {
-    const range = KRange.activated().item
+    const range = KRange.activated()
     if (!range.collapsed) return
     const {startContainer} = range
     let element

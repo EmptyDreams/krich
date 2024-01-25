@@ -31,8 +31,7 @@ export function initKrich(optional) {
         setTimeout(() => {
             resolve()
             const {data, inputType} = event
-            let kRange = KRange.activated()
-            let range = kRange.item
+            let range = KRange.activated()
             const {startContainer, startOffset} = range
             /* 当用户输入位置所在文本与按钮列表不同时，将新输入的文本样式与按钮状态同步 */
             if (data && !statusCheckCache && range.collapsed) {
@@ -48,7 +47,7 @@ export function initKrich(optional) {
                     behavior.onclick(KRange.deserialized(offline), child)
                 }
                 newRange.deserialized(offline)
-                newRange.item.collapse(false)
+                newRange.collapse(false)
                 newRange.active()
             }
             /* 在代办列表中换行时自动在 li 中插入 <input> */

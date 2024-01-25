@@ -40,7 +40,7 @@ function helper(range, key, lineTagName, simulateMarker) {
      */
     const buildStructure = () =>
         behavior.builder(KRICH_TOOL_BAR.querySelector(`*[data-id="${key}"]`))
-    const {startContainer, endContainer} = range.item
+    const {startContainer, endContainer} = range
     const startTopContainer = findParentTag(startContainer, isMultiElementStructure)
     const endTopContainer = findParentTag(endContainer, isMultiElementStructure)
     if (startTopContainer && startTopContainer === endTopContainer && startTopContainer.matches(behavior.exp)) {
@@ -78,7 +78,7 @@ function helper(range, key, lineTagName, simulateMarker) {
             startTopContainer.remove()
         }
         // 如果没有范围选中则判定为选中了全部
-        if (range.item.collapsed) return removeAll()
+        if (range.collapsed) return removeAll()
         // 检查指定元素的父元素是否是结构对象
         const topElementChecker = item => item.parentNode === startTopContainer
         // 获取选区的起始行和终止行

@@ -183,7 +183,7 @@ initBehaviors({
 export function execCommonCommand(
     key, range, removed = false, conflicts, type = 0
 ) {
-    if (range.item.collapsed) return true
+    if (range.collapsed) return true
     const behavior = behaviors[key]
     const selectionRange = KRange.activated()
     const isEquals = selectionRange.equals(range)
@@ -203,9 +203,9 @@ export function execCommonCommand(
     if (type !== 2 && (removed || type === 1))
         rangeArray = setStyleInRange(key, rangeArray, behavior)
     let offline = isEquals ? KRange.join(rangeArray).serialization() : null
-    const lastItem = rangeArray[lastIndex].item.endContainer
+    const lastItem = rangeArray[lastIndex].endContainer
     for (let kRange of rangeArray) {
-        zipTree(findParentTag(kRange.item.startContainer, TOP_LIST))
+        zipTree(findParentTag(kRange.startContainer, TOP_LIST))
     }
     if (isEquals) {
         KRange.deserialized(offline).active()
@@ -245,7 +245,7 @@ export function removeStylesInRange(range, ...behaviors) {
     tmpBox.classList.add('tmp')
     range.surroundContents(tmpBox)
     range.deserialized(offlineData)
-    const {startContainer, startOffset, endContainer, endOffset} = range.item
+    const {startContainer, startOffset, endContainer, endOffset} = range
     const boxTop = findParentTag(tmpBox, checker)
     if (boxTop) {
         const {list, index} = splitElementByContainer(boxTop, startContainer, startOffset, endContainer, endOffset)

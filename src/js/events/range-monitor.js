@@ -20,8 +20,12 @@ export function registryRangeMonitor() {
         if (KRICH_EDITOR !== document.activeElement) return
         KRICH_TOOL_BAR.classList.remove('disable')
         const kRange = KRange.activated()
-        const range = kRange.item
-        const prev = editorRange?.item
+        if (kRange.body) {
+            kRange.active()
+            return
+        }
+        const range = kRange
+        const prev = editorRange
         if (!range.collapsed) {
             const lca = range.commonAncestorContainer
             syncButtonsStatus(lca.firstChild ?? lca)

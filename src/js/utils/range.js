@@ -49,70 +49,73 @@ export function setCursorPositionAfter(node) {
     setCursorPosition(last, last.textContent.length)
 }
 
-export class KRange {
+export class KRange extends Range {
 
     /**
-     * 内部 Range 对象
-     * @type {Range}
+     * 判断是否是包裹文本的 range
+     * @type {Element|undefined}
      */
-    item
+    body
 
     /**
      * 从 Range 构建一个 KRange
      * @param range {Range|undefined}
      */
     constructor(range = undefined) {
-        if (!range) {
-            this.item = document.createRange()
-            return
-        }
+        super()
+        if (!range) return
         const {startContainer, startOffset, endContainer, endOffset} = range
         const checkStatus = node => !['#text', 'BR'].includes(node.nodeName)
         const startStatus = checkStatus(startContainer)
         const endStatus = checkStatus(endContainer)
         // 如果起点或结尾不是 TEXT NODE 则进行纠正
-        if (startStatus || endStatus) {
-            const newRange = document.createRange()
-            function setEndAfter(node) {
-                const text = getLastTextNode(node)
-                newRange.setEnd(text, text.textContent.length)
-            }
-            if (range.collapsed) {
-                if (startStatus) {
-                    let point = startContainer.childNodes[startOffset]
+        const setEndAfter = node => {
+            const text = getLastTextNode(node)
+            super.setEnd(text, text.textContent.length)
+        }
+        if (range.collapsed) {
+            if (startStatus) {
+                let point = startContainer.childNodes[startOffset]
+                if (point.previousSibling?.nodeName === 'HR')
+                    point = point.previousSibling
+                if (point.nodeName === 'HR') {
+                    super.setStartBefore(point)
+                    super.setEndAfter(point)
+                    // noinspection JSValidateTypes
+                    this.body = point
+                } else {
                     while (EMPTY_BODY_NODE_LIST.includes(point.nodeName))
                         point = prevSiblingText(point)
                     setEndAfter(point)
-                } else {
-                    newRange.setEnd(startContainer, startOffset)
                 }
-                newRange.collapse(false)
             } else {
-                if (startStatus) {
-                    let start = startContainer.childNodes[startOffset]
-                    while (EMPTY_BODY_NODE_LIST.includes(start.nodeName))
-                        start = nextSiblingText(start)
-                    newRange.setStart(getFirstTextNode(start), 0)
-                } else if (startContainer.textContent.length === startOffset) {
-                    newRange.setStart(nextSiblingText(startContainer), 0)
-                } else {
-                    newRange.setStart(startContainer, startOffset)
-                }
-                if (endStatus) {
-                    let end = endOffset === 0 ? prevSiblingText(endContainer) : endContainer.childNodes[endOffset - 1]
-                    while (EMPTY_BODY_NODE_LIST.includes(end.nodeName))
-                        end = prevSiblingText(end)
-                    setEndAfter(end)
-                } else {
-                    newRange.setEnd(endContainer, endOffset)
-                }
+                super.setEnd(startContainer, startOffset)
             }
-            range = newRange
+            if (!this.body)
+                super.collapse(false)
+        } else {
+            if (startStatus) {
+                let start = startContainer.childNodes[startOffset]
+                while (EMPTY_BODY_NODE_LIST.includes(start.nodeName))
+                    start = nextSiblingText(start)
+                super.setStart(getFirstTextNode(start), 0)
+            } else if (startContainer.textContent.length === startOffset) {
+                super.setStart(nextSiblingText(startContainer), 0)
+            } else {
+                super.setStart(startContainer, startOffset)
+            }
+            if (endStatus) {
+                let end = endOffset === 0 ? prevSiblingText(endContainer) : endContainer.childNodes[endOffset - 1]
+                while (EMPTY_BODY_NODE_LIST.includes(end.nodeName))
+                    end = prevSiblingText(end)
+                setEndAfter(end)
+            } else {
+                super.setEnd(endContainer, endOffset)
+            }
         }
-        this.item = range
         console.assert(
-            ![range.startContainer, range.endContainer].find(it => !['#text', 'BR'].includes(it.nodeName)),
-            'KRange 的起点或终点不在 TEXT NODE 中', range
+            this.body || ![this.startContainer, this.endContainer].find(it => !['#text', 'BR'].includes(it.nodeName)),
+            'KRange 的起点或终点不在 TEXT NODE 中', this
         )
     }
 
@@ -123,7 +126,7 @@ export class KRange {
      */
     setStart(node, offset) {
         const [text, index] = findTextByIndex(node, offset, true)
-        this.item.setStart(text, index)
+        super.setStart(text, index)
     }
 
     /**
@@ -133,7 +136,7 @@ export class KRange {
      */
     setEnd(node, offset) {
         const [text, index] = findTextByIndex(node, offset, false)
-        this.item.setEnd(text, index)
+        super.setEnd(text, index)
     }
 
     /**
@@ -156,8 +159,9 @@ export class KRange {
     /** 将当前区间设定为激活区间 */
     active() {
         const selection = getSelection()
+        if (selection.getRangeAt(0) === this) return
         selection.removeAllRanges()
-        selection.addRange(this.item)
+        selection.addRange(this)
     }
 
     /**
@@ -165,8 +169,8 @@ export class KRange {
      * @param that {KRange}
      */
     equals(that) {
-        const thisRange = this.item
-        const thatRange = that.item
+        const thisRange = this
+        const thatRange = that
         if (thisRange === thatRange) return true
         const list = ['collapsed', 'startContainer', 'endContainer', 'startOffset', 'endOffset']
         return !list.find(it => thisRange[it] !== thatRange[it])
@@ -176,7 +180,7 @@ export class KRange {
      * @return {{next: (function(): {value: Node, done: boolean})}}
      */
     [Symbol.iterator]() {
-        const range = this.item
+        const range = this
         let value = range.startContainer
         let done = false
         // noinspection JSUnusedGlobalSymbols
@@ -198,11 +202,10 @@ export class KRange {
      * @return {void}
      */
     surroundContents(container) {
-        const range = this.item
-        const {startContainer, endContainer, startOffset, endOffset, commonAncestorContainer} = range
+        const {startContainer, endContainer, startOffset, endOffset, commonAncestorContainer} = this
         console.assert(
             ['BR', '#text'].includes(startContainer.nodeName) && ['BR', '#text'].includes(endContainer.nodeName),
-            'Range 始末位置都应在 TEXT NODE 当中', range
+            'Range 始末位置都应在 TEXT NODE 当中', this
         )
         if (startContainer === endContainer && startOffset === 0 && endOffset === startContainer.textContent.length) {
             startContainer.parentNode.insertBefore(container, startContainer)
@@ -260,7 +263,7 @@ export class KRange {
             }
             return yOffset + x + offset
         }
-        const range = this.item
+        const range = this
         const {startContainer, startOffset, endContainer, endOffset} = range
         const startLocation = locateRange(startContainer, startOffset)
         if (range.collapsed) return [startLocation]
@@ -276,7 +279,7 @@ export class KRange {
         const [start, end] = data
         this.setStart(KRICH_EDITOR, start)
         if (data.length === 1) {
-            this.item.collapse(true)
+            this.collapse(true)
         } else {
             this.setEnd(KRICH_EDITOR, end)
         }
@@ -287,20 +290,19 @@ export class KRange {
      * @return {KRange[]}
      */
     splitLine() {
-        const range = this.item
-        const {startContainer, endContainer} = range
+        const {startContainer, endContainer, startOffset, endOffset} = this
         const lines = this.getAllTopElements()
         if (lines.length === 1) return [this.copy()]
         return lines.map((item, index) => {
             let newRange
             if (index === 0) {
                 newRange = new KRange()
-                newRange.setStart(startContainer, range.startOffset)
+                newRange.setStart(startContainer, startOffset)
                 newRange.setEndAfter(item)
             } else if (index === lines.length - 1) {
                 newRange = new KRange()
                 newRange.setStartBefore(item)
-                newRange.setEnd(endContainer, range.endOffset)
+                newRange.setEnd(endContainer, endOffset)
             } else {
                 newRange = KRange.selectNodeContents(item)
             }
@@ -313,7 +315,7 @@ export class KRange {
      * @return {HTMLElement[]}
      */
     getAllTopElements() {
-        const {commonAncestorContainer, startContainer, endContainer} = this.item
+        const {commonAncestorContainer, startContainer, endContainer} = this
         const firstChild = commonAncestorContainer.firstChild
         /**
          * 三元表达式表达式为 true 时表明选区最近公共祖先不是顶层标签。
@@ -339,7 +341,7 @@ export class KRange {
      * @return {KRange}
      */
     copy() {
-        return new KRange(this.item)
+        return new KRange(this)
     }
 
     /**
@@ -348,12 +350,14 @@ export class KRange {
      */
     static activated() {
         const selection = getSelection()
-        if (selection.rangeCount !== 0)
-            return new KRange(selection.getRangeAt(0))
+        if (selection.rangeCount !== 0) {
+            const range = selection.getRangeAt(0)
+            return 'text' in range ? range : new KRange(selection.getRangeAt(0))
+        }
         const node = getLastTextNode(KRICH_EDITOR)
         const range = new KRange()
         range.setStart(node, node.textContent.length)
-        range.item.collapse(true)
+        range.collapse(true)
         return range
     }
 
@@ -374,8 +378,8 @@ export class KRange {
      * @param ranges {KRange[]}
      */
     static join(ranges) {
-        const first = ranges[0].item
-        const last = ranges[ranges.length - 1].item
+        const first = ranges[0]
+        const last = ranges[ranges.length - 1]
         const result = new KRange()
         result.setStart(first.startContainer, first.startOffset)
         result.setEnd(last.endContainer, last.endOffset)

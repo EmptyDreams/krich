@@ -8,12 +8,8 @@ import {setCursorPositionIn} from '../utils/range'
  * @param range {KRange}
  */
 export function onclickHr(range) {
-    const posLine = findParentTag(range.item.endContainer, TOP_LIST)
-    const hr = createElement('div', {
-        class: 'hr',
-        contenteditable: false
-    })
-    hr.innerHTML = '<hr>'
+    const posLine = findParentTag(range.endContainer, TOP_LIST)
+    const hr = createElement('hr')
     if (!posLine.nextSibling) {
         const newLine = createElement('p')
         newLine.innerHTML = '<br>'
