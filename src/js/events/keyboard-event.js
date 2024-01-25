@@ -1,7 +1,8 @@
 import {KRICH_EDITOR, markStatusCacheInvalid} from '../global-fileds'
 import {findParentTag, getFirstTextNode, getLastTextNode, replaceElement} from '../utils/dom'
-import {KRange, setCursorPositionAfter, setCursorPositionIn} from '../utils/range'
+import {KRange, setCursorPositionAfter, setCursorPositionBefore, setCursorPositionIn} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
+import {editorRange} from './range-monitor'
 
 export function registryKeyboardEvent() {
     const switchTask = key => {
@@ -23,6 +24,20 @@ export function registryKeyboardEvent() {
         if (task) setTimeout(task, 0)
     })
     KRICH_EDITOR.addEventListener('keydown', event => {
+        const body = editorRange?.body
+        if (body) {
+            event.preventDefault()
+            switch (event.key) {
+                case 'ArrowLeft': case 'ArrowUp':
+                    if (body.previousSibling)
+                        setCursorPositionAfter(body.previousSibling)
+                    break
+                case 'ArrowRight': case 'ArrowDown':
+                    if (body.nextSibling)
+                        setCursorPositionBefore(body.nextSibling)
+                    break
+            }
+        }
         switch (event.key) {
             case 'Enter':
                 enterEvent(event)

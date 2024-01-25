@@ -49,6 +49,15 @@ export function setCursorPositionAfter(node) {
     setCursorPosition(last, last.textContent.length)
 }
 
+/**
+ * 将光标移动到指定元素的开头
+ * @param node {Node}
+ */
+export function setCursorPositionBefore(node) {
+    const first = getFirstTextNode(node)
+    setCursorPosition(first, 0)
+}
+
 export class KRange extends Range {
 
     /**
