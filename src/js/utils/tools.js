@@ -48,6 +48,15 @@ export function getElementBehavior(element) {
 }
 
 /**
+ * 判断一个标签是否是不包含子元素的标签
+ * @param element {HTMLElement|Node}
+ * @return {boolean}
+ */
+export function isEmptyBodyElement(element) {
+    return element.classList && !element.firstChild
+}
+
+/**
  * 判断两个富文本节点是否相同（不判断节点内容）
  * @param arg0 {HTMLElement}
  * @param arg1 {HTMLElement}

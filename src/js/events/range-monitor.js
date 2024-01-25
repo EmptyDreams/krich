@@ -21,6 +21,7 @@ export function registryRangeMonitor() {
         const prev = editorRange
         const range = KRange.activated()
         editorRange = range
+        prev?.body?.classList?.remove?.('active')
         if (range.body) {
             range.active()
             KRICH_TOOL_BAR.classList.add('disable')
@@ -28,7 +29,6 @@ export function registryRangeMonitor() {
             return
         } else {
             KRICH_TOOL_BAR.classList.remove('disable')
-            prev?.body?.classList?.remove?.('active')
         }
         if (!range.collapsed) {
             const lca = range.commonAncestorContainer

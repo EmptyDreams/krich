@@ -8,6 +8,7 @@ import {
     splitElementByContainer,
     zipTree
 } from './dom'
+import {isEmptyBodyElement} from './tools'
 
 /**
  * 将鼠标光标移动到指定位置
@@ -45,6 +46,7 @@ export function setCursorPositionIn(node, index) {
  * @param node {Node}
  */
 export function setCursorPositionAfter(node) {
+    if (checkEmptyBodyElement(node)) return
     const last = getLastTextNode(node)
     setCursorPosition(last, last.textContent.length)
 }
@@ -54,8 +56,16 @@ export function setCursorPositionAfter(node) {
  * @param node {Node}
  */
 export function setCursorPositionBefore(node) {
+    if (checkEmptyBodyElement(node)) return
     const first = getFirstTextNode(node)
     setCursorPosition(first, 0)
+}
+
+function checkEmptyBodyElement(node) {
+    if (isEmptyBodyElement(node)) {
+        new KRange(node).active()
+        return true
+    }
 }
 
 export class KRange extends Range {
@@ -67,13 +77,20 @@ export class KRange extends Range {
     body
 
     /**
-     * 从 Range 构建一个 KRange
-     * @param range {Range|undefined}
+     * 从 Range 或 EmptyBodyElement 构建一个 KRange
+     * @param optional {Range|HTMLElement|undefined}
      */
-    constructor(range = undefined) {
+    constructor(optional = undefined) {
         super()
-        if (!range) return
-        const {startContainer, startOffset, endContainer, endOffset} = range
+        if (!optional) return
+        if (optional.nodeName) {
+            console.assert(isEmptyBodyElement(optional), 'KRange 传入 HTMLElement 对象时仅允许传入 EmptyBodyElement')
+            this.body = optional
+            this.selectNode(optional)
+            optional.classList.add('active')
+            return
+        }
+        const {startContainer, startOffset, endContainer, endOffset} = optional
         const checkStatus = node => !['#text', 'BR'].includes(node.nodeName)
         const startStatus = checkStatus(startContainer)
         const endStatus = checkStatus(endContainer)
@@ -82,14 +99,13 @@ export class KRange extends Range {
             const text = getLastTextNode(node)
             super.setEnd(text, text.textContent.length)
         }
-        if (range.collapsed) {
+        if (optional.collapsed) {
             if (startStatus) {
                 let point = startContainer.childNodes[startOffset]
                 if (point.previousSibling?.nodeName === 'HR')
                     point = point.previousSibling
                 if (point.nodeName === 'HR') {
-                    super.setStartBefore(point)
-                    super.setEndAfter(point)
+                    this.selectNode(point)
                     // noinspection JSValidateTypes
                     this.body = point
                 } else {
