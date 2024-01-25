@@ -31,7 +31,9 @@ export function registryMouseClickEvent() {
             if (original === target) return
             const selectValueChecker = it => it.hasAttribute(SELECT_VALUE)
             // 判断是否需要修正点击区域（点击到选择框的选项的子标签时需要进行修正）
-            const needFix = findParentTag(original, item => item.classList?.contains('items')) && !selectValueChecker(original)
+            const needFix = findParentTag(
+                original, item => item.classList?.contains('items')
+            ) && !selectValueChecker(original)
             if (needFix)
                 original = findParentTag(original, selectValueChecker)
             if (selectValueChecker(original)) {
