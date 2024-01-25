@@ -53,7 +53,7 @@ export function getElementBehavior(element) {
  * @return {boolean}
  */
 export function isEmptyBodyElement(element) {
-    return element.classList && !element.firstChild
+    return element.classList && !element.firstChild && element.nodeName !== 'BR'
 }
 
 /**
