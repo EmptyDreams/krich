@@ -18,24 +18,21 @@ export function registryRangeMonitor() {
             return
         }
         if (KRICH_EDITOR !== document.activeElement) return
-        const kRange = KRange.activated()
-        if (kRange.body) {
-            kRange.active()
+        const prev = editorRange
+        const range = KRange.activated()
+        editorRange = range
+        if (range.body) {
+            range.active()
             KRICH_TOOL_BAR.classList.add('disable')
-            console.log('a')
             return
         } else {
             KRICH_TOOL_BAR.classList.remove('disable')
         }
-        console.log('b')
-        const range = kRange
-        const prev = editorRange
         if (!range.collapsed) {
             const lca = range.commonAncestorContainer
             syncButtonsStatus(lca.firstChild ?? lca)
         } else if (!prev?.collapsed || range.endContainer !== prev?.endContainer) {
             syncButtonsStatus(range.startContainer)
         }
-        editorRange = kRange
     })
 }
