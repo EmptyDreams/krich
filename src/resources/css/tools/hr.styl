@@ -1,0 +1,18 @@
+.krich-editor
+  hr
+    position relative
+    height 10px
+    border none
+
+    &.active
+      border 1px solid black
+
+    &:before
+      content ""
+      position absolute
+      top 50%
+      left 50%
+      transform translate(-50%, -50%)
+      background black
+      width calc(100% - 20px)
+      height 2px
