@@ -428,7 +428,9 @@ function checkLocationRelation(range) {
     const {startContainer, startOffset, endContainer, endOffset} = range
     if (startContainer === endContainer)
         return startOffset <= endOffset
-    return startContainer.compareDocumentPosition(endContainer) ^ Node.DOCUMENT_POSITION_FOLLOWING
+    const node = startContainer.childNodes[startOffset] ?? startContainer
+    const otherNode = endContainer.childNodes[endOffset] ?? endContainer
+    return node.compareDocumentPosition(otherNode) & 4
 }
 
 /**
