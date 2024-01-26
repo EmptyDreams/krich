@@ -171,7 +171,7 @@ export class KRange extends Range {
     /** 将当前区间设定为激活区间 */
     active() {
         const selection = getSelection()
-        if (selection.getRangeAt(0) === this) return
+        if (selection.rangeCount && selection.getRangeAt(0) === this) return
         selection.removeAllRanges()
         selection.addRange(this)
     }
