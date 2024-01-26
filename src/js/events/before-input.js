@@ -12,9 +12,10 @@ import {markComposingStart, markComposingStop} from '../global-fileds'
 export function registryBeforeInputEventListener(target, consumer) {
     target.addEventListener('beforeinput', event => {
         if (!event.isComposing && event.inputType.startsWith('insert')) {
-            markComposingStart()
             // noinspection JSIgnoredPromiseFromCall
             consumer(event)
+        } else {
+            markComposingStart()
         }
     })
     target.addEventListener('compositionend', event => {
