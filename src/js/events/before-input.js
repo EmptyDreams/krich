@@ -1,3 +1,5 @@
+import {updateEditorRange} from './range-monitor'
+
 /**
  * 标记是否正在输入
  * @type {boolean|undefined}
@@ -20,6 +22,9 @@ export function registryBeforeInputEventListener(target, consumer) {
         }
     })
     target.addEventListener('compositionend', event => {
-        consumer(event).then(() => IS_COMPOSING = false)
+        consumer(event).then(() => {
+            IS_COMPOSING = false
+            updateEditorRange()
+        })
     })
 }
