@@ -7,7 +7,7 @@ import {
     splitElementByContainer,
     zipTree
 } from './dom'
-import {isEmptyBodyElement} from './tools'
+import {isEmptyBodyElement, isMarkerNode} from './tools'
 
 /**
  * 将鼠标光标移动到指定位置
@@ -116,11 +116,11 @@ export class KRange extends Range {
             if (!this.body)
                 this.collapse(false)
         } else {
-            if (startContainer.textContent.length === startOffset) {
-                this.setStartAfter(startContainer)
-            } else if (startStatus) {
+            if (startStatus) {
                 const start = startContainer.childNodes[startOffset]
                 this.setStartBefore(start)
+            } else if (startContainer.textContent.length === startOffset) {
+                this.setStartAfter(startContainer)
             } else {
                 super.setStart(startContainer, startOffset)
             }
@@ -160,7 +160,11 @@ export class KRange extends Range {
         const item = node.previousSibling ??
             findParentTag(node, it => !!it.previousSibling)?.previousSibling
         console.assert(!!item,'使用 SetEndBefore 时当前元素前必须有一个元素')
-        this.setEndAfter(item)
+        if (isMarkerNode(item)) {
+            super.setEnd(getFirstChildNode(node), 0)
+        } else {
+            this.setEndAfter(item)
+        }
     }
 
     setEndAfter(node) {
@@ -348,8 +352,7 @@ export class KRange extends Range {
         if (lcaSpecialization) {
             const checker = it => it.parentNode === commonAncestorContainer
             start = startContainer === commonAncestorContainer ? firstChild : findParentTag(startContainer, checker)
-            if (start.classList?.contains('marker'))
-                start = start.nextSibling
+            if (isMarkerNode(start)) start = start.nextSibling
             end = endContainer === commonAncestorContainer ? lastChild : findParentTag(endContainer, checker)
         } else {
             start = findParentTag(startContainer, TOP_LIST)

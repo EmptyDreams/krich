@@ -66,6 +66,15 @@ export function isTextNode(node) {
 }
 
 /**
+ * 判断指定节点是否是 marker
+ * @param node {Node|Element}
+ * @return {boolean | undefined}
+ */
+export function isMarkerNode(node) {
+    return node.classList?.contains?.('marker')
+}
+
+/**
  * 判断两个富文本节点是否相同（不判断节点内容）
  * @param arg0 {HTMLElement}
  * @param arg1 {HTMLElement}
