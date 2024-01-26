@@ -1,4 +1,4 @@
-import {EMPTY_BODY_ACTIVE_FLAG, KRICH_EDITOR, TOP_LIST} from '../global-fileds'
+import {KRICH_EDITOR, TOP_LIST} from '../global-fileds'
 import {
     findParentTag,
     getFirstTextNode,
@@ -90,7 +90,11 @@ export class KRange extends Range {
             this.selectNode(optional)
             return
         }
-        const {startContainer, startOffset, endContainer, endOffset} = optional
+        let {startContainer, startOffset, endContainer, endOffset} = optional
+        if (!checkLocationRelation(optional)) {
+            [startContainer, startOffset, endContainer, endOffset] =
+                [endContainer, endOffset, startContainer, startOffset]
+        }
         const checkStatus = node => !['#text', 'BR'].includes(node.nodeName)
         const startStatus = checkStatus(startContainer)
         const endStatus = checkStatus(endContainer)
@@ -384,7 +388,7 @@ export class KRange extends Range {
      */
     static activated() {
         const selection = getSelection()
-        if (selection.rangeCount !== 0) {
+        if (selection.rangeCount > 0) {
             const range = selection.getRangeAt(0)
             return 'body' in range ? range : new KRange(selection.getRangeAt(0))
         }
@@ -431,6 +435,17 @@ export class KRange extends Range {
         return range
     }
 
+}
+
+/**
+ * 检查 Range 起点是否在终点之前
+ * @param range {Range}
+ */
+function checkLocationRelation(range) {
+    const {startContainer, startOffset, endContainer, endOffset} = range
+    if (startContainer === endContainer)
+        return startOffset <= endOffset
+    return startContainer.compareDocumentPosition(endContainer) ^ Node.DOCUMENT_POSITION_FOLLOWING
 }
 
 /**
