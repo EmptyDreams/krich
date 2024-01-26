@@ -317,15 +317,24 @@ export class KRange extends Range {
      */
     splitLine() {
         const {startContainer, endContainer, startOffset, endOffset} = this
-        const lines = this.getAllTopElements()
-        if (lines.length === 1) return [this.copy()]
+        let lines = this.getAllTopElements()
+        let length = lines.length
+        while (true) {
+            lines = lines.flatMap(it => TOP_LIST.includes(it.firstChild?.nodeName) ? Array.from(it.children) : [it])
+            const newLength = lines.length
+            if (newLength === length) break
+            length = newLength
+        }
+        lines = lines.filter(it => !isEmptyBodyElement(it))
+        length = lines.length
+        if (length === 1) return [this.copy()]
         return lines.map((item, index) => {
             let newRange
             if (index === 0) {
                 newRange = new KRange()
                 newRange.setStart(startContainer, startOffset)
                 newRange.setEndAfter(item)
-            } else if (index === lines.length - 1) {
+            } else if (index === length - 1) {
                 newRange = new KRange()
                 newRange.setStartBefore(item)
                 newRange.setEnd(endContainer, endOffset)
@@ -338,7 +347,7 @@ export class KRange extends Range {
 
     /**
      * 获取所有被包含的行
-     * @return {HTMLElement[]}
+     * @return {Element[]}
      */
     getAllTopElements() {
         const {commonAncestorContainer, startContainer, endContainer} = this
