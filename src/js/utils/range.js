@@ -1,10 +1,9 @@
 import {KRICH_EDITOR, TOP_LIST} from '../global-fileds'
 import {
-    findParentTag,
-    getFirstTextNode,
+    findParentTag, getFirstChildNode,
+    getFirstTextNode, getLastChildNode,
     getLastTextNode,
     nextSiblingText,
-    prevSiblingText,
     splitElementByContainer,
     zipTree
 } from './dom'
@@ -99,10 +98,6 @@ export class KRange extends Range {
         const startStatus = checkStatus(startContainer)
         const endStatus = checkStatus(endContainer)
         // 如果起点或结尾不是 TEXT NODE 则进行纠正
-        const setEndAfter = node => {
-            const text = getLastTextNode(node)
-            super.setEnd(text, text.textContent.length)
-        }
         if (optional.collapsed) {
             if (startStatus) {
                 let point = startContainer.childNodes[startOffset]
@@ -113,76 +108,66 @@ export class KRange extends Range {
                     // noinspection JSValidateTypes
                     this.body = point
                 } else {
-                    while (isEmptyBodyElement(point))
-                        point = prevSiblingText(point)
-                    setEndAfter(point)
+                    this.setEndAfter(point)
                 }
             } else {
                 super.setEnd(startContainer, startOffset)
             }
             if (!this.body)
-                super.collapse(false)
+                this.collapse(false)
         } else {
             if (startStatus) {
-                let start = startContainer.childNodes[startOffset]
-                while (isEmptyBodyElement(start))
-                    start = nextSiblingText(start)
-                super.setStart(getFirstTextNode(start), 0)
+                const start = startContainer.childNodes[startOffset]
+                this.setStartBefore(start)
             } else if (startContainer.textContent.length === startOffset) {
-                super.setStart(nextSiblingText(startContainer), 0)
+                this.setStartAfter(startContainer)
             } else {
                 super.setStart(startContainer, startOffset)
             }
             if (endStatus) {
-                let end = endOffset === 0 ? prevSiblingText(endContainer) : endContainer.childNodes[endOffset - 1]
-                while (isEmptyBodyElement(end))
-                    end = prevSiblingText(end)
-                setEndAfter(end)
+                if (endOffset) {
+                    this.setEndAfter(endContainer.childNodes[endOffset - 1])
+                } else {
+                    this.setEndBefore(endContainer)
+                }
             } else {
                 super.setEnd(endContainer, endOffset)
             }
         }
-        console.assert(
-            this.body || [this.startContainer, this.endContainer].every(it => ['#text', 'BR'].includes(it.nodeName)),
-            'KRange 的起点或终点不在 TEXT NODE 中', this
-        )
     }
 
-    /**
-     * 设置区间在指定位置开始
-     * @param node {Node}
-     * @param offset {number}
-     */
     setStart(node, offset) {
         const [text, index] = findTextByIndex(node, offset, true)
         super.setStart(text, index)
     }
 
-    /**
-     * 设置区间在指定位置结束
-     * @param node {Node}
-     * @param offset {number}
-     */
     setEnd(node, offset) {
         const [text, index] = findTextByIndex(node, offset, false)
         super.setEnd(text, index)
     }
 
-    /**
-     * 设置区间在指定节点前开始
-     * @param node {Node}
-     */
     setStartBefore(node) {
-        this.setStart(node, 0)
+        const childNode = getFirstChildNode(node)
+        super.setStart(childNode, 0)
     }
 
-    /**
-     * 设置区间在指定节点后结束
-     * @param node {Node}
-     */
+    setStartAfter(node) {
+        const item = node.nextSibling ??
+            findParentTag(node, it => !!it.nextSibling)?.nextSibling
+        if (item) this.setStartBefore(item)
+        else super.setStart(node, node.textContent.length)
+    }
+
+    setEndBefore(node) {
+        const item = node.previousSibling ??
+            findParentTag(node, it => !!it.previousSibling)?.previousSibling
+        console.assert(!!item,'使用 SetEndBefore 时当前元素前必须有一个元素')
+        this.setEndAfter(item)
+    }
+
     setEndAfter(node) {
-        const text = getLastTextNode(node)
-        this.setEnd(text, text.textContent.length)
+        const childNode = getLastChildNode(node)
+        super.setEnd(childNode, childNode.textContent.length)
     }
 
     /** 将当前区间设定为激活区间 */

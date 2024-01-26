@@ -2,7 +2,7 @@
     本文件用于放置与操作 DOM 有关的 util 函数
  */
 
-import {equalsKrichNode, isEmptyBodyElement} from './tools'
+import {equalsKrichNode, isEmptyBodyElement, isTextNode} from './tools'
 
 /**
  * 获取指定节点的第一个文本子节点
@@ -11,13 +11,8 @@ import {equalsKrichNode, isEmptyBodyElement} from './tools'
  * @return {Node}
  */
 export function getFirstTextNode(node, limit) {
-    let item = node
-    while (!['#text', 'BR'].includes(item.nodeName)) {
-        const next = item.firstChild
-        if (!next) return nextSiblingText(item, limit ?? node)
-        item = next
-    }
-    return item
+    const item = getFirstChildNode(node)
+    return isTextNode(item) ? item : nextSiblingText(item, limit ?? node)
 }
 
 /**
@@ -27,11 +22,38 @@ export function getFirstTextNode(node, limit) {
  * @return {Node}
  */
 export function getLastTextNode(node, limit) {
+    const item = getLastChildNode(node)
+    return isTextNode(item) ? item : prevSiblingText(item, limit ?? node)
+}
+
+/**
+ * 获取节点的第一个（间接）子节点，没有子节点返回其本身
+ * @param node {Node}
+ * @return {Node}
+ */
+export function getFirstChildNode(node) {
+    return getSideNode(node, 'firstChild')
+}
+
+/**
+ * 获取节点的最后一个（间接）子节点，没有子节点返回其本身
+ * @param node {Node}
+ * @return {Node}
+ */
+export function getLastChildNode(node) {
+    return getSideNode(node, 'lastChild')
+}
+
+/**
+ * 获取一个节点的端点
+ * @param node {Node}
+ * @param varName {'firstChild'|'lastChild'}
+ * @return {Node}
+ */
+function getSideNode(node, varName) {
     let item = node
-    while (!['#text', 'BR'].includes(item.nodeName)) {
-        const next = item.lastChild
-        if (!next) return prevSiblingText(item, limit ?? node)
-        item = next
+    while (item[varName]) {
+        item = item[varName]
     }
     return item
 }
