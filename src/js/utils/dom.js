@@ -6,14 +6,15 @@ import {equalsKrichNode, isEmptyBodyElement} from './tools'
 
 /**
  * 获取指定节点的第一个文本子节点
- * @param node {Node}
+ * @param node {Node} 指定节点
+ * @param limit {Node?} 搜索区域限制，留空为 [node]
  * @return {Node}
  */
-export function getFirstTextNode(node) {
+export function getFirstTextNode(node, limit) {
     let item = node
     while (!['#text', 'BR'].includes(item.nodeName)) {
         const next = item.firstChild
-        if (!next) return nextSiblingText(item, node)
+        if (!next) return nextSiblingText(item, limit ?? node)
         item = next
     }
     return item
@@ -21,14 +22,15 @@ export function getFirstTextNode(node) {
 
 /**
  * 获取指定节点的最后一个文本子结点
- * @param node {Node}
+ * @param node {Node} 指定节点
+ * @param limit {Node?} 搜索区域限制，留空为 [node]
  * @return {Node}
  */
-export function getLastTextNode(node) {
+export function getLastTextNode(node, limit) {
     let item = node
     while (!['#text', 'BR'].includes(item.nodeName)) {
         const next = item.lastChild
-        if (!next) return prevSiblingText(item, node)
+        if (!next) return prevSiblingText(item, limit ?? node)
         item = next
     }
     return item
@@ -67,7 +69,7 @@ export function replaceElement(src, novel) {
  * @param node {Node} 起始节点
  * @param limit {(HTMLElement|Node)?} 父节点约束
  * @param varName {string} 变量名
- * @param fun {function(Node):Node} 终止函数
+ * @param fun {function(Node, Node?):Node} 终止函数
  * @return {Node|null}
  */
 function getSiblingText(node, limit, varName, fun) {
@@ -78,7 +80,7 @@ function getSiblingText(node, limit, varName, fun) {
         while (isEmptyBodyElement(sibling)) {
             sibling = sibling[varName]
         }
-        if (sibling) return fun(sibling)
+        if (sibling) return fun(sibling, limit ?? document.body)
         dist = dist.parentNode
         if (!dist || dist === limit) return null
     }
