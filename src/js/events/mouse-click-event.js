@@ -14,7 +14,6 @@ export function registryMouseClickEvent() {
     KRICH_EDITOR.addEventListener('click', event => {
         const {target} = event
         if (isEmptyBodyElement(target)) {
-            event.preventDefault()
             new KRange(target).active()
         }
     })
