@@ -140,7 +140,7 @@ export class KRange extends Range {
             }
         }
         console.assert(
-            this.body || ![this.startContainer, this.endContainer].find(it => !['#text', 'BR'].includes(it.nodeName)),
+            this.body || [this.startContainer, this.endContainer].every(it => ['#text', 'BR'].includes(it.nodeName)),
             'KRange 的起点或终点不在 TEXT NODE 中', this
         )
     }
