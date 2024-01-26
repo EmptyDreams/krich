@@ -337,22 +337,33 @@ export class KRange extends Range {
      */
     getAllTopElements() {
         const {commonAncestorContainer, startContainer, endContainer} = this
-        const firstChild = commonAncestorContainer.firstChild
+        const {firstChild, lastChild} = commonAncestorContainer
         /**
-         * 三元表达式表达式为 true 时表明选区最近公共祖先不是顶层标签。
-         * 如果 LCA 的子节点是顶层元素，那么就返回选区在 LCA 下的直接子标签；
-         * 否则返回选区的首个顶层标签父节点。
-         * @type {string[]|function(Node|HTMLElement):boolean}
+         * 是否对公共祖先进行特化处理
+         * 为 true 时返回最近公共祖先下的直接子标签
+         * @type {boolean}
          */
-        const checker = !firstChild || findParentTag(firstChild, TOP_LIST) !== firstChild ?
-            TOP_LIST : it => it.parentNode === commonAncestorContainer
-        const start = findParentTag(startContainer, checker)
-        const end = findParentTag(endContainer, checker)
+        const lcaSpecialization = lastChild && findParentTag(lastChild, TOP_LIST) === lastChild
+        let start, end
+        if (lcaSpecialization) {
+            const checker = it => it.parentNode === commonAncestorContainer
+            start = startContainer === commonAncestorContainer ? firstChild : findParentTag(startContainer, checker)
+            if (start.classList?.contains('marker'))
+                start = start.nextSibling
+            end = endContainer === commonAncestorContainer ? lastChild : findParentTag(endContainer, checker)
+        } else {
+            start = findParentTag(startContainer, TOP_LIST)
+            end = findParentTag(endContainer, TOP_LIST)
+        }
+        console.assert(start && end, 'start 和 end 中一个或多个的值为空', start, end)
         const result = []
         let item = start
         while (true) {
             result.push(item)
-            if (item === end) return result
+            if (item === end) {
+                console.assert(result.every(it => it), '结果中部分元素为空')
+                return result
+            }
             item = item.nextElementSibling
         }
     }
