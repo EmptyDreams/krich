@@ -19,6 +19,12 @@ export const DATA_ID = 'data-id'
 /** 多选框的 value 的 KEY */
 export const SELECT_VALUE = 'data-value'
 
+/**
+ * EmptyBodyElement 激活标记
+ * @type {string}
+ */
+export const EMPTY_BODY_ACTIVE_FLAG = 'eb-active'
+
 export const TITLE_LIST = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6']
 export const TOP_LIST = ['P', 'BLOCKQUOTE', 'UL', 'OL', 'HR', ...TITLE_LIST]
 

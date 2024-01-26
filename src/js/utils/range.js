@@ -1,4 +1,4 @@
-import {KRICH_EDITOR, TOP_LIST} from '../global-fileds'
+import {EMPTY_BODY_ACTIVE_FLAG, KRICH_EDITOR, TOP_LIST} from '../global-fileds'
 import {
     findParentTag,
     getFirstTextNode,
@@ -88,7 +88,6 @@ export class KRange extends Range {
             console.assert(isEmptyBodyElement(optional), 'KRange 传入 HTMLElement 对象时仅允许传入 EmptyBodyElement')
             this.body = optional
             this.selectNode(optional)
-            optional.classList.add('active')
             return
         }
         const {startContainer, startOffset, endContainer, endOffset} = optional

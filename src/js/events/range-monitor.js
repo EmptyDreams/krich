@@ -1,7 +1,8 @@
-import {KRICH_CONTAINER, KRICH_EDITOR, KRICH_TOOL_BAR} from '../global-fileds'
+import {EMPTY_BODY_ACTIVE_FLAG, KRICH_CONTAINER, KRICH_EDITOR, KRICH_TOOL_BAR} from '../global-fileds'
 import {KRange} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
 import {IS_COMPOSING} from './before-input'
+import {isEmptyBodyElement} from '../utils/tools'
 
 /**
  * 编辑区最新的已激活的 KRange 对象
@@ -24,14 +25,21 @@ export function updateEditorRange() {
     const prev = editorRange
     const range = KRange.activated()
     editorRange = range
-    prev?.body?.classList?.remove?.('active')
+    KRICH_EDITOR.querySelectorAll(`.${EMPTY_BODY_ACTIVE_FLAG}`)
+        .forEach(it => it.classList.remove(EMPTY_BODY_ACTIVE_FLAG))
     if (range.body) {
         range.active()
         KRICH_TOOL_BAR.classList.add('disable')
-        range.body.classList.add('active')
+        range.body.classList.add(EMPTY_BODY_ACTIVE_FLAG)
         return
     } else {
         KRICH_TOOL_BAR.classList.remove('disable')
+        for (let element of range.getAllTopElements()) {
+            for (let it of [element, ...element.querySelectorAll('*')]) {
+                if (isEmptyBodyElement(it))
+                    it.classList.add(EMPTY_BODY_ACTIVE_FLAG)
+            }
+        }
     }
     if (!range.collapsed) {
         const lca = range.commonAncestorContainer
