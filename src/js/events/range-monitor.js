@@ -1,7 +1,7 @@
 import {EMPTY_BODY_ACTIVE_FLAG, isComposing, KRICH_CONTAINER, KRICH_EDITOR, KRICH_TOOL_BAR} from '../global-fileds'
 import {KRange} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
-import {isEmptyBodyElement} from '../utils/tools'
+import {createNewLine, isEmptyBodyElement} from '../utils/tools'
 
 /**
  * 编辑区最新的已激活的 KRange 对象
@@ -14,6 +14,8 @@ export function registryRangeMonitor() {
 }
 
 export function updateEditorRange() {
+    KRICH_EDITOR.querySelectorAll('br:not(:first-child),br:not(:last-child)')
+        .forEach(it => it.replaceWith(createNewLine()))
     if (isComposing) return
     if (!KRICH_CONTAINER.contains(document.activeElement)) {
         editorRange = null
