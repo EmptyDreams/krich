@@ -1,7 +1,6 @@
-import {EMPTY_BODY_ACTIVE_FLAG, KRICH_CONTAINER, KRICH_EDITOR, KRICH_TOOL_BAR} from '../global-fileds'
+import {EMPTY_BODY_ACTIVE_FLAG, isComposing, KRICH_CONTAINER, KRICH_EDITOR, KRICH_TOOL_BAR} from '../global-fileds'
 import {KRange} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
-import {IS_COMPOSING} from './before-input'
 import {isEmptyBodyElement} from '../utils/tools'
 
 /**
@@ -15,7 +14,7 @@ export function registryRangeMonitor() {
 }
 
 export function updateEditorRange() {
-    if (IS_COMPOSING) return
+    if (isComposing) return
     if (!KRICH_CONTAINER.contains(document.activeElement)) {
         editorRange = null
         KRICH_TOOL_BAR.classList.add('disable')

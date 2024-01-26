@@ -1,10 +1,5 @@
 import {updateEditorRange} from './range-monitor'
-
-/**
- * 标记是否正在输入
- * @type {boolean|undefined}
- */
-export let IS_COMPOSING
+import {markComposingStart, markComposingStop} from '../global-fileds'
 
 /**
  * 注册 before input 事件。
@@ -16,14 +11,15 @@ export let IS_COMPOSING
  */
 export function registryBeforeInputEventListener(target, consumer) {
     target.addEventListener('beforeinput', event => {
-        if (!(IS_COMPOSING = event.isComposing) && event.inputType.startsWith('insert')) {
+        if (!event.isComposing && event.inputType.startsWith('insert')) {
+            markComposingStart()
             // noinspection JSIgnoredPromiseFromCall
             consumer(event)
         }
     })
     target.addEventListener('compositionend', event => {
         consumer(event).then(() => {
-            IS_COMPOSING = false
+            markComposingStop()
             updateEditorRange()
         })
     })

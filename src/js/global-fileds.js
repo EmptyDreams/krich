@@ -39,6 +39,11 @@ export let behaviors
  * @type {boolean}
  */
 export let statusCheckCache = true
+/**
+ * 标记是否正在输入
+ * @type {boolean|undefined}
+ */
+export let isComposing
 
 /**
  * 初始化 behaviors
@@ -53,6 +58,16 @@ export function initContainerQuery(container) {
     KRICH_CONTAINER = container
     KRICH_EDITOR = container.getElementsByClassName('krich-editor')[0]
     KRICH_TOOL_BAR = container.getElementsByClassName('krich-tools')[0]
+}
+
+/** 标记输入结束 */
+export function markComposingStop() {
+    isComposing = false
+}
+
+/** 标记输入开始 */
+export function markComposingStart() {
+    isComposing = true
 }
 
 /** 标记状态检查缓存过时 */
