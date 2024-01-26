@@ -116,20 +116,18 @@ export class KRange extends Range {
             if (!this.body)
                 this.collapse(false)
         } else {
-            if (startStatus) {
+            if (startContainer.textContent.length === startOffset) {
+                this.setStartAfter(startContainer)
+            } else if (startStatus) {
                 const start = startContainer.childNodes[startOffset]
                 this.setStartBefore(start)
-            } else if (startContainer.textContent.length === startOffset) {
-                this.setStartAfter(startContainer)
             } else {
                 super.setStart(startContainer, startOffset)
             }
-            if (endStatus) {
-                if (endOffset) {
-                    this.setEndAfter(endContainer.childNodes[endOffset - 1])
-                } else {
-                    this.setEndBefore(endContainer)
-                }
+            if (!endOffset) {
+                this.setEndBefore(endContainer)
+            } else if (endStatus) {
+                this.setEndAfter(endContainer.childNodes[endOffset - 1])
             } else {
                 super.setEnd(endContainer, endOffset)
             }
