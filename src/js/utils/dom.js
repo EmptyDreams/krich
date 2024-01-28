@@ -94,7 +94,7 @@ export function replaceElement(src, novel) {
  * @param fun {function(Node, Node?):Node} 终止函数
  * @return {Node|null}
  */
-function getSiblingText(node, limit, varName, fun) {
+function getSiblingNode(node, limit, varName, fun) {
     if (node === limit) return null
     let dist = node
     while (true) {
@@ -115,7 +115,7 @@ function getSiblingText(node, limit, varName, fun) {
  * @return {Node|null}
  */
 export function nextSiblingText(node, limit) {
-    return getSiblingText(node, limit, 'nextSibling', getFirstTextNode)
+    return getSiblingNode(node, limit, 'nextSibling', getFirstTextNode)
 }
 
 /**
@@ -125,7 +125,7 @@ export function nextSiblingText(node, limit) {
  * @return {Node|null}
  */
 export function prevSiblingText(node, limit) {
-    return getSiblingText(node, limit, 'previousSibling', getLastTextNode)
+    return getSiblingNode(node, limit, 'previousSibling', getLastTextNode)
 }
 
 /**
