@@ -7,7 +7,7 @@ import {
     splitElementByContainer,
     zipTree
 } from './dom'
-import {isEmptyBodyElement, isMarkerNode} from './tools'
+import {isEmptyBodyElement, isMarkerNode, isTextNode} from './tools'
 
 /**
  * 将鼠标光标移动到指定位置
@@ -214,19 +214,21 @@ export class KRange extends Range {
 
     /**
      * 使用指定的容器包裹范围内选中的节点（不能跨行）
-     * @param container {HTMLElement} 容器
+     * @param container {Element} 容器
+     * @param lca {Element?} 切割范围限制，留空自动决定
      * @return {void}
      */
-    surroundContents(container) {
-        const {startContainer, endContainer, startOffset, endOffset, commonAncestorContainer} = this
-        console.assert(
-            ['BR', '#text'].includes(startContainer.nodeName) && ['BR', '#text'].includes(endContainer.nodeName),
-            'Range 始末位置都应在 TEXT NODE 当中', this
-        )
-        if (startContainer === endContainer && startOffset === 0 && endOffset === startContainer.textContent.length) {
-            startContainer.parentNode.insertBefore(container, startContainer)
+    surroundContents(container, lca) {
+        const {startContainer, endContainer, startOffset, endOffset} = this
+        // 判断选区是否选择了 endContainer 的结尾
+        const isOnTheRight = endOffset ===
+            (isTextNode(endContainer) ? endContainer.textContent.length : endContainer.childNodes.length)
+        if (startContainer === endContainer && startOffset === 0 && isOnTheRight) {
+            const item = lca ? findParentTag(startContainer, it => it === lca) : startContainer
+            item.parentNode.insertBefore(container, item)
             container.append(startContainer)
         } else {
+            const commonAncestorContainer = lca ?? this.commonAncestorContainer
             const {list, index} = splitElementByContainer(
                 commonAncestorContainer,
                 startContainer, startOffset, endContainer, endOffset

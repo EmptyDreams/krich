@@ -135,12 +135,22 @@ initBehaviors({
     clear: {
         noStatus: true,
         render: () => clearStyle,
-        onclick: () => {
-            for (let line of KRICH_EDITOR.children) {
-                if (!line.querySelector('img,pre')) {
-                    line.innerHTML = line.textContent
-                }
+        onclick: range => {
+            const tmpBox = createElement('div', ['tmp'])
+            for (let lineRange of range.splitLine()) {
+                const top = findParentTag(lineRange.startContainer, TOP_LIST)
+                lineRange.surroundContents(tmpBox, top)
+                tmpBox.innerHTML = tmpBox.textContent
+                removeNodeReserveChild(tmpBox)
+                console.assert(!tmpBox.firstChild, '循环完毕后 tmpBox 内容应当为空')
             }
+            console.assert(!KRICH_EDITOR.getElementsByClassName('tmp')[0], '样式清除完毕后不应当存在 tmp 标签')
+            KRICH_EDITOR.querySelectorAll(`p:empty`)
+                .forEach(it => it.innerHTML = '<br>')
+            console.assert(
+                !KRICH_EDITOR.querySelector(TOP_LIST.map(it => `${it}:empty`).join()),
+                '样式清楚完成后不应当存在满足 :empty 的顶级标签'
+            )
         }
     },
     hr: {
