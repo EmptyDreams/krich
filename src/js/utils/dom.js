@@ -5,6 +5,48 @@
 import {equalsKrichNode, isEmptyBodyElement, isTextNode} from './tools'
 
 /**
+ * 从起点开始遍历 DOM 树
+ * @param start {Node} 起点
+ * @param forward {boolean} 是否正向遍历
+ * @param first {boolean} 首个元素是否触发 consumer
+ * @param consumer {function(Node): any} 返回 true 或其它为 true 的值结束遍历
+ * @return {any} consumer 的返回值将会从此返回，若 consumer 返回了 true 则返回 consumer 最后一次传入的节点对象
+ */
+export function eachDomTree(start, forward, first, consumer) {
+    function calcResult(node, value) {
+        return value === true ? node : value
+    }
+    /**
+     * 深度优先遍历
+     * @param item {Element|Node}
+     * @return {any} 为 true 时中断
+     */
+    function dfs(item) {
+        const children = item.children
+        if (children) {
+            const list = forward ? children : Array.from(children).reverse()
+            for (let item of list) {
+                let result = consumer(item) || dfs(item)
+                if (result) return calcResult(item, result)
+            }
+        }
+    }
+    if (first) {
+        const result = consumer(start)
+        if (result) return calcResult(result, result)
+    }
+    let result = dfs(start)
+    if (result) return result
+    let next = start.nextSibling
+    let item = start
+    while (!next) {
+        item = item.parentNode
+        next = item?.nextSibling
+    }
+    return next ? eachDomTree(next, forward, true, consumer) : null
+}
+
+/**
  * 获取指定节点的第一个文本子节点
  * @param node {Node} 指定节点
  * @param limit {Node?} 搜索区域限制，留空为 [node]

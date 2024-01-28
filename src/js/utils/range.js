@@ -1,5 +1,6 @@
 import {KRICH_EDITOR, TOP_LIST} from '../global-fileds'
 import {
+    eachDomTree,
     findParentTag, getFirstChildNode,
     getFirstTextNode, getLastChildNode,
     getLastTextNode,
@@ -369,7 +370,11 @@ export class KRange extends Range {
                 console.assert(result.every(it => it), '结果中部分元素为空')
                 return result
             }
-            item = item.nextElementSibling
+            // noinspection JSIncompatibleTypesComparison
+            item = item.nextSibling ?? eachDomTree(
+                item, true, false,
+                it => item.parentNode.nextSibling === it.parentNode
+            )
         }
     }
 
