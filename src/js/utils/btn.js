@@ -2,7 +2,7 @@
     本文件用于放置与操作编辑器工具栏按钮相关的 util 函数
 */
 
-import {KRICH_TOOL_BAR, SELECT_VALUE} from '../global-fileds'
+import {behaviors, SELECT_VALUE} from '../global-fileds'
 import {getElementBehavior, readSelectedColor} from './tools'
 
 /**
@@ -78,17 +78,18 @@ function findDiffButton(node, consumer) {
     /** @type {Set<ButtonBehavior>} */
     const record = new Set()
     let item = node.parentElement
-    while (item) {
+    while (!item.classList.contains('krich-editor')) {
         const behavior = getElementBehavior(item)
-        if (!behavior) break
-        record.add(behavior)
-        if (!behavior.noStatus && !compareBtnStatusWith(item)) {
-            consumer(behavior.button, item)
+        if (behavior) {
+            record.add(behavior)
+            if (!behavior.noStatus && !compareBtnStatusWith(item)) {
+                consumer(behavior.button, item)
+            }
         }
         item = item.parentElement
     }
-    for (let child of KRICH_TOOL_BAR.children) {
-        const behavior = getElementBehavior(child)
+    for (let key in behaviors) {
+        const behavior = behaviors[key]
         const button = behavior.button
         if (!behavior.noStatus && !record.has(behavior) && isActive(button)) {
             consumer(button, null)
