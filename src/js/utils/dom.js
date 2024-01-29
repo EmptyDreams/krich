@@ -41,8 +41,8 @@ export function eachDomTree(start, forward, first, consumer) {
         const result = dfs(childNode)
         if (result) return result
     }
-    const {parentNode} = start
-    return parentNode ? eachDomTree(parentNode, forward, false, consumer) : null
+    const {parentElement} = start
+    return parentElement.classList.contains('krich-editor') ? null : eachDomTree(parentElement, forward, false, consumer)
 }
 
 /**
