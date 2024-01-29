@@ -3,7 +3,7 @@
 */
 
 import {behaviors, SELECT_VALUE} from '../global-fileds'
-import {getElementBehavior, readSelectedColor} from './tools'
+import {getElementBehavior, isKrichEditor, readSelectedColor} from './tools'
 
 /**
  * 判断指定按钮是否激活
@@ -79,7 +79,7 @@ function findDiffButton(node, consumer) {
     const record = new Set()
     let item = node.parentElement
     let multiFlag
-    while (!item.classList.contains('krich-editor')) {
+    while (!isKrichEditor(item)) {
         const behavior = getElementBehavior(item)
         if (behavior && !(behavior.multi && multiFlag)) {
             if (behavior.multi) multiFlag = true

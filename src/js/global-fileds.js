@@ -14,6 +14,10 @@ export let KRICH_EDITOR
  */
 export let KRICH_TOOL_BAR
 
+export const KRICH_CLASS = 'krich'
+export const KRICH_EDITOR_CLASS = KRICH_CLASS + '-editor'
+export const KRICH_TOOL_BAR_CLASS = KRICH_CLASS + '-tools'
+
 /** 标签类型的 KEY */
 export const DATA_ID = 'data-id'
 /** 多选框的 value 的 KEY */
@@ -56,8 +60,8 @@ export function initBehaviors(value) {
 /** 初始化容器 */
 export function initContainerQuery(container) {
     KRICH_CONTAINER = container
-    KRICH_EDITOR = container.getElementsByClassName('krich-editor')[0]
-    KRICH_TOOL_BAR = container.getElementsByClassName('krich-tools')[0]
+    KRICH_EDITOR = container.getElementsByClassName(KRICH_EDITOR_CLASS)[0]
+    KRICH_TOOL_BAR = container.getElementsByClassName(KRICH_TOOL_BAR_CLASS)[0]
 }
 
 /** 标记输入结束 */

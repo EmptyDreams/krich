@@ -5,7 +5,7 @@ import {
     markStatusCacheInvalid,
     SELECT_VALUE
 } from '../global-fileds'
-import {getElementBehavior, isEmptyBodyElement, parseRgbToHex} from '../utils/tools'
+import {getElementBehavior, isEmptyBodyElement, isKrichToolBar, parseRgbToHex} from '../utils/tools'
 import {editorRange} from './range-monitor'
 import {findParentTag} from '../utils/dom'
 import {KRange} from '../utils/range'
@@ -23,7 +23,7 @@ export function registryMouseClickEvent() {
         /** @type {HTMLElement} */
         let original = event.target
         let target = original
-        if (target.classList.contains('krich-tools')) return
+        if (isKrichToolBar(target)) return
         let type, dataKey
         while (true) {
             dataKey = target.getAttribute(DATA_ID)

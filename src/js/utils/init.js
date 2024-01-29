@@ -6,8 +6,8 @@ import {registryBeforeInputEventListener} from '../events/before-input'
 import {
     behaviors,
     DATA_ID,
-    initContainerQuery, KRICH_EDITOR,
-    KRICH_TOOL_BAR, markStatusCacheEffect,
+    initContainerQuery, KRICH_CLASS, KRICH_EDITOR, KRICH_EDITOR_CLASS,
+    KRICH_TOOL_BAR, KRICH_TOOL_BAR_CLASS, markStatusCacheEffect,
     SELECT_VALUE,
     statusCheckCache
 } from '../global-fileds'
@@ -70,12 +70,12 @@ function initContainer(optional) {
     const container = typeof optional === 'string' ? document.querySelector(optional) : optional
     console.assert(/^\s*$/g.test(container.textContent) && container.childElementCount === 0, "指定的容器内容不为空：", container)
     container.insertAdjacentHTML('beforebegin', `<style>${krichStyle}</style>`)
-    container.innerHTML = `<div class="krich-tools">${
+    container.innerHTML = `<div class="${KRICH_TOOL_BAR_CLASS}">${
         Object.getOwnPropertyNames(behaviors)
             .map(it => behaviors[it].render())
             .join('')
-    }</div><div class="krich-editor" spellcheck contenteditable><p><br></p></div>`
-    container.classList.add('krich')
+    }</div><div class="${KRICH_EDITOR_CLASS}" spellcheck contenteditable><p><br></p></div>`
+    container.classList.add(KRICH_CLASS)
     initContainerQuery(container)
     for (let child of KRICH_TOOL_BAR.children) {
         const dataId = child.getAttribute(DATA_ID)

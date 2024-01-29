@@ -2,7 +2,7 @@
     本文件用于放置与操作 DOM 有关的 util 函数
  */
 
-import {equalsKrichNode, isEmptyBodyElement, isTextNode} from './tools'
+import {equalsKrichNode, isEmptyBodyElement, isKrichContainer, isKrichEditor, isTextNode} from './tools'
 
 /**
  * 从起点开始遍历 DOM 树
@@ -42,7 +42,7 @@ export function eachDomTree(start, forward, first, consumer) {
         if (result) return result
     }
     const {parentElement} = start
-    return parentElement.classList.contains('krich-editor') ? null : eachDomTree(parentElement, forward, false, consumer)
+    return isKrichEditor(parentElement) ? null : eachDomTree(parentElement, forward, false, consumer)
 }
 
 /**
@@ -112,7 +112,7 @@ export function findParentTag(node, checker) {
     }
     /** @type {Node|Element} */
     let item = node
-    while (!item.classList?.contains?.('krich')) {
+    while (!isKrichContainer(item)) {
         if (checker(item)) return item
         item = item.parentElement
     }
@@ -267,7 +267,7 @@ export function cloneDomTree(node, text, breaker) {
  * @param container {HTMLElement}
  */
 export function zipTree(container) {
-    console.assert(!container.classList.contains('krich-editor'), '不能直接对编辑器 content 进行压缩')
+    console.assert(!isKrichEditor(container), '不能直接对编辑器 content 进行压缩')
     /** 移除为空的节点 */
     const removeEmptyNode = () => {
         let item = getFirstTextNode(container)
