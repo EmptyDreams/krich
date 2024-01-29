@@ -22,28 +22,27 @@ export function eachDomTree(start, forward, first, consumer) {
      * @return {any} 为 true 时中断
      */
     function dfs(item) {
+        let result = consumer(item)
+        if (result) return calcResult(item, result)
         const children = item.children
         if (children) {
             const list = forward ? children : Array.from(children).reverse()
             for (let item of list) {
-                let result = consumer(item) || dfs(item)
-                if (result) return calcResult(item, result)
+                result = dfs(item)
+                if (result) return result
             }
         }
     }
-    if (first) {
-        const result = consumer(start)
-        if (result) return calcResult(result, result)
+    for (let childNode of start.parentNode.childNodes) {
+        if (!first) {
+            first = true
+            continue
+        }
+        const result = dfs(childNode)
+        if (result) return result
     }
-    let result = dfs(start)
-    if (result) return result
-    let next = start.nextSibling
-    let item = start
-    while (!next) {
-        item = item.parentNode
-        next = item?.nextSibling
-    }
-    return next ? eachDomTree(next, forward, true, consumer) : null
+    const {parentNode} = start
+    return parentNode ? eachDomTree(parentNode, forward, false, consumer) : null
 }
 
 /**
