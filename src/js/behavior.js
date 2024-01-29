@@ -136,6 +136,7 @@ initBehaviors({
         noStatus: true,
         render: () => clearStyle,
         onclick: range => {
+            const offlineData = range.serialization()
             const tmpBox = createElement('div', ['tmp'])
             for (let lineRange of range.splitLine()) {
                 const top = findParentTag(lineRange.startContainer, TOP_LIST)
@@ -151,6 +152,8 @@ initBehaviors({
                 !KRICH_EDITOR.querySelector(TOP_LIST.map(it => `${it}:empty`).join()),
                 '样式清楚完成后不应当存在满足 :empty 的顶级标签'
             )
+            range.deserialized(offlineData)
+            return true
         }
     },
     hr: {
