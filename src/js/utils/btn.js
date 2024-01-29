@@ -78,9 +78,11 @@ function findDiffButton(node, consumer) {
     /** @type {Set<ButtonBehavior>} */
     const record = new Set()
     let item = node.parentElement
+    let multiFlag
     while (!item.classList.contains('krich-editor')) {
         const behavior = getElementBehavior(item)
-        if (behavior) {
+        if (behavior && !(behavior.multi && multiFlag)) {
+            if (behavior.multi) multiFlag = true
             record.add(behavior)
             if (!behavior.noStatus && !compareBtnStatusWith(item)) {
                 consumer(behavior.button, item)
