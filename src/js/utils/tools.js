@@ -2,7 +2,7 @@
     本文件用于放置一些通用的工具函数
  */
 
-import {behaviors, DATA_ID} from '../global-fileds'
+import {behaviors, DATA_ID, TOP_LIST} from '../global-fileds'
 
 /**
  * 构建一个新的元素
@@ -72,6 +72,15 @@ export function isTextNode(node) {
  */
 export function isMarkerNode(node) {
     return node.classList?.contains?.('marker')
+}
+
+/**
+ * 判断指定节点是否是多元素结构
+ * @param node {Node|Element}
+ * @return {true|undefined}
+ */
+export function isMultiElementStructure(node) {
+    return node.classList && getElementBehavior(node)?.multi
 }
 
 /**

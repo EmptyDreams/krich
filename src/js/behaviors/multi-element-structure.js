@@ -1,7 +1,7 @@
 import {findParentTag} from '../utils/dom'
 import {behaviors, KRICH_TOOL_BAR} from '../global-fileds'
 import {KRange} from '../utils/range'
-import {getElementBehavior} from '../utils/tools'
+import {isMultiElementStructure} from '../utils/tools'
 
 /**
  * 多元素结构的点击事件
@@ -14,15 +14,6 @@ export function onclickMultiElementStructure(range, key, lineTagName, simulateMa
     const offlineData = range.serialization()
     helper(range, key, lineTagName, simulateMarker)
     KRange.deserialized(offlineData).active()
-}
-
-/**
- * 判断指定节点是否是多元素结构
- * @param node {Node}
- * @return {boolean|undefined}
- */
-export function isMultiElementStructure(node) {
-    return node instanceof Element ? getElementBehavior(node)?.multi : false
 }
 
 /**

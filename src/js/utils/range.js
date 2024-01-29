@@ -8,7 +8,7 @@ import {
     splitElementByContainer,
     zipTree
 } from './dom'
-import {isEmptyBodyElement, isMarkerNode, isTextNode} from './tools'
+import {isEmptyBodyElement, isMarkerNode, isMultiElementStructure, isTextNode} from './tools'
 
 /**
  * 将鼠标光标移动到指定位置
@@ -312,7 +312,7 @@ export class KRange extends Range {
         let lines = this.getAllTopElements()
         let length = lines.length
         while (true) {
-            lines = lines.flatMap(it => TOP_LIST.includes(it.firstChild?.nodeName) ? Array.from(it.children) : [it])
+            lines = lines.flatMap(it => isMultiElementStructure(it) ? Array.from(it.children) : [it])
             const newLength = lines.length
             if (newLength === length) break
             length = newLength
