@@ -224,9 +224,8 @@ export class KRange extends Range {
         // 判断选区是否选择了 endContainer 的结尾
         const isOnTheRight = endOffset ===
             (isTextNode(endContainer) ? endContainer.textContent.length : endContainer.childNodes.length)
-        if (startContainer === endContainer && startOffset === 0 && isOnTheRight) {
-            const item = lca ? findParentTag(startContainer, it => it === lca) : startContainer
-            item.parentNode.insertBefore(container, item)
+        if (!lca && startContainer === endContainer && startOffset === 0 && isOnTheRight) {
+            startContainer.parentNode.insertBefore(container, startContainer)
             container.append(startContainer)
         } else {
             const commonAncestorContainer = lca ?? this.commonAncestorContainer
