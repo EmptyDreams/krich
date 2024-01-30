@@ -29,9 +29,9 @@ export function eachDomTree(start, forward, first, consumer) {
             result = consumer(item)
             if (result) return calcResult(item, result)
         }
-        const children = item.children
-        if (children) {
-            const list = forward ? children : Array.from(children).reverse()
+        const childNodes = item.childNodes
+        if (childNodes) {
+            const list = forward ? childNodes : Array.from(childNodes).reverse()
             for (let item of list) {
                 result = dfs(item)
                 if (result) return result
