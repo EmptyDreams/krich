@@ -3,8 +3,8 @@ import {
     eachDomTree,
     findParentTag, getFirstChildNode,
     getFirstTextNode, getLastChildNode,
-    getLastTextNode,
-    nextSiblingText,
+    getLastTextNode, nextLeafNode,
+    nextSiblingText, prevLeafNode,
     splitElementByContainer,
     zipTree
 } from './dom'
@@ -95,42 +95,18 @@ export class KRange extends Range {
             [startContainer, startOffset, endContainer, endOffset] =
                 [endContainer, endOffset, startContainer, startOffset]
         }
-        const checkStatus = node => !['#text', 'BR'].includes(node.nodeName)
-        const startStatus = checkStatus(startContainer)
-        const endStatus = checkStatus(endContainer)
-        // 如果起点或结尾不是 TEXT NODE 则进行纠正
+        if (!isTextNode(startContainer) && !isEmptyBodyElement(startContainer)) {
+            const node = startContainer.childNodes[startOffset]
+            if (node) {
+                this.setStartBefore(node)
+            }
+        }
         if (optional.collapsed) {
-            if (startStatus) {
-                let point = startContainer.childNodes[startOffset]
-                if (isEmptyBodyElement(point.previousSibling))
-                    point = point.previousSibling
-                if (isEmptyBodyElement(point)) {
-                    this.selectNode(point)
-                    // noinspection JSValidateTypes
-                    this.body = point
-                } else {
-                    this.setEndAfter(point)
-                }
-            } else {
-                super.setEnd(startContainer, startOffset)
-            }
-            if (!this.body)
-                this.collapse(false)
-        } else {
-            if (startStatus) {
-                const start = startContainer.childNodes[startOffset]
-                this.setStartBefore(start)
-            } else if (startContainer.textContent.length === startOffset) {
-                this.setStartAfter(startContainer)
-            } else {
-                super.setStart(startContainer, startOffset)
-            }
-            if (!endOffset) {
-                this.setEndBefore(endContainer)
-            } else if (endStatus) {
-                this.setEndAfter(endContainer.childNodes[endOffset - 1])
-            } else {
-                super.setEnd(endContainer, endOffset)
+            this.collapse(true)
+        } else if (!isTextNode(endContainer) && !isEmptyBodyElement(endContainer)) {
+            const node = endContainer.childNodes[endOffset]
+            if (node) {
+                this.setEndBefore(node)
             }
         }
     }
@@ -151,26 +127,35 @@ export class KRange extends Range {
     }
 
     setStartAfter(node) {
-        const item = node.nextSibling ??
-            findParentTag(node, it => !!it.nextSibling)?.nextSibling
-        if (item) this.setStartBefore(item)
-        else super.setStart(node, node.textContent.length)
+        const childNode = getLastChildNode(node)
+        if (isTextNode(childNode)) {
+            super.setStart(childNode, childNode.textContent.length)
+        } else if (isMarkerNode(childNode)) {
+            this.setStartBefore(nextLeafNode(childNode))
+        } else {
+            super.setStartAfter(childNode)
+        }
     }
 
     setEndBefore(node) {
-        const item = node.previousSibling ??
-            findParentTag(node, it => !!it.previousSibling)?.previousSibling
-        console.assert(!!item,'使用 SetEndBefore 时当前元素前必须有一个元素')
-        if (isMarkerNode(item)) {
+        const prevNode = prevLeafNode(node)
+        console.assert(!!prevNode,'使用 SetEndBefore 时当前元素前必须有一个元素')
+        if (isMarkerNode(prevNode)) {
             super.setEnd(getFirstChildNode(node), 0)
         } else {
-            this.setEndAfter(item)
+            this.setEndAfter(prevNode)
         }
     }
 
     setEndAfter(node) {
         const childNode = getLastChildNode(node)
-        super.setEnd(childNode, childNode.textContent.length)
+        if (isTextNode(childNode)) {
+            super.setEnd(childNode, childNode.textContent.length)
+        } else if (isMarkerNode(childNode)) {
+            super.setEnd(nextLeafNode(node), 0)
+        } else {
+            super.setEndAfter(childNode)
+        }
     }
 
     /** 将当前区间设定为激活区间 */
@@ -251,55 +236,111 @@ export class KRange extends Range {
 
     /**
      * 将 Range 信息序列化
-     * @return {[number, number]|[number]}
+     * @typedef {boolean|undefined} KRangePointType
+     * @typedef {[number, number, KRangePointType]|[number, number, KRangePointType, number, number]} KRangeData
+     * @return {KRangeData}
      */
     serialization() {
         /**
-         * 获取指定
-         * @param container {Text} 所在节点
+         * @param container {Node} 所在节点
          * @param offset {number} 偏移量
-         * @return {number} 0-横向局部偏移量，2-纵向全局偏移量
+         * @param include {boolean} 是否包含 offset 所指节点
+         * @return {[number, number, KRangePointType]|[number, number]}
          */
-        function locateRange(container, offset) {
+        function locateRange(container, offset, include) {
+            const isText = isTextNode(container)
+            const leafNode = isText ? container : container.childNodes[offset]
+            let emptyCount = -1
+            let emptyItem = leafNode
+            while (isEmptyBodyElement(emptyItem)) {
+                ++emptyCount
+                emptyItem = prevLeafNode(emptyItem)
+            }
+            let index = 0
             const top = findParentTag(
-                container, item => item.parentElement === KRICH_EDITOR
+                leafNode, item => item.parentElement === KRICH_EDITOR
             )
-            let yOffset = 0
             for (let item of KRICH_EDITOR.children) {
                 if (item === top) break
-                yOffset += item.textContent.length
+                index += item.textContent.length
             }
-            if (!top.firstChild) {
-                console.assert(offset === 0, 'offset 应当等于 0', offset)
-                return yOffset
+            eachDomTree(leafNode, false, false, it => {
+                if (it === top) return true
+                if (isTextNode(it)) index += it.textContent.length
+            })
+            /**
+             * 存储指针是否指向一个节点的开头
+             * @type {boolean|undefined}
+             */
+            let type
+            if (include) {
+                if (isText) {
+                    index += offset
+                    type = offset === 0
+                } else type = true
+            } else {
+                if (isText)
+                    index += offset
             }
-            let x = 0
-            let node = getFirstTextNode(top)
-            while (node !== container) {
-                x += node.textContent.length
-                node = nextSiblingText(node)
-            }
-            return yOffset + x + offset
+            return [index, emptyCount, ...(include ? [type] : [])]
         }
-        const range = this
-        const {startContainer, startOffset, endContainer, endOffset} = range
-        const startLocation = locateRange(startContainer, startOffset)
-        if (range.collapsed) return [startLocation]
-        const endLocation = locateRange(endContainer, endOffset)
-        return [startLocation, endLocation]
+        const {startContainer, startOffset, endContainer, endOffset} = this
+        const startLocation = locateRange(startContainer, startOffset, true)
+        if (this.collapsed) return startLocation
+        const endLocation = locateRange(endContainer, endOffset, false)
+        return [...startLocation, ...endLocation]
     }
 
     /**
      * 从 data 中恢复数据
-     * @param data {[number,number]|[number, number, number, number]}
+     * @param data {KRangeData}
      */
     deserialized(data) {
-        const [start, end] = data
-        this.setStart(KRICH_EDITOR, start)
-        if (data.length === 1) {
-            this.collapse(true)
+        let [startIndex, startEmptyCount, type, endIndex, endEmptyCount] = data
+        /**
+         * @param index {number}
+         * @param emptyCount {number}
+         * @param type {KRangePointType?}
+         * @return {[Node, number]}
+         */
+        function findNode(index, emptyCount, type) {
+            let pos = 0
+            return eachDomTree(KRICH_EDITOR, true, true, it => {
+                if (isTextNode(it)) {
+                    const length = it.textContent.length
+                    const nextPos = pos + length
+                    if (nextPos > index) {
+                        return [it, startIndex - index]
+                    } else if (nextPos === index) {
+                        while (emptyCount-- > 0) {
+                            it = nextLeafNode(it)
+                        }
+                        if (type) {
+                            return [nextLeafNode(it), 0]
+                        } else {
+                            return [it, -1]
+                        }
+                    } else {
+                        pos = nextPos
+                    }
+                }
+            })
+        }
+        const [startContainer, startOffset] = findNode(startIndex, startEmptyCount, type)
+        if (startOffset < 0) {
+            this.setStartAfter(startContainer)
         } else {
-            this.setEnd(KRICH_EDITOR, end)
+            super.setStart(startContainer, 0)
+        }
+        if (data.length < 4) {
+            this.collapse(true)
+            return this
+        }
+        const [endContainer, endOffset] = findNode(endIndex, endEmptyCount)
+        if (endOffset < 0) {
+            this.setEndAfter(endContainer)
+        } else {
+            super.setEnd(endContainer, endOffset)
         }
     }
 
@@ -429,7 +470,7 @@ export class KRange extends Range {
 
     /**
      * 反序列化数据
-     * @param data {[number,number]|[number, number, number, number]}
+     * @param data {[number, number, KRangePointType]|[number, number, KRangePointType, number, number]}
      * @return {KRange}
      */
     static deserialized(data) {

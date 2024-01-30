@@ -22,8 +22,11 @@ export function eachDomTree(start, forward, first, consumer) {
      * @return {any} 为 true 时中断
      */
     function dfs(item) {
-        let result = consumer(item)
-        if (result) return calcResult(item, result)
+        let result
+        if (forward) {
+            result = consumer(item)
+            if (result) return calcResult(item, result)
+        }
         const children = item.children
         if (children) {
             const list = forward ? children : Array.from(children).reverse()
@@ -32,17 +35,34 @@ export function eachDomTree(start, forward, first, consumer) {
                 if (result) return result
             }
         }
+        if (!forward) {
+            result = consumer(item)
+            if (result) return calcResult(item, result)
+        }
     }
-    for (let childNode of start.parentNode.childNodes) {
+    const childNodes = Array.from(start.parentNode.childNodes)
+    if (forward) childNodes.reverse()
+    const index = childNodes.indexOf(start)
+    for (let i = index; i >= 0; --i) {
         if (!first) {
             first = true
-            continue
+        } else {
+            const result = dfs(childNodes[i])
+            if (result) return result
         }
-        const result = dfs(childNode)
-        if (result) return result
     }
     const {parentElement} = start
     return isKrichEditor(parentElement) ? null : eachDomTree(parentElement, forward, false, consumer)
+}
+
+/** 获取最邻近的下一个叶子节点 */
+export function nextLeafNode(node) {
+    return getFirstChildNode(eachDomTree(node, true, false, _ => true))
+}
+
+/** 获取最邻近的上一个叶子节点 */
+export function prevLeafNode(node) {
+    return eachDomTree(node, false, false, _ => true)
 }
 
 /**
