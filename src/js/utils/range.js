@@ -100,6 +100,8 @@ export class KRange extends Range {
             if (node) {
                 this.setStartBefore(node)
             }
+        } else {
+            super.setStart(startContainer, startOffset)
         }
         if (optional.collapsed) {
             this.collapse(true)
@@ -108,6 +110,8 @@ export class KRange extends Range {
             if (node) {
                 this.setEndBefore(node)
             }
+        } else {
+            super.setEnd(endContainer, endOffset)
         }
     }
 
