@@ -3,6 +3,7 @@
  */
 
 import {equalsKrichNode, isEmptyBodyElement, isKrichContainer, isKrichEditor, isTextNode} from './tools'
+import {KRICH_EDITOR} from '../global-fileds'
 
 /**
  * 从起点开始遍历 DOM 树
@@ -13,6 +14,7 @@ import {equalsKrichNode, isEmptyBodyElement, isKrichContainer, isKrichEditor, is
  * @return {any} consumer 的返回值将会从此返回，若 consumer 返回了 true 则返回 consumer 最后一次传入的节点对象
  */
 export function eachDomTree(start, forward, first, consumer) {
+    console.assert(KRICH_EDITOR.contains(start), 'eachDomTree 仅允许遍历 KRICH_EDITOR 内的节点', start)
     function calcResult(node, value) {
         return value === true ? node : value
     }
@@ -40,7 +42,8 @@ export function eachDomTree(start, forward, first, consumer) {
             if (result) return calcResult(item, result)
         }
     }
-    const childNodes = Array.from(start.parentNode.childNodes)
+    const isTail = isKrichEditor(start)
+    const childNodes = isTail ? [start] : Array.from(start.parentNode.childNodes)
     if (forward) childNodes.reverse()
     const index = childNodes.indexOf(start)
     for (let i = index; i >= 0; --i) {
@@ -51,8 +54,7 @@ export function eachDomTree(start, forward, first, consumer) {
             if (result) return result
         }
     }
-    const {parentElement} = start
-    return isKrichEditor(parentElement) ? null : eachDomTree(parentElement, forward, false, consumer)
+    return isTail ? null : eachDomTree(start.parentNode, forward, false, consumer)
 }
 
 /** 获取最邻近的下一个叶子节点 */
