@@ -14,10 +14,11 @@ export const optional = {
             name: 'ReplaceHeaderAndFooter',
             renderChunk: function (code, chunk, options, _) {
                 if (chunk.type !== 'chunk') return
+                code = code.replaceAll('const ', 'let ')
                 if (options.format === 'iife') {
                     return code.replace(
                         new RegExp(`^(var\\s${options.name}\\s=\\s\\(function\\s\\(exports\\)\\s{)`),
-                        `var ${options.name} = function(_optional) {\n    const exports = {}`
+                        `var ${options.name} = function(_optional) {\n    let exports = {}`
                     ).replace(/^\s*}\)\({\s*}\);\s*$/m, '}')
                 } else {
                     const endIndex = code.lastIndexOf('// ESM：封装终点')

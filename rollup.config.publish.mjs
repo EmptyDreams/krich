@@ -1,5 +1,4 @@
 import terser from '@rollup/plugin-terser'
-import replace from '@rollup/plugin-replace'
 import {esmOutput, iifeOutput, optional} from './rollup.config.common.mjs'
 
 const customOptional = {
@@ -8,14 +7,6 @@ const customOptional = {
 
 // noinspection SpellCheckingInspection
 customOptional.plugins.push(
-    replace({
-        preventAssignment: true,
-        values: {
-            'const ': 'let ',
-            '!==': '!=',
-            '===': '=='
-        }
-    }),
     terser({
         compress: {
             sequences: true,
