@@ -11,9 +11,10 @@ import {KRICH_EDITOR} from '../global-fileds'
  * @param forward {boolean} 是否正向遍历
  * @param first {boolean} 首个元素是否触发 consumer
  * @param consumer {function(Node): any} 返回 true 或其它为 true 的值结束遍历
+ * @param limit {Node|Element?} 遍历范围限制，留空表示 KRICH_EDITOR
  * @return {any} consumer 的返回值将会从此返回，若 consumer 返回了 true 则返回 consumer 最后一次传入的节点对象
  */
-export function eachDomTree(start, forward, first, consumer) {
+export function eachDomTree(start, forward, first, consumer, limit) {
     console.assert(KRICH_EDITOR.contains(start), 'eachDomTree 仅允许遍历 KRICH_EDITOR 内的节点', start)
     function calcResult(node, value) {
         return value === true ? node : value
@@ -42,7 +43,7 @@ export function eachDomTree(start, forward, first, consumer) {
             if (result) return calcResult(item, result)
         }
     }
-    const isTail = isKrichEditor(start)
+    const isTail = start === (limit ?? KRICH_EDITOR)
     const childNodes = isTail ? [start] : Array.from(start.parentNode.childNodes)
     if (forward) childNodes.reverse()
     const index = childNodes.indexOf(start)
