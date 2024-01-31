@@ -2,7 +2,7 @@
     本文件用于放置与操作 DOM 有关的 util 函数
  */
 
-import {equalsKrichNode, isEmptyBodyElement, isKrichContainer, isKrichEditor, isTextNode} from './tools'
+import {equalsKrichNode, isKrichContainer, isKrichEditor, isTextNode} from './tools'
 import {KRICH_EDITOR} from '../global-fileds'
 
 /**
@@ -152,34 +152,13 @@ export function replaceElement(src, novel) {
 }
 
 /**
- * @param node {Node} 起始节点
- * @param limit {(HTMLElement|Node)?} 父节点约束
- * @param varName {string} 变量名
- * @param fun {function(Node, Node?):Node} 终止函数
- * @return {Node|null}
- */
-function getSiblingNode(node, limit, varName, fun) {
-    if (node === limit) return null
-    let dist = node
-    while (true) {
-        let sibling = dist[varName]
-        while (isEmptyBodyElement(sibling)) {
-            sibling = sibling[varName]
-        }
-        if (sibling) return fun(sibling, limit ?? document.body)
-        dist = dist.parentNode
-        if (!dist || dist === limit) return null
-    }
-}
-
-/**
  * 查找最邻近的下一个文本节点
  * @param node {Node} 起始节点
  * @param limit {(HTMLElement|Node)?} 父节点约束，查询范围不会超过该节点的范围
  * @return {Node|null}
  */
 export function nextSiblingText(node, limit) {
-    return getSiblingNode(node, limit, 'nextSibling', getFirstTextNode)
+    return eachDomTree(node, true, false, isTextNode, limit)
 }
 
 /**
@@ -189,7 +168,7 @@ export function nextSiblingText(node, limit) {
  * @return {Node|null}
  */
 export function prevSiblingText(node, limit) {
-    return getSiblingNode(node, limit, 'previousSibling', getLastTextNode)
+    return eachDomTree(node, false, false, isTextNode, limit)
 }
 
 /**
