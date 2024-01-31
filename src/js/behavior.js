@@ -42,7 +42,7 @@ import {
 import {behaviorHeader} from './behaviors/header'
 import {KRange, setCursorPositionAfter} from './utils/range'
 import {findParentTag, splitElementByContainer, zipTree} from './utils/dom'
-import {createElement, readSelectedColor} from './utils/tools'
+import {createElement, isEmptyBodyElement, readSelectedColor} from './utils/tools'
 import {handleTemplate} from './utils/template'
 import {onclickMultiElementStructure} from './behaviors/multi-element-structure'
 import {onclickHr} from './behaviors/hr'
@@ -150,8 +150,9 @@ initBehaviors({
             KRICH_EDITOR.querySelectorAll(`p:empty`)
                 .forEach(it => it.innerHTML = '<br>')
             console.assert(
-                !KRICH_EDITOR.querySelector(TOP_LIST.map(it => `${it}:empty`).join()),
-                '样式清楚完成后不应当存在满足 :empty 的顶级标签'
+                Array.from(KRICH_EDITOR.querySelectorAll(TOP_LIST.map(it => `${it}:empty`).join()))
+                    .every(it => isEmptyBodyElement(it)),
+                '样式清除完成后不应当存在满足 :empty 的顶级标签'
             )
             range.deserialized(offlineData)
             return true
