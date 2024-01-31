@@ -136,6 +136,7 @@ initBehaviors({
         noStatus: true,
         render: () => clearStyle,
         onclick: range => {
+            if (range.collapsed) return
             const offlineData = range.serialization()
             const tmpBox = createElement('div', ['tmp'])
             for (let lineRange of range.splitLine()) {
