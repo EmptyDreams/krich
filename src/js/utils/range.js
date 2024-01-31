@@ -243,8 +243,10 @@ export class KRange extends Range {
          */
         function locateRange(container, offset, include) {
             const isText = isTextNode(container)
-            const leafNode = isText ? container : container.childNodes[offset]
-            let emptyCount = -1
+            let leafNode = isText ? container : container.childNodes[offset]
+            if (!include && (!isText || !offset))
+                leafNode = prevLeafNode(leafNode)
+            let emptyCount = 0
             let emptyItem = leafNode
             while (isEmptyBodyElement(emptyItem)) {
                 ++emptyCount
