@@ -259,9 +259,8 @@ export class KRange extends Range {
                 index += item.textContent.length
             }
             eachDomTree(leafNode, false, false, it => {
-                if (it === top) return true
                 if (isTextNode(it)) index += it.textContent.length
-            })
+            }, top)
             /**
              * 存储指针是否指向一个节点的开头
              * @type {boolean|undefined}
