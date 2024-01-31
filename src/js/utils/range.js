@@ -115,16 +115,6 @@ export class KRange extends Range {
         }
     }
 
-    setStart(node, offset) {
-        const [text, index] = findTextByIndex(node, offset, true)
-        super.setStart(text, index)
-    }
-
-    setEnd(node, offset) {
-        const [text, index] = findTextByIndex(node, offset, false)
-        super.setEnd(text, index)
-    }
-
     setStartBefore(node) {
         const childNode = getFirstChildNode(node)
         super.setStart(childNode, 0)
@@ -362,21 +352,17 @@ export class KRange extends Range {
             if (newLength === length) break
             length = newLength
         }
-        lines = lines.filter(it => !isEmptyBodyElement(it))
-        length = lines.length
-        if (length === 1) return [this.copy()]
-        return lines.map((item, index) => {
-            let newRange
+        const worked = lines
+            .map((it, index) => [it, index])
+            .filter(it => !isEmptyBodyElement(it[0]))
+        return worked.map(data => {
+            const [item, index] = data
+            const newRange = KRange.selectNodeContents(item)
             if (index === 0) {
-                newRange = new KRange()
                 newRange.setStart(startContainer, startOffset)
-                newRange.setEndAfter(item)
-            } else if (index === length - 1) {
-                newRange = new KRange()
-                newRange.setStartBefore(item)
+            }
+            if (index === length - 1) {
                 newRange.setEnd(endContainer, endOffset)
-            } else {
-                newRange = KRange.selectNodeContents(item)
             }
             return newRange
         })
@@ -387,7 +373,8 @@ export class KRange extends Range {
      * @return {Element[]}
      */
     getAllTopElements() {
-        const {commonAncestorContainer, startContainer, endContainer} = this
+        let {commonAncestorContainer, startContainer, endContainer, endOffset} = this
+        if (!isTextNode(endContainer)) endContainer = prevLeafNode(endContainer.childNodes[endOffset])
         const {firstChild, lastChild} = commonAncestorContainer
         /**
          * 是否对公共祖先进行特化处理
@@ -420,14 +407,6 @@ export class KRange extends Range {
                 it => item.parentNode.nextSibling === it.parentNode
             )
         }
-    }
-
-    /**
-     * 拷贝对象
-     * @return {KRange}
-     */
-    copy() {
-        return new KRange(this)
     }
 
     /**
@@ -496,25 +475,4 @@ function checkLocationRelation(range) {
     const node = startContainer.childNodes[startOffset] ?? startContainer
     const otherNode = endContainer.childNodes[endOffset] ?? endContainer
     return node.compareDocumentPosition(otherNode) & 4
-}
-
-/**
- * 通过下标查找 Text
- * @param node {Node} 查找范围约束
- * @param index {number} 下标
- * @param focusHead {boolean} 是否将焦点聚焦到开头
- * @return {[Text, number]}
- */
-function findTextByIndex(node, index, focusHead) {
-    let text = getFirstTextNode(node)
-    while (true) {
-        console.assert(!!text, '下标超限', node)
-        const length = text.textContent.length
-        const next = nextSiblingText(text, node)
-        if (focusHead) {
-            if (index < length || (!next && index === length)) return [text, index]
-        } else if (index <= length) return [text, index]
-        index -= length
-        text = next
-    }
 }
