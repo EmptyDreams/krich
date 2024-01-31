@@ -314,7 +314,7 @@ export class KRange extends Range {
                     const length = it.textContent.length
                     const nextPos = pos + length
                     if (nextPos > index) {
-                        return [it, startIndex - index]
+                        return [it, index - pos]
                     } else if (nextPos === index) {
                         while (emptyCount-- > 0) {
                             it = nextLeafNode(it)
@@ -334,7 +334,7 @@ export class KRange extends Range {
         if (startOffset < 0) {
             this.setStartAfter(startContainer)
         } else {
-            super.setStart(startContainer, 0)
+            super.setStart(startContainer, startOffset)
         }
         if (data.length < 4) {
             this.collapse(true)
