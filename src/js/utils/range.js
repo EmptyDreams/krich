@@ -343,7 +343,7 @@ export class KRange extends Range {
      * 通过行切分 Range
      * @return {KRange[]}
      */
-    splitLine() {
+    splitRangeByLine() {
         const {startContainer, endContainer, startOffset, endOffset} = this
         let lines = this.getAllTopElements()
         let length = lines.length

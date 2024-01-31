@@ -139,7 +139,7 @@ initBehaviors({
             if (range.collapsed) return
             const offlineData = range.serialization()
             const tmpBox = createElement('div', ['tmp'])
-            for (let lineRange of range.splitLine()) {
+            for (let lineRange of range.splitRangeByLine()) {
                 const top = findParentTag(lineRange.startContainer, TOP_LIST)
                 lineRange.surroundContents(tmpBox, top)
                 tmpBox.innerHTML = tmpBox.textContent
@@ -202,7 +202,7 @@ export function execCommonCommand(
     const behavior = behaviors[key]
     const selectionRange = KRange.activated()
     const isEquals = selectionRange.equals(range)
-    let rangeArray = range.splitLine()
+    let rangeArray = range.splitRangeByLine()
     const lastIndex = rangeArray.length - 1
     if (!removed) {
         if (conflicts)
@@ -237,7 +237,7 @@ export function execCommonCommand(
  * @return {KRange[]} 设置后的选择范围
  */
 export function setStyleInRange(key, ranges, behavior) {
-    const rangeArray = Array.isArray(ranges) ? ranges : ranges.splitLine()
+    const rangeArray = Array.isArray(ranges) ? ranges : ranges.splitRangeByLine()
     for (let i = 0; i < rangeArray.length; i++) {
         const element = behavior.builder(KRICH_CONTAINER.querySelector(`*[data-id="${key}"]`))
         rangeArray[i].surroundContents(element)
