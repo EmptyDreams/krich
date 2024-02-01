@@ -5,7 +5,6 @@ import {
     getFirstTextNode, getLastChildNode,
     getLastTextNode, nextLeafNode,
     nextSiblingText, prevLeafNode,
-    splitElementByContainer,
     zipTree
 } from './dom'
 import {isEmptyBodyElement, isMarkerNode, isMultiElementStructure, isTextNode} from './tools'
@@ -208,17 +207,14 @@ export class KRange extends Range {
             container.append(startContainer)
         } else {
             const commonAncestorContainer = lca ?? this.commonAncestorContainer
-            const {list, index} = splitElementByContainer(
-                commonAncestorContainer,
-                startContainer, startOffset, endContainer, endOffset
-            )
+            const list = this.splitNode(commonAncestorContainer)
             if (commonAncestorContainer.nodeType === Node.TEXT_NODE) {
-                list[index].parentNode.insertBefore(container, list[index])
-                container.append(list[index])
+                list[1].parentNode.insertBefore(container, list[1])
+                container.append(list[1])
                 zipTree(list[0].parentElement)
             } else {
-                container.append(...list[index].childNodes)
-                list[index].append(container)
+                container.append(...list[1].childNodes)
+                list[1].append(container)
                 for (let i = 1; i < list.length; i++) {
                     list[0].append(...list[i].childNodes)
                     list[i].remove()
@@ -367,6 +363,50 @@ export class KRange extends Range {
             }
             return newRange
         })
+    }
+
+    /**
+     * 通过 KRange 选区切分 DOM 结构
+     *
+     * 注意：不应该对 collapsed 的 KRange 调用该函数
+     *
+     * @param root {Node} 切分的根，切分时不会影响 [root] 的父级节点
+     * @return {[Node|Element, Node|Element, Node|Element]} 中间为选区选中的范围
+     */
+    splitNode(root) {
+        console.assert(!this.collapsed, '对于 collapsed 的 KRange 不应当调用 splitNode 函数')
+        /**
+         * 通过下标切分文本节点
+         * @param node {Node} 切分起始节点
+         * @param offset {number|Node} 偏移量，该点指向的值分配到右侧
+         * @param tree {Node?} 已生成的树结构
+         * @return {Node} 生成的树结构的顶层节点
+         */
+        function splitNodeHelper(node, offset, tree) {
+            const isLast = node === root
+            const newNode = node.cloneNode(false)
+            if (isTextNode(node)) {
+                const textContent = node.textContent
+                newNode.textContent = textContent.substring(0, offset)
+                node.textContent = textContent.substring(offset)
+            } else {
+                for (let i = 0; i !== offset; ++i) {
+                    const item = node.firstChild
+                    if (!item || item === offset) break
+                    newNode.appendChild(item)
+                }
+                if (tree) newNode.appendChild(tree)
+            }
+            if (isLast) {
+                return node.parentNode.insertBefore(newNode, node)
+            } else {
+                return splitNodeHelper(node.parentNode, node, newNode)
+            }
+        }
+        const {startContainer, startOffset, endContainer, endOffset} = this
+        const left = splitNodeHelper(startContainer, startOffset)
+        const mid = splitNodeHelper(endContainer, endOffset - (startContainer === endContainer ? startOffset : 0))
+        return [left, mid, root]
     }
 
     /**

@@ -41,7 +41,7 @@ import {
 } from './global-fileds'
 import {behaviorHeader} from './behaviors/header'
 import {KRange, setCursorPositionAfter} from './utils/range'
-import {findParentTag, splitElementByContainer, zipTree} from './utils/dom'
+import {findParentTag, zipTree} from './utils/dom'
 import {createElement, isEmptyBodyElement, readSelectedColor} from './utils/tools'
 import {handleTemplate} from './utils/template'
 import {onclickMultiElementStructure} from './behaviors/multi-element-structure'
@@ -263,8 +263,8 @@ export function removeStylesInRange(range, ...behaviors) {
     const {startContainer, startOffset, endContainer, endOffset} = range
     const boxTop = findParentTag(tmpBox, checker)
     if (boxTop) {
-        const {list, index} = splitElementByContainer(boxTop, startContainer, startOffset, endContainer, endOffset)
-        removeNodeReserveChild(list[index])
+        const list = range.splitNode(boxTop)
+        removeNodeReserveChild(list[1])
     } else {
         tmpBox.querySelectorAll(
             behaviors.map(it => it.exp).join(',')
