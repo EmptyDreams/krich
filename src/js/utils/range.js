@@ -116,12 +116,16 @@ export class KRange extends Range {
 
     setStartBefore(node) {
         const childNode = getFirstChildNode(node)
-        super.setStart(childNode, 0)
+        if (isBrNode(childNode)) {
+            super.setStartBefore(childNode)
+        } else {
+            super.setStart(childNode, 0)
+        }
     }
 
     setStartAfter(node) {
         const childNode = getLastChildNode(node)
-        if (isTextNode(childNode)) {
+        if (isTextNode(childNode) && !isBrNode(childNode)) {
             super.setStart(childNode, childNode.textContent.length)
         } else if (isMarkerNode(childNode)) {
             this.setStartBefore(nextLeafNode(childNode))
