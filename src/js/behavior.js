@@ -260,7 +260,6 @@ export function removeStylesInRange(range, ...behaviors) {
     tmpBox.classList.add('tmp')
     range.surroundContents(tmpBox)
     range.deserialized(offlineData)
-    const {startContainer, startOffset, endContainer, endOffset} = range
     const boxTop = findParentTag(tmpBox, checker)
     if (boxTop) {
         const list = range.splitNode(boxTop)
