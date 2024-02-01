@@ -55,7 +55,7 @@ export function eachDomTree(start, forward, first, consumer, limit) {
             if (result) return result
         }
     }
-    return isTail ? null : eachDomTree(start.parentNode, forward, false, consumer)
+    return isTail ? null : eachDomTree(start.parentNode, forward, false, consumer, limit)
 }
 
 /** 获取最邻近的下一个叶子节点 */
