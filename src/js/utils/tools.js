@@ -102,6 +102,15 @@ export function isBrNode(node) {
 }
 
 /**
+ * 判断是否为空行
+ * @param node {Node}
+ * @return {boolean}
+ */
+export function isEmptyLine(node) {
+    return node.nodeName === 'P' && isBrNode(node.firstChild)
+}
+
+/**
  * 判断指定节点是否是 marker
  * @param node {Node|Element}
  * @return {boolean | undefined}

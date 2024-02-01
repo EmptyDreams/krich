@@ -7,7 +7,7 @@ import {
     nextSiblingText, prevLeafNode,
     zipTree
 } from './dom'
-import {isBrNode, isEmptyBodyElement, isMarkerNode, isMultiElementStructure, isTextNode} from './tools'
+import {isBrNode, isEmptyBodyElement, isEmptyLine, isMarkerNode, isMultiElementStructure, isTextNode} from './tools'
 
 /**
  * 将鼠标光标移动到指定位置
@@ -355,7 +355,7 @@ export class KRange extends Range {
         }
         const worked = lines
             .map((it, index) => [it, index])
-            .filter(it => !isEmptyBodyElement(it[0]) && !isBrNode(it[0]))
+            .filter(it => !isEmptyBodyElement(it[0]) && !isEmptyLine(it[0]))
         return worked.map(data => {
             const [item, index] = data
             const newRange = KRange.selectNodeContents(item)
