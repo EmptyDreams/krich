@@ -1,6 +1,6 @@
 import {findParentTag} from '../utils/dom'
 import {TOP_LIST} from '../global-fileds'
-import {createElement, createNewLine} from '../utils/tools'
+import {createElement, createNewLine, isEmptyLine} from '../utils/tools'
 import {setCursorPositionBefore} from '../utils/range'
 
 /**
@@ -10,7 +10,7 @@ import {setCursorPositionBefore} from '../utils/range'
 export function onclickHr(range) {
     const posLine = findParentTag(range.endContainer, TOP_LIST)
     const hr = createElement('hr')
-    if (posLine.innerHTML === '<br>') {
+    if (isEmptyLine(posLine)) {
         posLine.replaceWith(hr)
     } else {
         posLine.insertAdjacentElement('afterend', hr)
