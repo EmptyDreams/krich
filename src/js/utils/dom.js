@@ -2,7 +2,7 @@
     本文件用于放置与操作 DOM 有关的 util 函数
  */
 
-import {equalsKrichNode, isKrichContainer, isKrichEditor, isTextNode} from './tools'
+import {equalsKrichNode, isBrNode, isKrichContainer, isKrichEditor, isTextNode} from './tools'
 import {KRICH_EDITOR} from '../global-fileds'
 
 /**
@@ -182,7 +182,7 @@ export function zipTree(container) {
         let item = getFirstTextNode(container)
         while (item) {
             const nextText = nextSiblingText(item, container)
-            if (item.nodeName !== 'BR') {
+            if (!isBrNode(item)) {
                 if (!item.textContent) {
                     let parent = item.parentElement
                     item.remove()

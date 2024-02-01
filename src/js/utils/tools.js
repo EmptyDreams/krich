@@ -53,7 +53,7 @@ export function getElementBehavior(element) {
  * @return {boolean}
  */
 export function isEmptyBodyElement(element) {
-    return element && element.classList && !element.firstChild && element.nodeName !== 'BR'
+    return element && element.classList && !element.firstChild && !isBrNode(element)
 }
 
 /**
@@ -89,7 +89,16 @@ export function isKrichContainer(node) {
  * @return {boolean}
  */
 export function isTextNode(node) {
-    return ['#text', 'BR'].includes(node.nodeName)
+    return node.nodeName === '#text' || isBrNode(node)
+}
+
+/**
+ * 判断指定节点是否是 BR 节点
+ * @param node {Node}
+ * @return {boolean}
+ */
+export function isBrNode(node) {
+    return node.nodeName === 'BR'
 }
 
 /**

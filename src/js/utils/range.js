@@ -7,7 +7,7 @@ import {
     nextSiblingText, prevLeafNode,
     zipTree
 } from './dom'
-import {isEmptyBodyElement, isMarkerNode, isMultiElementStructure, isTextNode} from './tools'
+import {isBrNode, isEmptyBodyElement, isMarkerNode, isMultiElementStructure, isTextNode} from './tools'
 
 /**
  * 将鼠标光标移动到指定位置
@@ -142,7 +142,7 @@ export class KRange extends Range {
 
     setEndAfter(node) {
         const childNode = getLastChildNode(node)
-        if (isTextNode(childNode)) {
+        if (isTextNode(childNode) && !isBrNode(childNode)) {
             super.setEnd(childNode, childNode.textContent.length)
         } else if (isMarkerNode(childNode)) {
             super.setEnd(nextLeafNode(node), 0)
@@ -244,7 +244,7 @@ export class KRange extends Range {
                 leafNode = prevLeafNode(leafNode)
             let emptyCount = 0
             let emptyItem = leafNode
-            while (isEmptyBodyElement(emptyItem)) {
+            while (isBrNode(emptyItem) || isEmptyBodyElement(emptyItem)) {
                 ++emptyCount
                 emptyItem = prevLeafNode(emptyItem)
             }
@@ -351,7 +351,7 @@ export class KRange extends Range {
         }
         const worked = lines
             .map((it, index) => [it, index])
-            .filter(it => !isEmptyBodyElement(it[0]))
+            .filter(it => !isEmptyBodyElement(it[0]) && !isBrNode(it[0]))
         return worked.map(data => {
             const [item, index] = data
             const newRange = KRange.selectNodeContents(item)
