@@ -419,7 +419,10 @@ export class KRange extends Range {
      */
     getAllTopElements() {
         let {commonAncestorContainer, startContainer, endContainer, endOffset} = this
-        if (!isTextNode(endContainer)) endContainer = prevLeafNode(endContainer.childNodes[endOffset])
+        if (!isTextNode(endContainer)) {
+            const leafNode = endContainer.childNodes[endOffset]
+            endContainer = prevLeafNode(leafNode) ?? leafNode
+        }
         const {firstChild, lastChild} = commonAncestorContainer
         /**
          * 是否对公共祖先进行特化处理
