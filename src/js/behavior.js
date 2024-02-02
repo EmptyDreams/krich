@@ -40,7 +40,7 @@ import {
     TOP_LIST
 } from './global-fileds'
 import {behaviorHeader} from './behaviors/header'
-import {KRange, setCursorPositionAfter} from './utils/range'
+import {KRange} from './utils/range'
 import {findParentTag, zipTree} from './utils/dom'
 import {createElement, isEmptyBodyElement, readSelectedColor} from './utils/tools'
 import {handleTemplate} from './utils/template'
@@ -199,8 +199,7 @@ export function execCommonCommand(
     key, range, removed = false, conflicts, type = 0
 ) {
     if (range.collapsed) return true
-    const isEquals = KRange.activated().equals(range)
-    const offlineData = isEquals ? range.serialization() : range.endContainer
+    const offlineData = KRange.activated().equals(range) ? range.serialization() : null
     const behavior = behaviors[key]
     let rangeArray = range.splitRangeByLine()
     const lastIndex = rangeArray.length - 1
@@ -220,10 +219,8 @@ export function execCommonCommand(
     for (let kRange of rangeArray) {
         zipTree(findParentTag(kRange.startContainer, TOP_LIST))
     }
-    if (isEquals) {
+    if (offlineData) {
         range.deserialized(offlineData).active()
-    } else {
-        setCursorPositionAfter(offlineData)
     }
 }
 
