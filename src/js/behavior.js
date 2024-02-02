@@ -66,7 +66,8 @@ initBehaviors({
         render: () => blockquoteStyle,
         onclick: range => onclickMultiElementStructure(range, 'blockquote'),
         verify: () => true,
-        builder: () => createElement('blockquote')
+        builder: () => createElement('blockquote'),
+        newLine: () => false
     },
     bold: {
         exp: 'b',
@@ -168,22 +169,29 @@ initBehaviors({
         multi: true,
         exp: 'ul',
         render: () => ulStyle,
-        onclick: range => onclickMultiElementStructure(range, 'ul', 'li'),
-        builder: () => createElement('ul')
+        onclick: range => onclickMultiElementStructure(range, 'ul'),
+        builder: () => createElement('ul'),
+        newLine: () => createElement('li')
     },
     ol: {
         multi: true,
         exp: 'ol',
         render: () => olStyle,
-        onclick: range => onclickMultiElementStructure(range, 'ol', 'li'),
-        builder: () => createElement('ol')
+        onclick: range => onclickMultiElementStructure(range, 'ol'),
+        builder: () => createElement('ol'),
+        newLine: () => createElement('li')
     },
     todo: {
         multi: true,
         exp: 'div.todo',
         render: () => todoStyle,
-        onclick: range => onclickMultiElementStructure(range, 'todo', 'li', TODO_MARKER),
-        builder: () => createElement('div', ['todo'])
+        onclick: range => onclickMultiElementStructure(range, 'todo'),
+        builder: () => createElement('div', ['todo']),
+        newLine: () => {
+            const line = createElement('li')
+            line.append(TODO_MARKER.cloneNode(false))
+            return line
+        }
     }
 })
 

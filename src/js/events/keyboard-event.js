@@ -1,9 +1,9 @@
-import {KRICH_EDITOR, markStatusCacheInvalid} from '../global-fileds'
+import {KRICH_EDITOR, markStatusCacheInvalid, TOP_LIST} from '../global-fileds'
 import {findParentTag, getFirstTextNode, getLastTextNode, replaceElement} from '../utils/dom'
 import {KRange, setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
 import {editorRange} from './range-monitor'
-import {createNewLine} from '../utils/tools'
+import {createNewLine, getElementBehavior, isMultiElementStructure} from '../utils/tools'
 
 export function registryKeyboardEvent() {
     const switchTask = key => {
@@ -107,12 +107,11 @@ function enterEvent(event) {
         }
     } else {
         const structure = findParentTag(
-            startContainer,
-            item => ['BLOCKQUOTE', 'UL', 'OL'].includes(item.nodeName) || item.classList?.contains?.('todo')
+            startContainer, item => isMultiElementStructure(item)
         )
         if (!structure) return
         const lastChild = structure.lastChild
-        if (!lastChild.textContent && startContainer === getLastTextNode(structure)) {
+        if (!lastChild.textContent && startContainer.contains(getLastTextNode(structure))) {
             /* 在多元素结构最后一个空行按下回车时自动退出 */
             event.preventDefault()
             if (structure.nodeName[0] === 'B') {
@@ -121,7 +120,17 @@ function enterEvent(event) {
                 element = lastChild.lastChild
                 lastChild.remove()
             }
-            structure.insertAdjacentElement('afterend', element)
+            const parent = findParentTag(structure.parentNode, TOP_LIST)
+            const behavior = getElementBehavior(parent)
+            let inserted = element
+            if (behavior.multi) {
+                const newLine = behavior.newLine()
+                if (newLine) {
+                    newLine.append(element)
+                    inserted = newLine
+                }
+            }
+            structure.insertAdjacentElement('afterend', inserted)
             if (!structure.firstChild) structure.remove()
         }
     }

@@ -7,12 +7,10 @@ import {isMultiElementStructure} from '../utils/tools'
  * 多元素结构的点击事件
  * @param range {KRange} 选择范围
  * @param key {string} 在 behaviors 中的 key
- * @param lineTagName {string?} 每行使用指定标签包裹时使用的标签名称
- * @param simulateMarker {HTMLElement?} 每行开头用于模拟 ::marker 的元素，传入的对象不会被修改和插入到 DOM 中
  */
-export function onclickMultiElementStructure(range, key, lineTagName, simulateMarker) {
+export function onclickMultiElementStructure(range, key) {
     const offlineData = range.serialization()
-    helper(range, key, lineTagName, simulateMarker)
+    helper(range, key)
     KRange.deserialized(offlineData).active()
 }
 
@@ -20,10 +18,8 @@ export function onclickMultiElementStructure(range, key, lineTagName, simulateMa
  * 辅助函数，承载实际功能
  * @param range {KRange} 选择范围
  * @param key {string} 在 behaviors 中的 key
- * @param lineTagName {string?} 每行使用指定标签包裹时使用的标签名称
- * @param simulateMarker {HTMLElement?} 每行开头用于模拟 ::marker 的元素，传入的对象不会被修改和插入到 DOM 中
  */
-function helper(range, key, lineTagName, simulateMarker) {
+function helper(range, key) {
     const behavior = behaviors[key]
     /**
      * 构建一个结构
@@ -57,7 +53,7 @@ function helper(range, key, lineTagName, simulateMarker) {
             const array = []
             let item = start
             while (item) {
-                array.push(lineTagName ? item.lastChild : item)
+                array.push(...(item.nodeName === 'P' ? [item] : item.querySelectorAll('&>p')))
                 if (item === end) break
                 item = item.nextElementSibling
             }
@@ -102,8 +98,8 @@ function helper(range, key, lineTagName, simulateMarker) {
      * @return {HTMLElement}
      */
     const pack = item => {
-        if (!lineTagName) return item
-        const packing = document.createElement(lineTagName)
+        const packing = behavior.newLine()
+        if (!packing) return item
         packing.append(item)
         return packing
     }
@@ -120,10 +116,5 @@ function helper(range, key, lineTagName, simulateMarker) {
         structure = buildStructure()
         lines[0].parentNode.insertBefore(structure, lines[0])
         structure.append(...lines.map(pack))
-    }
-    if (simulateMarker) {
-        for (let child of structure.children) {
-            child.insertBefore(simulateMarker.cloneNode(true), child.firstChild)
-        }
     }
 }

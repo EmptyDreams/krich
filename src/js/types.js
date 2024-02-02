@@ -28,6 +28,11 @@ class ButtonBehavior {
      */
     builder
     /**
+     * 用于构建一个新行，仅在 [multi] 为 `true` 时需要填写该项
+     * @type {undefined|function(): Element|false}
+     */
+    newLine
+    /**
      * 判断指定元素是否是当前样式
      * @type {string & keyof HTMLElementTagNameMap | string | undefined}
      */
