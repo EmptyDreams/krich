@@ -246,7 +246,7 @@ export class KRange extends Range {
                 leafNode = leafNode ? prevLeafNode(leafNode) : container.childNodes[offset - 1]
             let emptyCount = 0
             let emptyItem = leafNode
-            while (isBrNode(emptyItem) || isEmptyBodyElement(emptyItem)) {
+            while (emptyItem && (isBrNode(emptyItem) || isEmptyBodyElement(emptyItem))) {
                 ++emptyCount
                 emptyItem = prevLeafNode(emptyItem)
             }
