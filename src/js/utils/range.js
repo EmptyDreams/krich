@@ -228,8 +228,7 @@ export class KRange extends Range {
 
     /**
      * 将 Range 信息序列化
-     * @typedef {boolean|undefined} KRangePointType
-     * @typedef {[number, number, KRangePointType]|[number, number, KRangePointType, number, number]} KRangeData
+     * @typedef {[number, number, boolean]|[number, number, boolean, number, number, false]} KRangeData
      * @return {KRangeData}
      */
     serialization() {
@@ -237,14 +236,14 @@ export class KRange extends Range {
          * @param container {Node} 所在节点
          * @param offset {number} 偏移量
          * @param include {boolean} 是否包含 offset 所指节点
-         * @return {[number, number, KRangePointType]|[number, number]}
+         * @return {[number, number, boolean]}
          */
         function locateRange(container, offset, include) {
             const isText = isTextNode(container)
             let leafNode = isText ? container : container.childNodes[offset]
             if (!include && (!isText || !offset))
                 leafNode = leafNode ? prevLeafNode(leafNode) : container.childNodes[offset - 1]
-            let emptyCount = 0
+            let emptyCount = include ? -1 : 0
             let emptyItem = leafNode
             while (emptyItem && (isBrNode(emptyItem) || isEmptyBodyElement(emptyItem))) {
                 ++emptyCount
@@ -262,20 +261,20 @@ export class KRange extends Range {
                 if (isTextNode(it)) index += it.textContent.length
             }, top)
             /**
-             * 存储指针是否指向一个节点的开头
+             * 存储指针是否指向下一个节点的开头
              * @type {boolean|undefined}
              */
-            let type
+            let type = false
             if (include) {
                 if (isText) {
                     index += offset
                     type = offset === 0
-                } else type = true
+                }
             } else {
                 if (isText)
                     index += offset
             }
-            return [index, emptyCount, ...(include ? [type] : [])]
+            return [index, emptyCount, type]
         }
         const {startContainer, startOffset, endContainer, endOffset} = this
         const startLocation = locateRange(startContainer, startOffset, true)
@@ -294,7 +293,7 @@ export class KRange extends Range {
         /**
          * @param index {number}
          * @param emptyCount {number}
-         * @param type {KRangePointType?}
+         * @param type {boolean?}
          * @return {[Node, number]}
          */
         function findNode(index, emptyCount, type) {
@@ -491,7 +490,7 @@ export class KRange extends Range {
 
     /**
      * 反序列化数据
-     * @param data {[number, number, KRangePointType]|[number, number, KRangePointType, number, number]}
+     * @param data {KRangeData}
      * @return {KRange}
      */
     static deserialized(data) {
