@@ -168,11 +168,9 @@ export class KRange extends Range {
      * @param that {KRange}
      */
     equals(that) {
-        const thisRange = this
-        const thatRange = that
-        if (thisRange === thatRange) return true
+        if (this === that) return true
         const list = ['collapsed', 'startContainer', 'endContainer', 'startOffset', 'endOffset']
-        return !list.find(it => thisRange[it] !== thatRange[it])
+        return list.every(it => this[it] === that[it])
     }
 
     /**
@@ -483,19 +481,6 @@ export class KRange extends Range {
         const result = new KRange()
         result.setStartBefore(node)
         result.setEndAfter(node)
-        return result
-    }
-
-    /**
-     * 连接相邻的 KRange
-     * @param ranges {KRange[]}
-     */
-    static join(ranges) {
-        const first = ranges[0]
-        const last = ranges[ranges.length - 1]
-        const result = new KRange()
-        result.setStart(first.startContainer, first.startOffset)
-        result.setEnd(last.endContainer, last.endOffset)
         return result
     }
 

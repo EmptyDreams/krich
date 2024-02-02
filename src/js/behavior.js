@@ -199,9 +199,9 @@ export function execCommonCommand(
     key, range, removed = false, conflicts, type = 0
 ) {
     if (range.collapsed) return true
+    const isEquals = KRange.activated().equals(range)
+    const offlineData = isEquals ? range.serialization() : range.endContainer
     const behavior = behaviors[key]
-    const selectionRange = KRange.activated()
-    const isEquals = selectionRange.equals(range)
     let rangeArray = range.splitRangeByLine()
     const lastIndex = rangeArray.length - 1
     if (!removed) {
@@ -217,15 +217,13 @@ export function execCommonCommand(
     }
     if (type !== 2 && (removed || type === 1))
         rangeArray = setStyleInRange(key, rangeArray, behavior)
-    let offline = isEquals ? KRange.join(rangeArray).serialization() : null
-    const lastItem = rangeArray[lastIndex].endContainer
     for (let kRange of rangeArray) {
         zipTree(findParentTag(kRange.startContainer, TOP_LIST))
     }
     if (isEquals) {
-        KRange.deserialized(offline).active()
+        range.deserialized(offlineData).active()
     } else {
-        setCursorPositionAfter(lastItem)
+        setCursorPositionAfter(offlineData)
     }
 }
 
