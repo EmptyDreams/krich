@@ -287,6 +287,7 @@ export class KRange extends Range {
     /**
      * 从 data 中恢复数据
      * @param data {KRangeData}
+     * @return {KRange} 返回 this
      */
     deserialized(data) {
         let [startIndex, startEmptyCount, type, endIndex, endEmptyCount] = data
@@ -335,6 +336,7 @@ export class KRange extends Range {
         } else {
             super.setEnd(endContainer, endOffset)
         }
+        return this
     }
 
     /**
@@ -491,8 +493,7 @@ export class KRange extends Range {
      */
     static deserialized(data) {
         const range = new KRange()
-        range.deserialized(data)
-        return range
+        return range.deserialized(data)
     }
 
 }
