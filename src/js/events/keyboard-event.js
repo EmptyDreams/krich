@@ -3,7 +3,7 @@ import {findParentTag, getFirstTextNode, getLastTextNode, replaceElement} from '
 import {KRange, setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
 import {editorRange} from './range-monitor'
-import {createNewLine, getElementBehavior, isMultiElementStructure} from '../utils/tools'
+import {createNewLine, getElementBehavior, isEmptyLine, isMultiElementStructure} from '../utils/tools'
 
 export function registryKeyboardEvent() {
     const switchTask = key => {
@@ -83,9 +83,19 @@ function deleteEvent(event) {
         element.outerHTML = element.outerHTML.match(/<p>.*<\/p>/)[0]
         setCursorPositionBefore(topElement.previousSibling)
         if (!topElement.firstChild) topElement.remove()
-    } else if (getFirstTextNode(KRICH_EDITOR) === startContainer) {
-        // 在编辑器开头按下删除键时屏蔽此次按键
-        event.preventDefault()
+    } else if (isEmptyLine(startContainer)) {
+        const firstTopNode = KRICH_EDITOR.firstChild
+        if (firstTopNode === startContainer) {
+            // 在编辑器开头按下删除键时屏蔽此次按键
+            event.preventDefault()
+        } else {
+            const parent = findParentTag(startContainer.parentNode, TOP_LIST)
+            if (parent && isMultiElementStructure(parent) && parent.childElementCount < 2 && firstTopNode === parent) {
+                event.preventDefault()
+                parent.replaceWith(startContainer)
+                setCursorPositionAfter(startContainer)
+            }
+        }
     }
 }
 
