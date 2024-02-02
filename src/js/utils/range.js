@@ -418,8 +418,8 @@ export class KRange extends Range {
      * @return {Element[]}
      */
     getAllTopElements() {
-        let {commonAncestorContainer, startContainer, endContainer, endOffset} = this
-        if (!isTextNode(endContainer)) {
+        let {commonAncestorContainer, startContainer, endContainer, endOffset, collapsed} = this
+        if (!collapsed && !isTextNode(endContainer)) {
             const leafNode = endContainer.childNodes[endOffset]
             endContainer = prevLeafNode(leafNode) ?? leafNode
         }
@@ -435,17 +435,20 @@ export class KRange extends Range {
             const checker = it => it.parentNode === commonAncestorContainer
             start = startContainer === commonAncestorContainer ? firstChild : findParentTag(startContainer, checker)
             if (isMarkerNode(start)) start = start.nextSibling
-            end = endContainer === commonAncestorContainer ? lastChild : findParentTag(endContainer, checker)
+            if (!collapsed) {
+                end = endContainer === commonAncestorContainer ? lastChild : findParentTag(endContainer, checker)
+            }
         } else {
             start = findParentTag(startContainer, TOP_LIST)
-            end = findParentTag(endContainer, TOP_LIST)
+            if (!collapsed) {
+                end = findParentTag(endContainer, TOP_LIST)
+            }
         }
-        console.assert(start && end, 'start 和 end 中一个或多个的值为空', start, end)
         const result = []
         let item = start
         while (true) {
             result.push(item)
-            if (item === end) {
+            if (item === end || !end) {
                 console.assert(result.every(it => it), '结果中部分元素为空')
                 return result
             }
