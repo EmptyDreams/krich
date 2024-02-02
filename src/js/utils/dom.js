@@ -58,12 +58,21 @@ export function eachDomTree(start, forward, first, consumer, limit) {
     return isTail ? null : eachDomTree(start.parentNode, forward, false, consumer, limit)
 }
 
-/** 获取最邻近的下一个叶子节点 */
+/**
+ * 获取最邻近的下一个叶子节点
+ * @param node {Node}
+ * @return {Node|null}
+ */
 export function nextLeafNode(node) {
-    return getFirstChildNode(eachDomTree(node, true, false, _ => true))
+    const next = eachDomTree(node, true, false, _ => true)
+    return next ? getFirstChildNode(next) : null
 }
 
-/** 获取最邻近的上一个叶子节点 */
+/**
+ * 获取最邻近的上一个叶子节点
+ * @param node {Node}
+ * @return {Node|undefined}
+ */
 export function prevLeafNode(node) {
     return eachDomTree(node, false, false, _ => true)
 }
