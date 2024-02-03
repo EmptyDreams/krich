@@ -1,9 +1,10 @@
-import {KRICH_EDITOR, markStatusCacheInvalid, TOP_LIST} from '../global-fileds'
+import {behaviors, KRICH_EDITOR, markStatusCacheInvalid, TOP_LIST} from '../global-fileds'
 import {findParentTag, getFirstTextNode, getLastTextNode, replaceElement} from '../utils/dom'
 import {KRange, setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
 import {editorRange} from './range-monitor'
 import {createNewLine, getElementBehavior, isEmptyLine, isMultiElementStructure} from '../utils/tools'
+import {TODO_MARKER} from '../behavior'
 
 export function registryKeyboardEvent() {
     const switchTask = key => {
@@ -13,10 +14,14 @@ export function registryKeyboardEvent() {
                     .forEach(it => replaceElement(it, document.createElement('p')))
             case 'Backspace': case 'Delete':
                 return () => {
-                    if (KRICH_EDITOR.children.length === 1 && KRICH_EDITOR.firstChild.textContent.length === 0) {
+                    if (KRICH_EDITOR.children.length === 1 && !KRICH_EDITOR.firstChild.textContent) {
                         markStatusCacheInvalid()
                     }
-                    syncButtonsStatus(KRange.activated().startContainer)
+                    // 自动为没有多选框的代办列表的 li 添加多选框
+                    Array.from(KRICH_EDITOR.querySelectorAll(`${behaviors.todo.exp}>li`))
+                        .filter(it => !it.firstElementChild?.classList?.contains?.('marker'))
+                        .forEach(it => it.insertAdjacentElement('afterbegin', TODO_MARKER.cloneNode(false)))
+                    syncButtonsStatus(editorRange.startContainer)
                 }
         }
     }
