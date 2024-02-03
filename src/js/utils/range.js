@@ -289,7 +289,7 @@ export class KRange extends Range {
                             it = nextLeafNode(it)
                         }
                         if (type > 0)
-                            return [nextLeafNode(it), 0]
+                            return [it, index - pos]
                         if (type < 0)
                             return [it, -2]
                         return [it, -1]
