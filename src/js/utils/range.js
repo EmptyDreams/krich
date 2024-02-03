@@ -201,7 +201,16 @@ export class KRange extends Range {
 
     /**
      * 将 Range 信息序列化
-     * @typedef {[number, number, boolean]|[number, number, boolean, number, number, false]} KRangeData
+     *
+     * 每个维度包含三个数据，依次表示：偏移量、EmptyBodyElement 技术、光标位置
+     *
+     * 光标位置的值意义如下：
+     *
+     * + 1  - 在内部
+     * + 0  - 在下一个节点的开头
+     * + -1 - 在当前节点开头
+     *
+     * @typedef {[number, number, number]|[number, number, boolean, number, number, 0]} KRangeData
      * @return {KRangeData}
      */
     serialization() {
@@ -209,7 +218,7 @@ export class KRange extends Range {
          * @param container {Node} 所在节点
          * @param offset {number} 偏移量
          * @param include {boolean} 是否包含 offset 所指节点
-         * @return {[number, number, boolean]}
+         * @return {[number, number, number]}
          */
         function locateRange(container, offset, include) {
             const isText = isTextNode(container)
@@ -233,15 +242,13 @@ export class KRange extends Range {
             eachDomTree(leafNode, false, false, it => {
                 if (isTextNode(it)) index += it.textContent.length
             }, top)
-            /**
-             * 存储指针是否指向下一个节点的开头
-             * @type {boolean|undefined}
-             */
-            let type = false
+            let type = 0
             if (include) {
-                if (isText) {
+                if (isBrNode(leafNode)) {
+                    type = -1
+                } else if (isText) {
                     index += offset
-                    type = offset === 0
+                    type = offset ? 1 : 0
                 }
             } else {
                 if (isText)
@@ -266,12 +273,10 @@ export class KRange extends Range {
         /**
          * @param index {number}
          * @param emptyCount {number}
-         * @param type {boolean?}
+         * @param type {number?}
          * @return {[Node, number]}
          */
         function findNode(index, emptyCount, type) {
-            if (!index && emptyCount < 1 && !type)
-                return [getFirstChildNode(KRICH_EDITOR), -2]
             let pos = 0
             return eachDomTree(KRICH_EDITOR, true, true, it => {
                 if (isTextNode(it)) {
@@ -283,11 +288,11 @@ export class KRange extends Range {
                         while (emptyCount-- > 0) {
                             it = nextLeafNode(it)
                         }
-                        if (type) {
+                        if (type > 0)
                             return [nextLeafNode(it), 0]
-                        } else {
-                            return [it, -1]
-                        }
+                        if (type < 0)
+                            return [it, -2]
+                        return [it, -1]
                     } else {
                         pos = nextPos
                     }
