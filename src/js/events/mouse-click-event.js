@@ -4,7 +4,7 @@ import {
     KRICH_TOOL_BAR,
     markStatusCacheInvalid,
     SELECT_VALUE
-} from '../global-fileds'
+} from '../vars/global-fileds'
 import {getElementBehavior, isEmptyBodyElement, isKrichToolBar, parseRgbToHex} from '../utils/tools'
 import {editorRange} from './range-monitor'
 import {findParentTag} from '../utils/dom'

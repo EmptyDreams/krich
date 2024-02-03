@@ -1,5 +1,5 @@
 import {findParentTag} from '../utils/dom'
-import {TOP_LIST} from '../global-fileds'
+import {TOP_LIST} from '../vars/global-fileds'
 import {createElement, createNewLine, isEmptyLine} from '../utils/tools'
 import {setCursorPositionBefore} from '../utils/range'
 

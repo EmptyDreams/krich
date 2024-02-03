@@ -1,4 +1,4 @@
-import {KRICH_EDITOR, TOP_LIST} from '../global-fileds'
+import {KRICH_EDITOR, TOP_LIST} from '../vars/global-fileds'
 import {
     eachDomTree,
     findParentTag, getFirstChildNode,

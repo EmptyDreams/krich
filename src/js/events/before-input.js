@@ -1,5 +1,5 @@
 import {updateEditorRange} from './range-monitor'
-import {markComposingStart, markComposingStop} from '../global-fileds'
+import {markComposingStart, markComposingStop} from '../vars/global-fileds'
 
 /**
  * 注册 before input 事件。

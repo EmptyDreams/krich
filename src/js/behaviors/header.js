@@ -1,4 +1,4 @@
-import {SELECT_VALUE} from '../global-fileds'
+import {SELECT_VALUE} from '../vars/global-fileds'
 import {KRange} from '../utils/range'
 import {createElement} from '../utils/tools'
 

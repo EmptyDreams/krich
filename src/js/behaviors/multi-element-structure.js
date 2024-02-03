@@ -1,5 +1,5 @@
 import {findParentTag} from '../utils/dom'
-import {behaviors, KRICH_TOOL_BAR} from '../global-fileds'
+import {behaviors, KRICH_TOOL_BAR} from '../vars/global-fileds'
 import {KRange} from '../utils/range'
 import {isMultiElementStructure} from '../utils/tools'
 

@@ -2,7 +2,7 @@
     本文件用于放置与操作编辑器工具栏按钮相关的 util 函数
 */
 
-import {behaviors, SELECT_VALUE} from '../global-fileds'
+import {behaviors, SELECT_VALUE} from '../vars/global-fileds'
 import {getElementBehavior, isKrichEditor, readSelectedColor} from './tools'
 
 /**

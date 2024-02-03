@@ -2,8 +2,9 @@
     本文件用于放置与操作 DOM 有关的 util 函数
  */
 
-import {equalsKrichNode, isBrNode, isKrichContainer, isKrichEditor, isTextNode} from './tools'
-import {KRICH_EDITOR} from '../global-fileds'
+import {createNewLine, equalsKrichNode, isBrNode, isKrichContainer, isKrichEditor, isTextNode} from './tools'
+import {behaviors, KRICH_EDITOR} from '../vars/global-fileds'
+import {TODO_MARKER} from '../vars/global-tag'
 
 /**
  * 从起点开始遍历 DOM 树
@@ -148,6 +149,17 @@ export function findParentTag(node, checker) {
         if (checker(item)) return item
         item = item.parentElement
     }
+}
+
+/** 尝试修复 DOM 中的结构错误 */
+export function tryFixDom() {
+    // 自动为没有多选框的代办列表的 li 添加多选框
+    Array.from(KRICH_EDITOR.querySelectorAll(`${behaviors.todo.exp}>li`))
+        .filter(it => !it.firstElementChild?.classList?.contains?.('marker'))
+        .forEach(it => it.insertAdjacentElement('afterbegin', TODO_MARKER.cloneNode(false)))
+    // 将不在不是唯一子节点的 <br> 替换为空行
+    KRICH_EDITOR.querySelectorAll('br:not(:first-child),br:not(:last-child)')
+        .forEach(it => it.replaceWith(createNewLine()))
 }
 
 /**

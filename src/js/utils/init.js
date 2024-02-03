@@ -10,12 +10,12 @@ import {
     KRICH_TOOL_BAR, KRICH_TOOL_BAR_CLASS, markStatusCacheEffect,
     SELECT_VALUE,
     statusCheckCache
-} from '../global-fileds'
+} from '../vars/global-fileds'
 import {compareBtnListStatusWith} from './btn'
 import {KRange} from './range'
 import {getElementBehavior, readSelectedColor} from './tools'
 import {findParentTag} from './dom'
-import {TODO_MARKER} from '../behavior'
+import {TODO_MARKER} from '../vars/global-tag'
 
 /**
  * 在指定容器内初始化编辑器，该容器应当是一个内容为空的标签

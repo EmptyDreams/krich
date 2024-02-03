@@ -38,7 +38,7 @@ import {
     SELECT_VALUE,
     TITLE_LIST,
     TOP_LIST
-} from './global-fileds'
+} from './vars/global-fileds'
 import {behaviorHeader} from './behaviors/header'
 import {KRange} from './utils/range'
 import {findParentTag, zipTree} from './utils/dom'
@@ -46,12 +46,7 @@ import {createElement, isEmptyBodyElement, readSelectedColor} from './utils/tool
 import {handleTemplate} from './utils/template'
 import {onclickMultiElementStructure} from './behaviors/multi-element-structure'
 import {onclickHr} from './behaviors/hr'
-
-/** 代办列表的 marker */
-export const TODO_MARKER = createElement('input', {
-    class: 'marker',
-    type: 'checkbox'
-})
+import {TODO_MARKER} from './vars/global-tag'
 
 initBehaviors({
     headerSelect: {
@@ -203,7 +198,7 @@ initBehaviors({
  * @param conflicts {string[]?} 相互冲突的样式的 ID
  * @param type {0|1|2} 任务模式，0-默认，1-强制添加，2-仅删除
  */
-export function execCommonCommand(
+function execCommonCommand(
     key, range, removed = false, conflicts, type = 0
 ) {
     if (range.collapsed) return true
@@ -239,7 +234,7 @@ export function execCommonCommand(
  * @param behavior {ButtonBehavior} 按钮对象
  * @return {KRange[]} 设置后的选择范围
  */
-export function setStyleInRange(key, ranges, behavior) {
+function setStyleInRange(key, ranges, behavior) {
     const rangeArray = Array.isArray(ranges) ? ranges : ranges.splitRangeByLine()
     for (let i = 0; i < rangeArray.length; i++) {
         const element = behavior.builder(KRICH_CONTAINER.querySelector(`*[data-id="${key}"]`))
@@ -255,7 +250,7 @@ export function setStyleInRange(key, ranges, behavior) {
  * @param behaviors {ButtonBehavior} 要删除的标签名
  * @return {boolean} 是否存在元素没有修改
  */
-export function removeStylesInRange(range, ...behaviors) {
+function removeStylesInRange(range, ...behaviors) {
     const offlineData = range.serialization()
     /** @param it {HTMLElement} */
     const checker = it => behaviors.some(behavior => it.matches(behavior.exp))
