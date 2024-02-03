@@ -146,6 +146,7 @@ function enterEvent(event) {
             if (!structure.firstChild) structure.remove()
         }
     }
-    if (element)
-        setCursorPositionAfter(element)
+    if (element) {
+        setCursorPositionBefore(element)
+    }
 }
