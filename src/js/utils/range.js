@@ -225,7 +225,7 @@ export class KRange extends Range {
             let leafNode = isText ? container : container.childNodes[offset]
             if (!include && (!isText || !offset))
                 leafNode = leafNode ? prevLeafNode(leafNode) : container.childNodes[offset - 1]
-            let emptyCount = include ? -1 : 0
+            let emptyCount = 0
             let emptyItem = leafNode
             while (emptyItem && (isBrNode(emptyItem) || isEmptyBodyElement(emptyItem))) {
                 ++emptyCount
@@ -254,6 +254,7 @@ export class KRange extends Range {
                 if (isText)
                     index += offset
             }
+            if (!index) --emptyCount
             return [index, emptyCount, type]
         }
         const {startContainer, startOffset, endContainer, endOffset} = this
