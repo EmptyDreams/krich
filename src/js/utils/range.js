@@ -228,7 +228,8 @@ export class KRange extends Range {
             let emptyCount = 0
             let emptyItem = leafNode
             while (emptyItem && (isBrNode(emptyItem) || isEmptyBodyElement(emptyItem))) {
-                ++emptyCount
+                if (!isMarkerNode(emptyItem))
+                    ++emptyCount
                 emptyItem = prevLeafNode(emptyItem)
             }
             let index = 0
@@ -279,26 +280,29 @@ export class KRange extends Range {
          */
         function findNode(index, emptyCount, type) {
             let pos = 0
-            return eachDomTree(KRICH_EDITOR, true, true, it => {
-                if (isTextNode(it)) {
-                    const length = it.textContent.length
+            let item = getFirstChildNode(KRICH_EDITOR)
+            do {
+                if (!isMarkerNode(item)) {
+                    const length = item.textContent.length
                     const nextPos = pos + length
                     if (nextPos > index) {
-                        return [it, index - pos]
+                        return [item, index - pos]
                     } else if (nextPos === index) {
                         while (emptyCount-- > 0) {
-                            it = nextLeafNode(it)
+                            item = nextLeafNode(item)
                         }
                         if (type > 0)
-                            return [it, index - pos]
+                            return [item, index - pos]
                         if (type < 0)
-                            return [it, -2]
-                        return [it, -1]
+                            return [item, -2]
+                        return [item, -1]
                     } else {
                         pos = nextPos
                     }
                 }
-            })
+                item = nextLeafNode(item)
+            } while (item)
+            console.error('解序列化时不应当执行该语句')
         }
         const [startContainer, startOffset] = findNode(startIndex, startEmptyCount, type)
         if (startOffset === -1) {
