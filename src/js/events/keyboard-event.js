@@ -130,14 +130,16 @@ function enterEvent(event) {
                 element = lastChild.lastChild
                 lastChild.remove()
             }
-            const parent = findParentTag(structure.parentNode, TOP_LIST)
-            const behavior = getElementBehavior(parent)
             let inserted = element
-            if (behavior.multi) {
-                const newLine = behavior.newLine()
-                if (newLine) {
-                    newLine.append(element)
-                    inserted = newLine
+            const parent = findParentTag(structure.parentNode, TOP_LIST)
+            if (parent) {
+                const behavior = getElementBehavior(parent)
+                if (behavior.multi) {
+                    const newLine = behavior.newLine()
+                    if (newLine) {
+                        newLine.append(element)
+                        inserted = newLine
+                    }
                 }
             }
             structure.insertAdjacentElement('afterend', inserted)
