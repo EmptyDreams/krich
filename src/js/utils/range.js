@@ -430,6 +430,7 @@ export class KRange extends Range {
                 end = findParentTag(endContainer, TOP_LIST)
             }
         }
+        console.assert(start, 'start 不能为空')
         const result = []
         let item = start
         while (true) {
