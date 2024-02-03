@@ -74,8 +74,8 @@ function deleteEvent(event) {
     const range = KRange.activated()
     if (!range.collapsed || range.startOffset !== 0) return
     const {startContainer} = range
-    const topElement = findParentTag(startContainer, ['UL', 'OL', 'BLOCKQUOTE'])
-    if (topElement && getFirstTextNode(topElement) === startContainer) {
+    const topElement = findParentTag(startContainer, isMultiElementStructure)
+    if (topElement && startContainer.contains(getFirstTextNode(topElement))) {
         // 在引用、列表开头使用删除键时直接取消当前行的样式
         event.preventDefault()
         const element = topElement.firstElementChild
