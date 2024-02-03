@@ -157,6 +157,7 @@ export class KRange extends Range {
 
     /** 将当前区间设定为激活区间 */
     active() {
+        KRICH_EDITOR.focus()
         const selection = getSelection()
         if (selection.rangeCount && selection.getRangeAt(0) === this) return
         selection.removeAllRanges()
@@ -297,6 +298,8 @@ export class KRange extends Range {
          * @return {[Node, number]}
          */
         function findNode(index, emptyCount, type) {
+            if (!index && emptyCount < 1 && !type)
+                return [getFirstChildNode(KRICH_EDITOR), -2]
             let pos = 0
             return eachDomTree(KRICH_EDITOR, true, true, it => {
                 if (isTextNode(it)) {
@@ -320,8 +323,10 @@ export class KRange extends Range {
             })
         }
         const [startContainer, startOffset] = findNode(startIndex, startEmptyCount, type)
-        if (startOffset < 0) {
+        if (startOffset === -1) {
             this.setStartAfter(startContainer)
+        } else if (startOffset === -2) {
+            this.setStartBefore(startContainer)
         } else {
             super.setStart(startContainer, startOffset)
         }
