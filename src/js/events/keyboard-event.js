@@ -1,6 +1,6 @@
 import {KRICH_EDITOR, markStatusCacheInvalid, TOP_LIST} from '../vars/global-fileds'
 import {findParentTag, getFirstTextNode, getLastTextNode, replaceElement, tryFixDom} from '../utils/dom'
-import {KRange, setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
+import {setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
 import {editorRange} from './range-monitor'
 import {createNewLine, getElementBehavior, isEmptyLine, isMultiElementStructure} from '../utils/tools'

@@ -61,8 +61,26 @@ export class KRange extends Range {
             this.selectNode(optional)
             return
         }
-        let {startContainer, startOffset, endContainer, endOffset} = optional
-        if (!checkLocationRelation(optional)) {
+        let {startContainer, startOffset, endContainer, endOffset, collapsed} = optional
+        if (collapsed) {
+            if (!isTextNode(startContainer)) {
+                if (isEmptyBodyElement(startContainer)) {
+                    this.body = startContainer
+                } else {
+                    const now = startContainer.childNodes[startOffset]
+                    if (isEmptyBodyElement(now)) {
+                        // noinspection JSValidateTypes
+                        this.body = now
+                    } else if (startOffset) {
+                        const prev = startContainer.childNodes[startOffset - 1]
+                        if (isEmptyBodyElement(prev))
+                            this.body = prev
+                    }
+                }
+                if (this.body)
+                    return super.selectNode(this.body)
+            }
+        } else if (!checkLocationRelation(optional)) {
             [startContainer, startOffset, endContainer, endOffset] =
                 [endContainer, endOffset, startContainer, startOffset]
         }
@@ -74,7 +92,7 @@ export class KRange extends Range {
         } else {
             super.setStart(startContainer, startOffset)
         }
-        if (optional.collapsed) {
+        if (collapsed) {
             this.collapse(true)
         } else if (!isTextNode(endContainer) && !isEmptyBodyElement(endContainer)) {
             const node = endContainer.childNodes[endOffset]
@@ -91,7 +109,9 @@ export class KRange extends Range {
         if (isBrNode(childNode)) {
             super.setStartBefore(childNode)
         } else if (isMarkerNode(childNode)) {
-            this.setStartBefore(nextLeafNode(childNode))
+            const next = prevLeafNode(childNode)
+            if (next) this.setStartAfter(next)
+            else this.setStartBefore(nextLeafNode(childNode))
         } else {
             super.setStart(childNode, 0)
         }
