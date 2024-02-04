@@ -238,7 +238,9 @@ export class KRange extends Range {
         function locateRange(container, offset, include) {
             const isText = isTextNode(container)
             let leafNode = isText ? container : container.childNodes[offset]
-            if (!include && (!isText || !offset))
+            if (include && !offset && !leafNode)
+                leafNode = container
+            else if (!include && (!isText || !offset))
                 leafNode = leafNode ? prevLeafNode(leafNode) : (container.childNodes[offset - 1] ?? prevLeafNode(container))
             console.assert(!!leafNode, 'leafNode 不应当为空', container, offset, include)
             let emptyCount = 0
