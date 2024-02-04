@@ -375,7 +375,7 @@ export class KRange extends Range {
      * 注意：不应该对 collapsed 的 KRange 调用该函数
      *
      * @param root {Node} 切分的根，切分时不会影响 [root] 的父级节点
-     * @return {[Node|Element, Node|Element, Node|Element]} 中间为选区选中的范围
+     * @return {[Node|Element|null, Node|Element, Node|Element|null]} 中间为选区选中的范围
      */
     splitNode(root) {
         console.assert(!this.collapsed, '对于 collapsed 的 KRange 不应当调用 splitNode 函数')
@@ -384,16 +384,23 @@ export class KRange extends Range {
          * @param node {Node} 切分起始节点
          * @param offset {number|Node} 偏移量，该点指向的值分配到右侧
          * @param tree {Node?} 已生成的树结构
-         * @return {Node} 生成的树结构的顶层节点
+         * @return {Node|undefined} 生成的树结构的顶层节点
          */
         function splitNodeHelper(node, offset, tree) {
-            const isLast = node === root
-            const newNode = node.cloneNode(false)
+            /** @type {Node} */
+            let newNode
+            const initNewNode = () => newNode = node.cloneNode(false)
             if (isTextNode(node)) {
                 const textContent = node.textContent
+                if (offset === textContent.length)
+                    return root
+                initNewNode()
                 newNode.textContent = textContent.substring(0, offset)
                 node.textContent = textContent.substring(offset)
+            } else if (!tree && offset === node.childNodes.length) {
+                return root
             } else {
+                initNewNode()
                 for (let i = 0; i !== offset; ++i) {
                     const item = node.firstChild
                     if (!item || item === offset) break
@@ -401,16 +408,16 @@ export class KRange extends Range {
                 }
                 if (tree) newNode.appendChild(tree)
             }
-            if (isLast) {
+            if (node === root) {
                 return node.parentNode.insertBefore(newNode, node)
             } else {
                 return splitNodeHelper(node.parentNode, node, newNode)
             }
         }
         const {startContainer, startOffset, endContainer, endOffset} = this
-        const left = splitNodeHelper(startContainer, startOffset)
+        const left = startOffset ? splitNodeHelper(startContainer, startOffset) : null
         const mid = splitNodeHelper(endContainer, endOffset - (startContainer === endContainer ? startOffset : 0))
-        return [left, mid, root]
+        return [left, mid, root === mid ? null : mid]
     }
 
     /**

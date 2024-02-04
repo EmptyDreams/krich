@@ -255,8 +255,7 @@ function removeStylesInRange(range, ...behaviors) {
     const offlineData = range.serialization()
     /** @param it {HTMLElement} */
     const checker = it => behaviors.some(behavior => it.matches(behavior.exp))
-    const tmpBox = document.createElement('div')
-    tmpBox.classList.add('tmp')
+    const tmpBox = createElement('div', ['tmp'])
     range.surroundContents(tmpBox)
     range.deserialized(offlineData)
     const boxTop = findParentTag(tmpBox, checker)
