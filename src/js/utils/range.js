@@ -226,7 +226,6 @@ export class KRange extends Range {
      * + 0  - 在下一个节点的开头
      * + -1 - 在当前节点开头
      *
-     * @typedef {[number, number, number]|[number, number, boolean, number, number, 0]} KRangeData
      * @return {KRangeData}
      */
     serialization() {

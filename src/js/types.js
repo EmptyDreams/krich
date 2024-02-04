@@ -1,3 +1,7 @@
+/**
+ * @typedef {[number, number, number]|[number, number, boolean, number, number, 0]} KRangeData
+ */
+
 class ButtonBehavior {
     /**
      * 是否需要保存状态
