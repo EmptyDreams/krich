@@ -53,7 +53,7 @@ function helper(range, key) {
             const array = []
             let item = start
             while (item) {
-                array.push(...(item.nodeName === 'P' ? [item] : item.querySelectorAll('&>p')))
+                array.push(...(item.nodeName === 'P' ? [item] : item.querySelectorAll('&>*:not(.marker)')))
                 if (item === end) break
                 item = item.nextElementSibling
             }
