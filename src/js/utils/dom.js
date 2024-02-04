@@ -6,7 +6,6 @@ import {
     createNewLine,
     equalsKrichNode,
     isBrNode,
-    isKrichContainer,
     isKrichEditor, isKrichToolBar,
     isMarkerNode,
     isTextNode
