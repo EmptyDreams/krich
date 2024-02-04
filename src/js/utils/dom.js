@@ -7,7 +7,7 @@ import {
     equalsKrichNode,
     isBrNode,
     isKrichContainer,
-    isKrichEditor,
+    isKrichEditor, isKrichToolBar,
     isMarkerNode,
     isTextNode
 } from './tools'
@@ -160,7 +160,7 @@ export function findParentTag(node, checker) {
     }
     /** @type {Node|Element} */
     let item = node
-    while (!isKrichContainer(item)) {
+    while (!isKrichEditor(item) && !isKrichToolBar(item)) {
         if (checker(item)) return item
         item = item.parentElement
     }
