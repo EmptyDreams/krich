@@ -301,6 +301,8 @@ export class KRange extends Range {
         function findNode(index, emptyCount, type) {
             let pos = 0
             let item = getFirstChildNode(KRICH_EDITOR)
+            if (isMarkerNode(item))
+                item = nextLeafNode(item)
             do {
                 const length = item.textContent.length
                 const nextPos = pos + length
