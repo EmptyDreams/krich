@@ -90,6 +90,8 @@ export class KRange extends Range {
         const childNode = getFirstChildNode(node)
         if (isBrNode(childNode)) {
             super.setStartBefore(childNode)
+        } else if (isMarkerNode(childNode)) {
+            this.setStartBefore(nextLeafNode(childNode))
         } else {
             super.setStart(childNode, 0)
         }
@@ -134,16 +136,6 @@ export class KRange extends Range {
         if (selection.rangeCount && selection.getRangeAt(0) === this) return
         selection.removeAllRanges()
         selection.addRange(this)
-    }
-
-    /**
-     * 判断两个 KRange 是否相等
-     * @param that {KRange}
-     */
-    equals(that) {
-        if (this === that) return true
-        const list = ['collapsed', 'startContainer', 'endContainer', 'startOffset', 'endOffset']
-        return list.every(it => this[it] === that[it])
     }
 
     /**

@@ -47,6 +47,7 @@ import {handleTemplate} from './utils/template'
 import {onclickMultiElementStructure} from './behaviors/multi-element-structure'
 import {onclickHr} from './behaviors/hr'
 import {TODO_MARKER} from './vars/global-tag'
+import {editorRange} from './events/range-monitor'
 
 initBehaviors({
     headerSelect: {
@@ -202,7 +203,7 @@ function execCommonCommand(
     key, range, removed = false, conflicts, type = 0
 ) {
     if (range.collapsed) return true
-    const offlineData = KRange.activated().equals(range) ? range.serialization() : null
+    const offlineData = range === editorRange ? range.serialization() : null
     const behavior = behaviors[key]
     let rangeArray = range.splitRangeByLine()
     const lastIndex = rangeArray.length - 1

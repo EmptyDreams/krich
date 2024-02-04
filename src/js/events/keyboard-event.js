@@ -72,7 +72,7 @@ export function registryKeyboardEvent() {
  * @param event {KeyboardEvent}
  */
 function deleteEvent(event) {
-    const range = KRange.activated()
+    const range = editorRange
     if (!range.collapsed || range.startOffset !== 0) return
     const {startContainer} = range
     const topElement = findParentTag(startContainer, isMultiElementStructure)
@@ -105,7 +105,7 @@ function deleteEvent(event) {
  * @param event {KeyboardEvent}
  */
 function enterEvent(event) {
-    const range = KRange.activated()
+    const range = editorRange
     if (!range.collapsed) return
     const {startContainer} = range
     let element
