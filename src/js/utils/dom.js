@@ -2,7 +2,15 @@
     本文件用于放置与操作 DOM 有关的 util 函数
  */
 
-import {createNewLine, equalsKrichNode, isBrNode, isKrichContainer, isKrichEditor, isTextNode} from './tools'
+import {
+    createNewLine,
+    equalsKrichNode,
+    isBrNode,
+    isKrichContainer,
+    isKrichEditor,
+    isMarkerNode,
+    isTextNode
+} from './tools'
 import {behaviors, KRICH_EDITOR} from '../vars/global-fileds'
 import {TODO_MARKER} from '../vars/global-tag'
 
@@ -26,6 +34,7 @@ export function eachDomTree(start, forward, first, consumer, limit) {
      * @return {any} 为 true 时中断
      */
     function dfs(item) {
+        if (isMarkerNode(item)) return
         let result
         if (forward) {
             result = consumer(item)
@@ -65,8 +74,11 @@ export function eachDomTree(start, forward, first, consumer, limit) {
  * @return {Node|null}
  */
 export function nextLeafNode(node) {
-    const next = eachDomTree(node, true, false, _ => true)
-    return next ? getFirstChildNode(next) : null
+    let next = eachDomTree(node, true, false, _ => true)
+    next =  next ? getFirstChildNode(next) : null
+    if (next && isMarkerNode(next))
+        next = nextLeafNode(next)
+    return next
 }
 
 /**
@@ -75,7 +87,10 @@ export function nextLeafNode(node) {
  * @return {Node|undefined}
  */
 export function prevLeafNode(node) {
-    return eachDomTree(node, false, false, _ => true)
+    let prev = eachDomTree(node, false, false, _ => true)
+    if (prev && isMarkerNode(prev))
+        prev = prevLeafNode(prev)
+    return prev
 }
 
 /**

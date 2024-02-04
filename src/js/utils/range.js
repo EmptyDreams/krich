@@ -131,11 +131,7 @@ export class KRange extends Range {
     setEndBefore(node) {
         const prevNode = prevLeafNode(node)
         console.assert(!!prevNode,'使用 SetEndBefore 时当前元素前必须有一个元素')
-        if (isMarkerNode(prevNode)) {
-            super.setEnd(getFirstChildNode(node), 0)
-        } else {
-            this.setEndAfter(prevNode)
-        }
+        this.setEndAfter(prevNode)
     }
 
     setEndAfter(node) {
@@ -240,8 +236,7 @@ export class KRange extends Range {
             let emptyCount = 0
             let emptyItem = leafNode
             while (emptyItem && (isBrNode(emptyItem) || isEmptyBodyElement(emptyItem))) {
-                if (!isMarkerNode(emptyItem))
-                    ++emptyCount
+                ++emptyCount
                 emptyItem = prevLeafNode(emptyItem)
             }
             let index = 0
@@ -294,23 +289,21 @@ export class KRange extends Range {
             let pos = 0
             let item = getFirstChildNode(KRICH_EDITOR)
             do {
-                if (!isMarkerNode(item)) {
-                    const length = item.textContent.length
-                    const nextPos = pos + length
-                    if (nextPos > index) {
-                        return [item, index - pos]
-                    } else if (nextPos === index) {
-                        while (emptyCount-- > 0) {
-                            item = nextLeafNode(item)
-                        }
-                        if (type > 0)
-                            return [item, index - pos]
-                        if (type < 0)
-                            return [item, -2]
-                        return [item, -1]
-                    } else {
-                        pos = nextPos
+                const length = item.textContent.length
+                const nextPos = pos + length
+                if (nextPos > index) {
+                    return [item, index - pos]
+                } else if (nextPos === index) {
+                    while (emptyCount-- > 0) {
+                        item = nextLeafNode(item)
                     }
+                    if (type > 0)
+                        return [item, index - pos]
+                    if (type < 0)
+                        return [item, -2]
+                    return [item, -1]
+                } else {
+                    pos = nextPos
                 }
                 item = nextLeafNode(item)
             } while (item)
