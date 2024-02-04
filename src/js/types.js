@@ -1,5 +1,5 @@
 /**
- * @typedef {[number, number, number]|[number, number, number, number, number, -1]} KRangeData
+ * @typedef {[number, number, number]|[number, number, number, number, number, 0]} KRangeData
  */
 
 class ButtonBehavior {

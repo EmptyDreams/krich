@@ -267,7 +267,6 @@ export class KRange extends Range {
                     type = offset ? 1 : 0
                 }
             } else {
-                type = -1
                 if (isText)
                     index += offset
             }
@@ -289,7 +288,7 @@ export class KRange extends Range {
     deserialized(data) {
         let [
             startIndex, startEmptyCount, startType,
-            endIndex, endEmptyCount, endType
+            endIndex, endEmptyCount
         ] = data
         /**
          * @param index {number}
@@ -331,7 +330,7 @@ export class KRange extends Range {
             this.collapse(true)
             return this
         }
-        const [endContainer, endOffset] = findNode(endIndex, endEmptyCount, endType)
+        const [endContainer, endOffset] = findNode(endIndex, endEmptyCount, -1)
         if (endOffset < 0) {
             this.setEndAfter(endContainer)
         } else {
