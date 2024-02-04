@@ -267,6 +267,7 @@ export class KRange extends Range {
                     type = offset ? 1 : 0
                 }
             } else {
+                type = -1
                 if (isText)
                     index += offset
             }
@@ -286,11 +287,14 @@ export class KRange extends Range {
      * @return {KRange} 返回 this
      */
     deserialized(data) {
-        let [startIndex, startEmptyCount, type, endIndex, endEmptyCount] = data
+        let [
+            startIndex, startEmptyCount, startType,
+            endIndex, endEmptyCount, endType
+        ] = data
         /**
          * @param index {number}
          * @param emptyCount {number}
-         * @param type {number?}
+         * @param type {number}
          * @return {[Node, number]}
          */
         function findNode(index, emptyCount, type) {
@@ -308,8 +312,8 @@ export class KRange extends Range {
                     if (type > 0)
                         return [item, index - pos]
                     if (type < 0)
-                        return [item, -2]
-                    return [item, -1]
+                        return [item, -1]
+                    return [nextLeafNode(item), -1]
                 } else {
                     pos = nextPos
                 }
@@ -317,19 +321,17 @@ export class KRange extends Range {
             } while (item)
             console.error('解序列化时不应当执行该语句')
         }
-        const [startContainer, startOffset] = findNode(startIndex, startEmptyCount, type)
-        if (startOffset === -1) {
-            this.setStartAfter(startContainer)
-        } else if (startOffset === -2) {
+        const [startContainer, startOffset] = findNode(startIndex, startEmptyCount, startType)
+        if (startOffset < 0) {
             this.setStartBefore(startContainer)
         } else {
-            super.setStart(startContainer, startOffset)
+            this.setStart(startContainer, startOffset)
         }
         if (data.length < 4) {
             this.collapse(true)
             return this
         }
-        const [endContainer, endOffset] = findNode(endIndex, endEmptyCount)
+        const [endContainer, endOffset] = findNode(endIndex, endEmptyCount, endType)
         if (endOffset < 0) {
             this.setEndAfter(endContainer)
         } else {
