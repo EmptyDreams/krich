@@ -158,7 +158,7 @@ function enterEvent(event) {
                     }
                 }
             }
-            structure.insertAdjacentElement('afterend', inserted)
+            (parent ?? structure).insertAdjacentElement(parent ? 'beforeend' : 'afterend', inserted)
             if (!structure.firstChild) structure.remove()
         }
     }
