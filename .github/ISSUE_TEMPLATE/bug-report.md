@@ -7,8 +7,8 @@ assignees: ''
 
 ---
 
-[] - 我正在使用最新版本的 krich
-[] - 我已经查阅了 issue 并确定该问题没有重复
+- [] 我正在使用最新版本的 krich
+- [] 我已经查阅了 issue 并确定该问题没有重复
 
 **描述你遇到的问题**
 A clear and concise description of what the bug is.
