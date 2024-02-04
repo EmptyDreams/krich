@@ -7,8 +7,10 @@ assignees: ''
 
 ---
 
-- [] 我正在使用最新版本的 krich
-- [] 我已经查阅了 issue 并确定该问题没有重复
+<!-- 如果你确定某个选项，请把方括号中的空格替换为英文字母 `x` -->
+
+- [ ] 我正在使用最新版本的 krich
+- [ ] 我已经查阅了 issue 并确定该问题没有重复
 
 **描述你遇到的问题**
 A clear and concise description of what the bug is.
