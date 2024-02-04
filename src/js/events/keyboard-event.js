@@ -20,13 +20,7 @@ export function registryKeyboardEvent() {
                 return () => KRICH_EDITOR.querySelectorAll('div:not([class])')
                     .forEach(it => replaceElement(it, document.createElement('p')))
             case 'Backspace': case 'Delete':
-                return () => {
-                    tryFixDom()
-                    if (KRICH_EDITOR.children.length === 1 && !KRICH_EDITOR.firstChild.textContent) {
-                        markStatusCacheInvalid()
-                    }
-                    syncButtonsStatus(editorRange.startContainer)
-                }
+                return tryFixDom
         }
     }
     KRICH_EDITOR.addEventListener('keyup', event => {
