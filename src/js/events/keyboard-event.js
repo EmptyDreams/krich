@@ -1,9 +1,17 @@
 import {KRICH_EDITOR, markStatusCacheInvalid, TOP_LIST} from '../vars/global-fileds'
-import {findParentTag, getFirstTextNode, getLastTextNode, replaceElement, tryFixDom} from '../utils/dom'
+import {
+    findParentTag,
+    getFirstTextNode,
+    getLastTextNode,
+    nextLeafNode,
+    prevLeafNode,
+    replaceElement,
+    tryFixDom
+} from '../utils/dom'
 import {setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
 import {editorRange} from './range-monitor'
-import {createNewLine, getElementBehavior, isEmptyLine, isMultiElementStructure} from '../utils/tools'
+import {createNewLine, getElementBehavior, isEmptyLine, isMarkerNode, isMultiElementStructure} from '../utils/tools'
 
 export function registryKeyboardEvent() {
     const switchTask = key => {
@@ -31,28 +39,35 @@ export function registryKeyboardEvent() {
         if (body) {
             event.preventDefault()
             switch (key) {
-                case 'ArrowLeft': case 'ArrowUp':
-                    if (body.previousSibling)
-                        setCursorPositionAfter(body.previousSibling)
+                case 'ArrowLeft': case 'ArrowUp': {
+                    const prev = prevLeafNode(body)
+                    if (prev)
+                        setCursorPositionAfter(prev)
                     break
-                case 'ArrowRight': case 'ArrowDown':
-                    if (body.nextSibling)
-                        setCursorPositionBefore(body.nextSibling)
+                }
+                case 'ArrowRight': case 'ArrowDown': {
+                    const next = nextLeafNode(body)
+                    if (next)
+                        setCursorPositionBefore(next)
                     break
+                }
                 case 'Backspace': case 'Delete':
-                    if (key[0] === 'B' && body.previousSibling) {
-                        setCursorPositionAfter(body.previousSibling)
-                    } else {
-                        setCursorPositionBefore(body.nextSibling)
+                    if (!isMarkerNode(body)) {
+                        if (key[0] === 'B' && body.previousSibling) {
+                            setCursorPositionAfter(body.previousSibling)
+                        } else {
+                            setCursorPositionBefore(body.nextSibling)
+                        }
+                        body.remove()
                     }
-                    body.remove()
                     break
-                case 'Enter':
+                case 'Enter': {
                     const line = createNewLine()
                     const where = event.shiftKey ? 'afterend' : 'beforebegin'
                     body.insertAdjacentElement(where, line)
                     setCursorPositionAfter(line)
                     break
+                }
             }
         } else {
             switch (key) {
