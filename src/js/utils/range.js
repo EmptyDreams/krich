@@ -7,7 +7,15 @@ import {
     nextSiblingText, prevLeafNode,
     zipTree
 } from './dom'
-import {isBrNode, isEmptyBodyElement, isEmptyLine, isMarkerNode, isMultiElementStructure, isTextNode} from './tools'
+import {
+    isBrNode,
+    isEmptyBodyElement,
+    isEmptyLine,
+    isKrichEditor,
+    isMarkerNode,
+    isMultiElementStructure,
+    isTextNode
+} from './tools'
 
 /**
  * 将光标移动到指定元素的结尾
@@ -421,10 +429,13 @@ export class KRange extends Range {
          * 为 true 时返回最近公共祖先下的直接子标签
          * @type {boolean}
          */
-        const lcaSpecialization = lastChild && findParentTag(lastChild, TOP_LIST) === lastChild
+        const lcaSpecialization = lastChild && [...TOP_LIST, 'LI'].includes(lastChild.nodeName)
         let start, end
         if (lcaSpecialization) {
-            const checker = it => it.parentNode === commonAncestorContainer
+            const checker = it => {
+                const parent = findParentTag(it.parentNode, it => it.nodeName !== 'LI')
+                return parent === commonAncestorContainer || (!parent && isKrichEditor(commonAncestorContainer))
+            }
             start = startContainer === commonAncestorContainer ? firstChild : findParentTag(startContainer, checker)
             if (isMarkerNode(start)) start = start.nextSibling
             if (!collapsed) {
