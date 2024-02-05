@@ -16,7 +16,7 @@ import {
     highlightCode,
     isEmptyLine,
     isMarkerNode,
-    isMultiElementStructure
+    isMultiElementStructure, isTextNode
 } from '../utils/tools'
 
 export function registryKeyboardEvent() {
@@ -89,7 +89,7 @@ export function registryKeyboardEvent() {
 function deleteEvent(event) {
     const range = editorRange
     if (!range.collapsed || range.startOffset !== 0) return
-    const {startContainer} = range
+    const {startContainer, startOffset} = range
     const topElement = findParentTag(startContainer, isMultiElementStructure)
     if (topElement && startContainer.contains(getFirstTextNode(topElement))) {
         // 在引用、列表开头使用删除键时直接取消当前行的样式
@@ -111,6 +111,22 @@ function deleteEvent(event) {
                 parent.replaceWith(startContainer)
                 setCursorPositionAfter(startContainer)
             }
+        }
+    } else {
+        const node = isTextNode(startContainer) ? startContainer : startContainer.childNodes[startOffset]
+        const pre = findParentTag(node, ['PRE'])
+        if (pre) {
+            event.preventDefault()
+            let list = pre.textContent.split('\n')
+            if (list.length > 1 && !list[list.length - 1]) list.pop()
+            list = list.map(it => {
+                const line = createNewLine()
+                if (it) line.textContent = it
+                return line
+            })
+            list.forEach(it => pre.insertAdjacentElement('beforebegin', it))
+            pre.remove()
+            setCursorPositionBefore(list[0])
         }
     }
 }
