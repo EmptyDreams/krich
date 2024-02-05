@@ -61,13 +61,14 @@ export function registryKeyboardEvent() {
                         body.remove()
                     }
                     break
-                case 'Enter': {
-                    const line = createNewLine()
-                    const where = event.shiftKey ? 'afterend' : 'beforebegin'
-                    body.insertAdjacentElement(where, line)
-                    setCursorPositionAfter(line)
-                    break
-                }
+                case 'Enter':
+                    if (!isMarkerNode(body)) {
+                        const line = createNewLine()
+                        const where = event.shiftKey ? 'afterend' : 'beforebegin'
+                        body.insertAdjacentElement(where, line)
+                        setCursorPositionAfter(line)
+                        break
+                    }
             }
         } else {
             switch (key) {
