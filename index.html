@@ -4,10 +4,16 @@
     <meta charset="UTF-8">
     <title>测试页面</title>
     <script defer src="./krich-es.js" type="module"></script>
+    <link rel="stylesheet" href="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-1-M/prism/1.27.0/themes/prism.min.css">
+    <script defer src="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/prism/1.27.0/components/prism-core.min.js" data-manual></script>
+    <script defer src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/prism/1.27.0/plugins/autoloader/prism-autoloader.min.js"></script>
     <script type="module">
         import KRich from './krich-es.js'
         document.addEventListener('DOMContentLoaded', () => {
-            KRich('#krich')
+            const krich = KRich('#krich')
+            krich.setHighlight(pre => {
+                Prism.highlightElement(pre)
+            })
         })
     </script>
 </head>
