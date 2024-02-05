@@ -36,7 +36,7 @@ export function registryKeyboardEvent() {
     KRICH_EDITOR.addEventListener('keydown', event => {
         const body = editorRange?.body
         if (body) {
-            bodyEnter(event, body)
+            emptyBodyElementKeyEvent(event, body)
         } else {
             switch (event.key) {
                 case 'Enter':
@@ -171,7 +171,7 @@ function enterEvent(event) {
  * @param event {KeyboardEvent}
  * @param body {Element}
  */
-function bodyEnter(event, body) {
+function emptyBodyElementKeyEvent(event, body) {
     const key = event.key
     console.log(key)
     switch (key) {
