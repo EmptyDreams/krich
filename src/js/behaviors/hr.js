@@ -1,6 +1,6 @@
 import {findParentTag} from '../utils/dom'
 import {TOP_LIST} from '../vars/global-fileds'
-import {createElement, createNewLine, isEmptyLine} from '../utils/tools'
+import {createElement, createNewLine, isEmptyLine, isMarkerNode} from '../utils/tools'
 import {setCursorPositionBefore} from '../utils/range'
 
 /**
@@ -16,7 +16,7 @@ export function onclickHr(range) {
         posLine.insertAdjacentElement('afterend', hr)
     }
     const {previousSibling, nextSibling} = hr
-    if (!previousSibling || previousSibling.nodeName === 'HR') {
+    if (!previousSibling || isMarkerNode(previousSibling) || previousSibling.nodeName === 'HR') {
         hr.insertAdjacentElement('beforebegin', createNewLine())
     }
     if (!nextSibling || nextSibling.nodeName === 'HR') {
