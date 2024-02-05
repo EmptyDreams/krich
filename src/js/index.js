@@ -1,10 +1,9 @@
 import './behavior'
 import {initKrich} from './utils/init'
 
-// noinspection JSUnusedGlobalSymbols
-export const _tmp_obj = {}
-
 // noinspection JSUnresolvedReference
 initKrich(_optional)
+
+export {setHighlight} from './vars/global-fileds'
 
 // ESM：封装终点

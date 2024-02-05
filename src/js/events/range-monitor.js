@@ -2,6 +2,7 @@ import {EMPTY_BODY_ACTIVE_FLAG, isComposing, KRICH_CONTAINER, KRICH_EDITOR, KRIC
 import {KRange} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
 import {isEmptyBodyElement} from '../utils/tools'
+import {findParentTag} from '../utils/dom'
 
 /**
  * 编辑区最新的已激活的 KRange 对象
@@ -26,10 +27,14 @@ export function updateEditorRange() {
     editorRange = range
     KRICH_EDITOR.querySelectorAll(`.${EMPTY_BODY_ACTIVE_FLAG}`)
         .forEach(it => it.classList.remove(EMPTY_BODY_ACTIVE_FLAG))
+    const disableToolBar = () => KRICH_TOOL_BAR.classList.add('disable')
     if (range.body) {
         range.active()
-        KRICH_TOOL_BAR.classList.add('disable')
+        disableToolBar()
         range.body.classList.add(EMPTY_BODY_ACTIVE_FLAG)
+        return
+    } else if (findParentTag(range.startContainer, ['PRE'])) {
+        disableToolBar()
         return
     } else {
         KRICH_TOOL_BAR.classList.remove('disable')

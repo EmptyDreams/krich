@@ -5,7 +5,7 @@ import {editorRange, registryRangeMonitor} from '../events/range-monitor'
 import {registryBeforeInputEventListener} from '../events/before-input'
 import {
     behaviors,
-    DATA_ID,
+    DATA_ID, highlight,
     initContainerQuery, KRICH_CLASS, KRICH_EDITOR, KRICH_EDITOR_CLASS,
     KRICH_TOOL_BAR, KRICH_TOOL_BAR_CLASS, markStatusCacheEffect,
     SELECT_VALUE,
@@ -33,6 +33,19 @@ export function initKrich(optional) {
             const {data, inputType} = event
             let range = KRange.activated()
             const {startContainer, startOffset} = range
+            const ppn = startContainer.parentNode.parentNode
+            if (ppn.nodeName === 'PRE') {
+                const code = startContainer.parentNode
+                const html = code.innerHTML
+                const index = html.indexOf('\u200B')
+                if (index >= 0) {
+                    code.innerHTML = html.substring(0, index) + html.substring(index + 1)
+                    range.setStart(code.firstChild, index < startOffset ? startOffset - 1 : startOffset)
+                    range.active()
+                }
+                highlight?.(ppn)
+                return
+            }
             /* 当用户输入位置所在文本与按钮列表不同时，将新输入的文本样式与按钮状态同步 */
             if (data && !statusCheckCache && range.collapsed) {
                 markStatusCacheEffect()

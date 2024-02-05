@@ -14,6 +14,15 @@ export let KRICH_EDITOR
  */
 export let KRICH_TOOL_BAR
 
+/**
+ * 代码高亮器，留空表示不支持高亮
+ *
+ * 传入的参数为 pre 对象，直接修改传入的对象即可，无返回值
+ *
+ * @type {undefined|function(Element)}
+ */
+export let highlight
+
 export const KRICH_CLASS = 'krich'
 export const KRICH_EDITOR_CLASS = KRICH_CLASS + '-editor'
 export const KRICH_TOOL_BAR_CLASS = KRICH_CLASS + '-tools'
@@ -30,7 +39,7 @@ export const SELECT_VALUE = 'data-value'
 export const EMPTY_BODY_ACTIVE_FLAG = 'eb-active'
 
 export const TITLE_LIST = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6']
-export const TOP_LIST = ['P', 'BLOCKQUOTE', 'UL', 'OL', 'HR', 'DIV', ...TITLE_LIST]
+export const TOP_LIST = ['P', 'BLOCKQUOTE', 'UL', 'OL', 'HR', 'DIV', 'PRE', ...TITLE_LIST]
 
 /**
  * 工具栏上的按钮的样式
@@ -48,6 +57,14 @@ export let statusCheckCache = true
  * @type {boolean|undefined}
  */
 export let isComposing
+
+/**
+ * 设置高亮
+ * @param fun {function(Element)}
+ */
+export function setHighlight(fun) {
+    highlight = fun
+}
 
 /**
  * 初始化 behaviors

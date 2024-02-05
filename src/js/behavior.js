@@ -29,6 +29,8 @@ import olStyle from '../resources/html/tools/ol.html'
 /** @type {string} */
 import todoStyle from '../resources/html/tools/todo.html'
 /** @type {string} */
+import codeStyle from '../resources/html/tools/code.html'
+/** @type {string} */
 import hrStyle from '../resources/html/tools/hr.html'
 import {
     behaviors,
@@ -48,6 +50,7 @@ import {onclickMultiElementStructure} from './behaviors/multi-element-structure'
 import {onclickHr} from './behaviors/hr'
 import {TODO_MARKER} from './vars/global-tag'
 import {editorRange} from './events/range-monitor'
+import {behaviorHighlight} from './behaviors/highlight'
 
 initBehaviors({
     headerSelect: {
@@ -90,10 +93,10 @@ initBehaviors({
         builder: () => createElement('span', ['through'])
     },
     inlineCode: {
-        exp: 'code',
+        exp: 'code.inline',
         render: () => inlineCodeStyle,
         onclick: range => execCommonCommand('inlineCode', range),
-        builder: () => createElement('code')
+        builder: () => createElement('code', ['inline'])
     },
     sup: {
         exp: 'sup',
@@ -187,6 +190,18 @@ initBehaviors({
             const line = createElement('li')
             line.append(TODO_MARKER.cloneNode(false))
             return line
+        }
+    },
+    code: {
+        exp: 'pre',
+        render: () => codeStyle,
+        onclick: behaviorHighlight,
+        builder: () => {
+            const pre = createElement('pre')
+            const code = createElement('code')
+            code.innerHTML = '\u200B'
+            pre.append(code)
+            return pre
         }
     }
 })

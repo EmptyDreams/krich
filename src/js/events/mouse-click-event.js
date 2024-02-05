@@ -18,6 +18,8 @@ export function registryMouseClickEvent() {
         }
     })
     KRICH_TOOL_BAR.addEventListener('click', event => {
+        if (KRICH_TOOL_BAR.classList.contains('disable'))
+            return
         const range = editorRange
         if (!range || range.body) return
         /** @type {HTMLElement} */
