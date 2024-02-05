@@ -35,43 +35,10 @@ export function registryKeyboardEvent() {
     })
     KRICH_EDITOR.addEventListener('keydown', event => {
         const body = editorRange?.body
-        const {key} = event
         if (body) {
-            event.preventDefault()
-            switch (key) {
-                case 'ArrowLeft': case 'ArrowUp': {
-                    const prev = prevLeafNode(body)
-                    if (prev)
-                        setCursorPositionAfter(prev)
-                    break
-                }
-                case 'ArrowRight': case 'ArrowDown': {
-                    const next = nextLeafNode(body)
-                    if (next)
-                        setCursorPositionBefore(next)
-                    break
-                }
-                case 'Backspace': case 'Delete':
-                    if (!isMarkerNode(body)) {
-                        if (key[0] === 'B' && body.previousSibling) {
-                            setCursorPositionAfter(body.previousSibling)
-                        } else {
-                            setCursorPositionBefore(body.nextSibling)
-                        }
-                        body.remove()
-                    }
-                    break
-                case 'Enter':
-                    if (!isMarkerNode(body)) {
-                        const line = createNewLine()
-                        const where = event.shiftKey ? 'afterend' : 'beforebegin'
-                        body.insertAdjacentElement(where, line)
-                        setCursorPositionAfter(line)
-                        break
-                    }
-            }
+            bodyEnter(event, body)
         } else {
-            switch (key) {
+            switch (event.key) {
                 case 'Enter':
                     enterEvent(event)
                     break
@@ -197,4 +164,50 @@ function enterEvent(event) {
     if (element) {
         setCursorPositionBefore(element)
     }
+}
+
+/**
+ * 在 KRange 选中 EmptyBodyElement 时接管键盘操作
+ * @param event {KeyboardEvent}
+ * @param body {Element}
+ */
+function bodyEnter(event, body) {
+    const key = event.key
+    console.log(key)
+    switch (key) {
+        case 'ArrowLeft': case 'ArrowUp': {
+            const prev = prevLeafNode(body)
+            if (prev)
+                setCursorPositionAfter(prev)
+            break
+        }
+        case 'ArrowRight': case 'ArrowDown': {
+            const next = nextLeafNode(body)
+            if (next)
+                setCursorPositionBefore(next)
+            break
+        }
+        case 'Backspace': case 'Delete':
+            if (!isMarkerNode(body)) {
+                if (key[0] === 'B' && body.previousSibling) {
+                    setCursorPositionAfter(body.previousSibling)
+                } else {
+                    setCursorPositionBefore(body.nextSibling)
+                }
+                body.remove()
+            }
+            break
+        case 'Enter':
+            if (!isMarkerNode(body)) {
+                const line = createNewLine()
+                const where = event.shiftKey ? 'afterend' : 'beforebegin'
+                body.insertAdjacentElement(where, line)
+                setCursorPositionAfter(line)
+            }
+            break
+        default:
+            if (key.startsWith('F'))
+                return
+    }
+    event.preventDefault()
 }
