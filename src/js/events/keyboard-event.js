@@ -10,7 +10,14 @@ import {
 } from '../utils/dom'
 import {setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
 import {editorRange} from './range-monitor'
-import {createNewLine, getElementBehavior, isEmptyLine, isMarkerNode, isMultiElementStructure} from '../utils/tools'
+import {
+    createNewLine,
+    getElementBehavior,
+    highlightCode,
+    isEmptyLine,
+    isMarkerNode,
+    isMultiElementStructure
+} from '../utils/tools'
 
 export function registryKeyboardEvent() {
     const switchTask = key => {
@@ -113,9 +120,24 @@ function deleteEvent(event) {
  * @param event {KeyboardEvent}
  */
 function enterEvent(event) {
-    const range = editorRange
-    if (!range.collapsed) return
-    const {startContainer} = range
+    const {
+        startContainer, endContainer,
+        startOffset, endOffset,
+        collapsed
+    } = editorRange
+    const pre = findParentTag(startContainer, ['PRE'])
+    if (pre && startContainer === endContainer) {
+        event.preventDefault()
+        const text = startContainer.textContent
+        startContainer.textContent = text.substring(0, startOffset) + '\n' + text.substring(endOffset) + (text.endsWith('\n') ? '' : '\n')
+        editorRange.setStart(startContainer, startOffset + 1)
+        editorRange.collapse(true)
+        if (!highlightCode(editorRange, pre)) {
+            editorRange.active()
+        }
+        return
+    }
+    if (!collapsed) return
     let element
     if (event.shiftKey) {
         const pElement = findParentTag(startContainer, ['P'])

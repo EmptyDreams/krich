@@ -16,9 +16,10 @@ export function registryRangeMonitor() {
 
 export function updateEditorRange() {
     if (isComposing) return
+    const disableToolBar = () => KRICH_TOOL_BAR.classList.add('disable')
     if (!KRICH_CONTAINER.contains(document.activeElement)) {
         editorRange = null
-        KRICH_TOOL_BAR.classList.add('disable')
+        disableToolBar()
         return
     }
     if (KRICH_EDITOR !== document.activeElement) return
@@ -27,15 +28,12 @@ export function updateEditorRange() {
     editorRange = range
     KRICH_EDITOR.querySelectorAll(`.${EMPTY_BODY_ACTIVE_FLAG}`)
         .forEach(it => it.classList.remove(EMPTY_BODY_ACTIVE_FLAG))
-    const disableToolBar = () => KRICH_TOOL_BAR.classList.add('disable')
     if (range.body) {
         range.active()
         disableToolBar()
         range.body.classList.add(EMPTY_BODY_ACTIVE_FLAG)
-        return
     } else if (findParentTag(range.startContainer, ['PRE'])) {
         disableToolBar()
-        return
     } else {
         KRICH_TOOL_BAR.classList.remove('disable')
         for (let element of range.getAllTopElements()) {
@@ -44,11 +42,11 @@ export function updateEditorRange() {
                     it.classList.add(EMPTY_BODY_ACTIVE_FLAG)
             }
         }
-    }
-    if (!range.collapsed) {
-        const lca = range.commonAncestorContainer
-        syncButtonsStatus(lca.firstChild ?? lca)
-    } else if (!prev?.collapsed || range.endContainer !== prev?.endContainer) {
-        syncButtonsStatus(range.startContainer)
+        if (!range.collapsed) {
+            const lca = range.commonAncestorContainer
+            syncButtonsStatus(lca.firstChild ?? lca)
+        } else if (!prev?.collapsed || range.endContainer !== prev?.endContainer) {
+            syncButtonsStatus(range.startContainer)
+        }
     }
 }

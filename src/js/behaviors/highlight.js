@@ -1,6 +1,6 @@
-import {behaviors, highlight, TOP_LIST} from '../vars/global-fileds'
+import {behaviors} from '../vars/global-fileds'
 import {findParentTag} from '../utils/dom'
-import {isEmptyLine} from '../utils/tools'
+import {highlightCode, isEmptyLine} from '../utils/tools'
 
 /**
  * 代码高亮按钮点击
@@ -19,6 +19,7 @@ export function behaviorHighlight(range) {
         }
         range.setStart(code, 0)
     } else {
+        const offlineData = range.serialization()
         const allLines = range.getAllTopElements()
         allLines[0].insertAdjacentElement('afterend', pre)
         let codeContent = ''
@@ -27,7 +28,7 @@ export function behaviorHighlight(range) {
             line.remove()
         }
         code.textContent = codeContent
-        highlight?.(pre)
+        highlightCode(offlineData, pre)
     }
     return true
 }

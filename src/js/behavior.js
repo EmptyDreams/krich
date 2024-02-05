@@ -199,7 +199,7 @@ initBehaviors({
         builder: () => {
             const pre = createElement('pre')
             const code = createElement('code')
-            code.innerHTML = '\u200B'
+            code.innerHTML = '\n'
             pre.append(code)
             return pre
         }
