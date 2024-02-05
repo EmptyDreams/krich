@@ -10,6 +10,7 @@ export function behaviorHighlight(range) {
     const behavior = behaviors.code
     const pre = behavior.builder()
     const code = pre.firstChild
+    const offlineData = range.serialization()
     if (range.collapsed) {
         const line = findParentTag(range.startContainer, ['P'])
         if (isEmptyLine(line)) {
@@ -17,9 +18,7 @@ export function behaviorHighlight(range) {
         } else {
             line.insertAdjacentElement('afterend', pre)
         }
-        range.setStart(code, 0)
     } else {
-        const offlineData = range.serialization()
         const allLines = range.getAllTopElements()
         allLines[0].insertAdjacentElement('afterend', pre)
         let codeContent = ''
@@ -28,7 +27,7 @@ export function behaviorHighlight(range) {
             line.remove()
         }
         code.textContent = codeContent
-        highlightCode(offlineData, pre)
     }
+    highlightCode(offlineData, pre)
     return true
 }
