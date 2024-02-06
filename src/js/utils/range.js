@@ -122,6 +122,16 @@ export class KRange extends Range {
     }
 
     /**
+     * 获取真实的终止节点（不包含）
+     * @return {Node}
+     */
+    realEndContainer() {
+        const {endContainer, endOffset} = this
+        const {childNodes} = endContainer
+        return childNodes ? (childNodes[endOffset] ?? nextLeafNode(endContainer)) : endContainer
+    }
+
+    /**
      * 获取被包含或部分包含的最后一个节点
      * @return {Node}
      */

@@ -27,7 +27,8 @@ function helper(range, key) {
      */
     const buildStructure = () =>
         behavior.builder(KRICH_TOOL_BAR.querySelector(`*[data-id="${key}"]`))
-    const {startContainer, endContainer} = range
+    const startContainer = range.realStartContainer()
+    const endContainer = range.realEndContainer()
     const startTopContainer = findParentTag(startContainer, isMultiElementStructure)
     const endTopContainer = findParentTag(endContainer, isMultiElementStructure)
     if (startTopContainer && startTopContainer === endTopContainer && startTopContainer.matches(behavior.exp)) {

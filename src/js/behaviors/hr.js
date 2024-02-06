@@ -8,7 +8,7 @@ import {setCursorPositionBefore} from '../utils/range'
  * @param range {KRange}
  */
 export function onclickHr(range) {
-    const posLine = findParentTag(range.endContainer, TOP_LIST)
+    const posLine = findParentTag(range.realEndContainer(), TOP_LIST)
     const hr = createElement('hr')
     if (isEmptyLine(posLine)) {
         posLine.replaceWith(hr)
