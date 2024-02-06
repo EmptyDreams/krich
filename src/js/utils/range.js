@@ -118,17 +118,18 @@ export class KRange extends Range {
      */
     realStartContainer() {
         const {startContainer, startOffset} = this
-        return startContainer.childNodes?.[startOffset] ?? startContainer
+        return startContainer.childNodes[startOffset] ?? startContainer
     }
 
     /**
-     * 获取真实的终止节点（不包含）
+     * 获取真实的终止节点
      * @return {Node}
      */
     realEndContainer() {
         const {endContainer, endOffset} = this
-        const {childNodes} = endContainer
-        return childNodes ? (childNodes[endOffset] ?? nextLeafNode(endContainer)) : endContainer
+        return (isTextNode(endContainer) || isEmptyBodyElement(endContainer)) ?
+            endContainer :
+            (endContainer.childNodes[endOffset] ?? nextLeafNode(endContainer))
     }
 
     /**
@@ -138,10 +139,10 @@ export class KRange extends Range {
     endInclude() {
         const {endContainer, endOffset} = this
         const {childNodes} = endContainer
-        if (childNodes) {
-            return endOffset ? childNodes[endOffset - 1] : prevLeafNode(childNodes[endOffset])
-        } else if (endOffset && isTextNode(endContainer)) {
+        if (isTextNode(endContainer)) {
             return endContainer
+        } else if (childNodes) {
+            return endOffset ? childNodes[endOffset - 1] : prevLeafNode(childNodes[endOffset])
         } else {
             console.assert(this.commonAncestorContainer.contains(prevLeafNode(endContainer)), '终点前的节点不在选区范围内')
             return prevLeafNode(endContainer)
