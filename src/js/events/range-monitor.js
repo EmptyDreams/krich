@@ -1,8 +1,11 @@
+// noinspection JSAssignmentUsedAsCondition
+
 import {EMPTY_BODY_ACTIVE_FLAG, isComposing, KRICH_CONTAINER, KRICH_EDITOR, KRICH_TOOL_BAR} from '../vars/global-fileds'
 import {KRange} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
 import {isEmptyBodyElement} from '../utils/tools'
 import {findParentTag} from '../utils/dom'
+import {closeHoverTip, openHoverTip} from '../utils/hover-tip'
 
 /**
  * 编辑区最新的已激活的 KRange 对象
@@ -23,6 +26,7 @@ export function updateEditorRange() {
         return
     }
     if (KRICH_EDITOR !== document.activeElement) return
+    let pre
     const prev = editorRange
     const range = KRange.activated()
     editorRange = range
@@ -32,8 +36,10 @@ export function updateEditorRange() {
         range.active()
         disableToolBar()
         range.body.classList.add(EMPTY_BODY_ACTIVE_FLAG)
-    } else if (findParentTag(range.startContainer, ['PRE'])) {
+    } else if (pre = findParentTag(range.startContainer, ['PRE'])) {
         disableToolBar()
+        openHoverTip('code', pre)
+        return
     } else {
         KRICH_TOOL_BAR.classList.remove('disable')
         for (let element of range.getAllTopElements()) {
@@ -49,4 +55,5 @@ export function updateEditorRange() {
             syncButtonsStatus(range.startContainer)
         }
     }
+    closeHoverTip()
 }

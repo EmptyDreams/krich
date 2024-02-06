@@ -2,12 +2,11 @@
     本文件用于放置一些通用的工具函数
  */
 
-import {behaviors, DATA_ID, highlight, KRICH_EDITOR_CLASS, KRICH_TOOL_BAR_CLASS} from '../vars/global-fileds'
-import {KRange} from './range'
+import {behaviors, DATA_ID, KRICH_EDITOR_CLASS, KRICH_TOOL_BAR_CLASS} from '../vars/global-fileds'
 
 /**
  * 构建一个新的元素
- * @param tagName {string} 标签名称
+ * @param tagName {string & keyof HTMLElementTagNameMap} 标签名称
  * @param optional {(string[]|{[p:string]:(string|boolean)})?} 类名数组或属性键值对
  * @return {HTMLElement}
  */
@@ -118,21 +117,6 @@ export function isMarkerNode(node) {
  */
 export function isMultiElementStructure(node) {
     return node.classList && getElementBehavior(node)?.multi
-}
-
-/**
- * 高亮代码
- * @param range {KRange|KRangeData}
- * @param pre {Element|Node}
- * @return {boolean} 是否执行了高亮操作
- */
-export function highlightCode(range, pre) {
-    console.assert(pre?.nodeName === 'PRE', '传入的 pre 必须是代码块对象', pre)
-    if (!highlight) return false
-    const offlineData = Array.isArray(range) ? range : range.serialization()
-    highlight(pre)
-    KRange.deserialized(offlineData).active()
-    return true
 }
 
 /**

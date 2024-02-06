@@ -13,7 +13,9 @@
             const krich = KRich('#krich')
             krich.setHighlight(pre => {
                 Prism.highlightElement(pre)
-            })
+            }, () => [
+                ['PlainText', 'text']
+            ])
         })
     </script>
 </head>

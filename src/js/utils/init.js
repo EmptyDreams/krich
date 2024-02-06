@@ -6,16 +6,17 @@ import {registryBeforeInputEventListener} from '../events/before-input'
 import {
     behaviors,
     DATA_ID,
-    initContainerQuery, KRICH_CLASS, KRICH_EDITOR, KRICH_EDITOR_CLASS,
+    initContainerQuery, KRICH_CLASS, KRICH_EC_CLASS, KRICH_EDITOR, KRICH_EDITOR_CLASS, KRICH_HOVER_TIP_CLASS,
     KRICH_TOOL_BAR, KRICH_TOOL_BAR_CLASS, markStatusCacheEffect,
     SELECT_VALUE,
     statusCheckCache
 } from '../vars/global-fileds'
 import {compareBtnListStatusWith} from './btn'
 import {KRange} from './range'
-import {getElementBehavior, highlightCode, readSelectedColor} from './tools'
+import {getElementBehavior, readSelectedColor} from './tools'
 import {findParentTag} from './dom'
 import {TODO_MARKER} from '../vars/global-tag'
+import {highlightCode} from './highlight'
 
 /**
  * 在指定容器内初始化编辑器，该容器应当是一个内容为空的标签
@@ -77,7 +78,7 @@ function initContainer(optional) {
         Object.getOwnPropertyNames(behaviors)
             .map(it => behaviors[it].render())
             .join('')
-    }</div><div class="${KRICH_EDITOR_CLASS}" spellcheck contenteditable><p><br></p></div>`
+    }</div><div class="${KRICH_EC_CLASS}"><div class="${KRICH_HOVER_TIP_CLASS}"></div><div class="${KRICH_EDITOR_CLASS}" spellcheck contenteditable><p><br></p></div></div>`
     container.classList.add(KRICH_CLASS)
     initContainerQuery(container)
     for (let child of KRICH_TOOL_BAR.children) {

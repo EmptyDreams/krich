@@ -210,6 +210,24 @@ export function prevSiblingText(node, limit) {
 }
 
 /**
+ * 获取某个节点相对于其某个父节点的坐标
+ * @param target {Element}
+ * @param parent {Element|Node}
+ */
+export function getRelCoords(target, parent) {
+    console.assert(parent.contains(target), 'parent 必须包含 target', parent, target)
+    let x = 0, y = 0
+    /** @type {HTMLElement} */
+    let item = target
+    while (item !== parent) {
+        x += item.offsetLeft
+        y += item.offsetTop
+        item = item.parentElement
+    }
+    return [x, y]
+}
+
+/**
  * 压缩 DOM 树结构
  * @param container {Element}
  */

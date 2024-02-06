@@ -65,3 +65,7 @@ class ButtonBehavior {
      */
     button
 }
+
+class HoverTipNames {
+    code
+}

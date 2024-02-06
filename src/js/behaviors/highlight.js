@@ -1,6 +1,7 @@
 import {behaviors} from '../vars/global-fileds'
 import {findParentTag} from '../utils/dom'
-import {highlightCode, isEmptyLine} from '../utils/tools'
+import {isEmptyLine} from '../utils/tools'
+import {highlightCode} from '../utils/highlight'
 
 /**
  * 代码高亮按钮点击

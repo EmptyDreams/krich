@@ -13,11 +13,11 @@ import {editorRange} from './range-monitor'
 import {
     createNewLine,
     getElementBehavior,
-    highlightCode,
     isEmptyLine,
     isMarkerNode,
     isMultiElementStructure, isTextNode
 } from '../utils/tools'
+import {highlightCode} from '../utils/highlight'
 
 export function registryKeyboardEvent() {
     const switchTask = key => {
