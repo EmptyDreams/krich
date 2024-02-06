@@ -81,7 +81,7 @@ function deleteEvent(event) {
             }
         }
     } else {
-        const node = isTextNode(startContainer) ? startContainer : startContainer.childNodes[startOffset]
+        const node = range.realStartContainer()
         const pre = findParentTag(node, ['PRE'])
         if (pre) {
             event.preventDefault()

@@ -112,6 +112,15 @@ export class KRange extends Range {
         }
     }
 
+    /**
+     * 获取真实的其实节点
+     * @return {Node}
+     */
+    realStartContainer() {
+        const {startContainer, startOffset} = this
+        return isTextNode(startContainer) ? startContainer : startContainer.childNodes[startOffset]
+    }
+
     setStartBefore(node) {
         const childNode = getFirstChildNode(node)
         if (isBrNode(childNode)) {

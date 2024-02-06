@@ -36,7 +36,7 @@ export function updateEditorRange() {
         range.active()
         disableToolBar()
         range.body.classList.add(EMPTY_BODY_ACTIVE_FLAG)
-    } else if (pre = findParentTag(range.startContainer, ['PRE'])) {
+    } else if (pre = findParentTag(range.realStartContainer(), ['PRE'])) {
         disableToolBar()
         openHoverTip('code', pre)
         return
