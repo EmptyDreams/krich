@@ -113,12 +113,29 @@ export class KRange extends Range {
     }
 
     /**
-     * 获取真实的其实节点
+     * 获取真实的起始节点
      * @return {Node}
      */
     realStartContainer() {
         const {startContainer, startOffset} = this
         return startContainer.childNodes?.[startOffset] ?? startContainer
+    }
+
+    /**
+     * 获取被包含或部分包含的最后一个节点
+     * @return {Node}
+     */
+    endInclude() {
+        const {endContainer, endOffset} = this
+        const {childNodes} = endContainer
+        if (childNodes) {
+            return endOffset ? childNodes[endOffset - 1] : prevLeafNode(childNodes[endOffset])
+        } else if (endOffset && isTextNode(endContainer)) {
+            return endContainer
+        } else {
+            console.assert(this.commonAncestorContainer.contains(prevLeafNode(endContainer)), '终点前的节点不在选区范围内')
+            return prevLeafNode(endContainer)
+        }
     }
 
     setStartBefore(node) {
@@ -441,11 +458,8 @@ export class KRange extends Range {
      * @return {Element[]}
      */
     getAllTopElements() {
-        let {commonAncestorContainer, startContainer, endContainer, endOffset, collapsed} = this
-        if (!collapsed && !isTextNode(endContainer)) {
-            const leafNode = endContainer.childNodes[endOffset]
-            endContainer = prevLeafNode(leafNode) ?? leafNode
-        }
+        let {commonAncestorContainer, startContainer, collapsed} = this
+        const endContainer = collapsed || this.endInclude()
         const {firstChild, lastChild} = commonAncestorContainer
         /**
          * 是否对公共祖先进行特化处理
