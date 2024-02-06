@@ -118,7 +118,7 @@ export class KRange extends Range {
      */
     realStartContainer() {
         const {startContainer, startOffset} = this
-        return isTextNode(startContainer) ? startContainer : startContainer.childNodes[startOffset]
+        return startContainer.childNodes?.[startOffset] ?? startContainer
     }
 
     setStartBefore(node) {
