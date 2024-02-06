@@ -219,7 +219,7 @@ export class KRange extends Range {
                     list[1].insertBefore(list[0].lastChild, list[1].firstChild)
                 }
                 if (list[2])
-                    list[1].append(...list[2])
+                    list[1].append(...list[2].childNodes)
                 list[0]?.remove?.()
                 list[2]?.remove?.()
                 zipTree(list[1])
