@@ -173,7 +173,6 @@ function enterEvent(event) {
  */
 function emptyBodyElementKeyEvent(event, body) {
     const key = event.key
-    console.log(key)
     switch (key) {
         case 'ArrowLeft': case 'ArrowUp': {
             const prev = prevLeafNode(body)
