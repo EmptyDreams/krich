@@ -408,7 +408,7 @@ export class KRange extends Range {
             const initNewNode = () => newNode = node.cloneNode(false)
             if (isTextNode(node)) {
                 const textContent = node.textContent
-                if (offset === textContent.length)
+                if (offset === textContent.length && !root.contains(nextLeafNode(node)))
                     return root
                 initNewNode()
                 newNode.textContent = textContent.substring(0, offset)
