@@ -211,7 +211,7 @@ export class KRange extends Range {
             if (commonAncestorContainer.nodeType === Node.TEXT_NODE) {
                 list[1].parentNode.insertBefore(container, list[1])
                 container.append(list[1])
-                zipTree(list[0].parentElement)
+                zipTree(list[1].parentElement)
             } else {
                 container.append(...list[1].childNodes)
                 list[1].append(container)
