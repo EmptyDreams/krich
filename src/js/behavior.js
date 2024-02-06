@@ -236,7 +236,7 @@ function execCommonCommand(
     if (type !== 2 && (removed || type === 1))
         rangeArray = setStyleInRange(key, rangeArray, behavior)
     for (let kRange of rangeArray) {
-        zipTree(findParentTag(kRange.startContainer, TOP_LIST))
+        zipTree(findParentTag(kRange.realStartContainer(), TOP_LIST))
     }
     if (offlineData) {
         range.deserialized(offlineData).active()
