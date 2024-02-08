@@ -220,9 +220,10 @@ export function getRelCoords(target, parent) {
     /** @type {HTMLElement} */
     let item = target
     while (item !== parent) {
+        console.assert(parent.contains(item), '迭代错误')
         x += item.offsetLeft
         y += item.offsetTop
-        item = item.parentElement
+        item = item.offsetParent
     }
     return [x, y]
 }

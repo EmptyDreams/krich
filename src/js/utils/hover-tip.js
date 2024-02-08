@@ -31,5 +31,5 @@ export function updateHoverTipPosition() {
     console.assert(KRICH_HOVER_TIP.tip, '悬浮窗没有绑定对象')
     const [x, y] = getRelCoords(KRICH_HOVER_TIP.tip, KRICH_EDITOR)
     KRICH_HOVER_TIP.style.top = Math.max(5, y - KRICH_HOVER_TIP.offsetHeight - 5) + 'px'
-    KRICH_HOVER_TIP.style.left = (x + 10) + 'px'
+    KRICH_HOVER_TIP.style.left = (x + 5) + 'px'
 }
