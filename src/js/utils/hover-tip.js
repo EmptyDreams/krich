@@ -1,4 +1,4 @@
-import {highlightLanguagesGetter, KRICH_EC_CLASS, KRICH_EDITOR, KRICH_HOVER_TIP} from '../vars/global-fileds'
+import {highlightLanguagesGetter, KRICH_EDITOR, KRICH_HOVER_TIP} from '../vars/global-fileds'
 import {getRelCoords} from './dom'
 
 const HOVER_TIP_LIST = {
@@ -30,7 +30,7 @@ export function closeHoverTip() {
 export function updateHoverTipPosition() {
     const tipTarget = KRICH_HOVER_TIP.tip
     if (!tipTarget) return
-    const {t: top, l: left, r: right, b: bottom} = getRelCoords(tipTarget, KRICH_EDITOR)
+    const {t: top, l: left, b: bottom} = getRelCoords(tipTarget, KRICH_EDITOR)
     let styleTop, styleLeft = left + 5
     const tipHeight = KRICH_HOVER_TIP.offsetHeight
     const editorHeight = KRICH_EDITOR.offsetHeight
