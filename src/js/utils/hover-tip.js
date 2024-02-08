@@ -30,7 +30,23 @@ export function closeHoverTip() {
 export function updateHoverTipPosition() {
     const tipTarget = KRICH_HOVER_TIP.tip
     if (!tipTarget) return
-    const [x, y] = getRelCoords(tipTarget, KRICH_EDITOR)
-    KRICH_HOVER_TIP.style.top = Math.max(5, y - KRICH_HOVER_TIP.offsetHeight - 5) + 'px'
-    KRICH_HOVER_TIP.style.left = (x + 5) + 'px'
+    const {t: top, l: left, r: right, b: bottom} = getRelCoords(tipTarget, KRICH_EDITOR)
+    let styleTop, styleLeft = left + 5
+    const tipHeight = KRICH_HOVER_TIP.offsetHeight
+    const editorHeight = KRICH_EDITOR.offsetHeight
+    if (top - tipHeight > 6)
+        styleTop = top - tipHeight - 5
+    else if (bottom + tipHeight + 6 < editorHeight)
+        styleTop = bottom + 5
+    else {
+        styleTop = 5
+        styleLeft = -10
+    }
+    const style = KRICH_HOVER_TIP.style
+    style.left = style.right = ''
+    style.top = styleTop + 'px'
+    if (styleLeft > 0)
+        style.left = styleLeft + 'px'
+    else
+        style.right = -styleLeft + 'px'
 }

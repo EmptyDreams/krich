@@ -213,21 +213,23 @@ export function prevSiblingText(node, limit) {
  * 获取某个节点相对于其某个父节点的坐标
  * @param target {Element}
  * @param parent {Element|Node}
+ * @return {{
+ *     t: number,
+ *     l: number,
+ *     r: number,
+ *     b: number
+ * }}
  */
 export function getRelCoords(target, parent) {
     console.assert(parent.contains(target), 'parent 必须包含 target', parent, target)
-    let x = 0, y = 0
-    /** @type {HTMLElement} */
-    let item = target
-    while (item !== parent) {
-        console.assert(parent.contains(item), '迭代错误')
-        x += item.offsetLeft
-        y += item.offsetTop
-        item = item.offsetParent
-        x -= item.scrollLeft
-        y -= item.scrollTop
+    const targetBox = target.getBoundingClientRect()
+    const parentBox = parent.getBoundingClientRect()
+    return {
+        t: targetBox.y - parentBox.y,
+        l: targetBox.x - parentBox.x,
+        r: targetBox.right - parentBox.x,
+        b: targetBox.bottom - parentBox.y
     }
-    return [x, y]
 }
 
 /**
