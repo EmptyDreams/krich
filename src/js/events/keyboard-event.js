@@ -107,48 +107,71 @@ function enterEvent(event) {
         startOffset, endOffset,
         collapsed
     } = editorRange
-    const pre = findParentTag(startContainer, ['PRE'])
-    if (pre && startContainer === endContainer) {
+    const {shiftKey, ctrlKey} = event
+    let element
+    function handlePre() {
+        const pre = findParentTag(startContainer, ['PRE'])
+        if (!pre) return false
         event.preventDefault()
         const text = startContainer.textContent
-        startContainer.textContent = text.substring(0, startOffset) + '\n' + text.substring(endOffset) + (text.endsWith('\n') ? '' : '\n')
-        editorRange.setStart(startContainer, startOffset + 1)
-        editorRange.collapse(true)
+        /**
+         * 在指定位置插入换行符
+         * @param left {number}
+         */
+        const insertLF = left => {
+            startContainer.textContent = text.substring(0, left) + '\n' + text.substring(endOffset) + (text.endsWith('\n') ? '' : '\n')
+            editorRange.setStart(startContainer, left + 1)
+            editorRange.collapse(true)
+        }
+        if (collapsed) {
+            if (shiftKey) {
+                const index = text.indexOf('\n', startOffset)
+                insertLF(index + 1)
+                return true
+            } else if (ctrlKey) {
+                element = createNewLine()
+                pre.insertAdjacentElement(event.altKey ? 'beforebegin' : 'afterend', element)
+                return false
+            }
+        }
+        insertLF(startOffset)
         if (!highlightCode(editorRange, pre)) {
             editorRange.active()
         }
-        return
+        return true
     }
-    if (!collapsed) return
-    let element
-    if (event.shiftKey) {
-        const pElement = findParentTag(startContainer, ['P'])
-        if (pElement) { // 如果在 p 标签中按下 Shift + Enter，则直接创建新行且不将输入指针后的内容放置在新的一行中
-            event.preventDefault()
-            element = createNewLine()
-            pElement.insertAdjacentElement('afterend', element)
-        }
-    } else {
-        const structure = findParentTag(
-            startContainer, item => isMultiElementStructure(item)
-        )
-        if (!structure) return
-        const lastChild = structure.lastChild
-        const lastChildNodes = lastChild.childNodes
-        const numCheckResult = lastChildNodes.length < 2 || (lastChildNodes.length < 3 && isMarkerNode(lastChildNodes[0]))
-        if (numCheckResult && !lastChild.textContent && startContainer.contains(getLastTextNode(structure))) {
-            /* 在多元素结构最后一个空行按下回车时自动退出 */
-            event.preventDefault()
-            if (structure.nodeName[0] === 'B') {
-                element = lastChild
-            } else {
-                element = lastChild.lastChild
-                lastChild.remove()
+    if (startContainer === endContainer && handlePre()) return
+    function handleOther() {
+        if (shiftKey) {
+            const pElement = findParentTag(startContainer, ['P'])
+            if (pElement) { // 如果在 p 标签中按下 Shift + Enter，则直接创建新行且不将输入指针后的内容放置在新的一行中
+                event.preventDefault()
+                element = createNewLine()
+                pElement.insertAdjacentElement('afterend', element)
             }
-            structure.insertAdjacentElement('afterend', element)
-            if (!structure.firstChild) structure.remove()
+        } else {
+            const structure = findParentTag(
+                startContainer, item => isMultiElementStructure(item)
+            )
+            if (!structure) return
+            const lastChild = structure.lastChild
+            const lastChildNodes = lastChild.childNodes
+            const numCheckResult = lastChildNodes.length < 2 || (lastChildNodes.length < 3 && isMarkerNode(lastChildNodes[0]))
+            if (numCheckResult && !lastChild.textContent && startContainer.contains(getLastTextNode(structure))) {
+                /* 在多元素结构最后一个空行按下回车时自动退出 */
+                event.preventDefault()
+                if (structure.nodeName[0] === 'B') {
+                    element = lastChild
+                } else {
+                    element = lastChild.lastChild
+                    lastChild.remove()
+                }
+                structure.insertAdjacentElement('afterend', element)
+                if (!structure.firstChild) structure.remove()
+            }
         }
     }
+    if (collapsed && !element) handleOther()
     if (element) {
         setCursorPositionBefore(element)
     }
