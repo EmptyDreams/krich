@@ -116,7 +116,7 @@ export function isMarkerNode(node) {
  * @return {true|undefined}
  */
 export function isMultiElementStructure(node) {
-    return node.classList && getElementBehavior(node)?.multi
+    return node.classList && isMultiElementStructure(getElementBehavior(node))
 }
 
 /**

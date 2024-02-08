@@ -17,6 +17,7 @@ import {
     isMultiElementStructure
 } from '../utils/tools'
 import {insertTextToString, replaceStringByIndex} from '../utils/string-utils'
+import {isTextAreaBehavior} from '../types/button-behavior'
 
 export function registryKeyboardEvent() {
     const switchTask = key => {
@@ -125,7 +126,7 @@ function enterEvent(event) {
         event.preventDefault()
         const top = findParentTag(realStartContainer, TOP_LIST)
         console.assert(!!top, '未找到顶层元素', realStartContainer)
-        if (shiftKey && !ctrlKey && getElementBehavior(top).textArea) {
+        if (shiftKey && !ctrlKey && isTextAreaBehavior(getElementBehavior(top))) {
             let text = top.textContent
             if (!text.endsWith('\n')) text += '\n'
             const index = text.indexOf('\n', startOffset) + 1
@@ -144,7 +145,7 @@ function enterEvent(event) {
     /** 处理在 TextArea 中按回车的动作 */
     function handleTextAreaEnter() {
         const top = findParentTag(realStartContainer, TOP_LIST)
-        if (!getElementBehavior(top).textArea) return
+        if (!isTextAreaBehavior(getElementBehavior(top))) return
         event.preventDefault()
         let text = top.textContent
         if (!text.endsWith('\n')) text += '\n'

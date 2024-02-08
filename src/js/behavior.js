@@ -51,16 +51,17 @@ import {onclickHr} from './behaviors/hr'
 import {TODO_MARKER} from './vars/global-tag'
 import {editorRange} from './events/range-monitor'
 import {behaviorHighlight} from './behaviors/highlight'
+import {BEHAVIOR_STATE_MES, BEHAVIOR_STATE_NO_STATUS, BEHAVIOR_STATE_TEXT_AREA} from './types/button-behavior'
 
 initBehaviors({
     headerSelect: {
+        state: BEHAVIOR_STATE_NO_STATUS,
         exp: ['P', ...TITLE_LIST].join(','),
-        noStatus: true,
         render: () => headerSelectStyle,
         onclick: behaviorHeader
     },
     blockquote: {
-        multi: true,
+        state: BEHAVIOR_STATE_MES,
         exp: 'blockquote',
         render: () => blockquoteStyle,
         onclick: range => onclickMultiElementStructure(range, 'blockquote'),
@@ -133,7 +134,7 @@ initBehaviors({
         }
     },
     clear: {
-        noStatus: true,
+        state: BEHAVIOR_STATE_NO_STATUS,
         render: () => clearStyle,
         onclick: range => {
             if (range.collapsed) return true
@@ -159,13 +160,13 @@ initBehaviors({
         }
     },
     hr: {
+        state: BEHAVIOR_STATE_NO_STATUS,
         exp: 'hr',
-        noStatus: true,
         render: () => hrStyle,
         onclick: onclickHr
     },
     ul: {
-        multi: true,
+        state: BEHAVIOR_STATE_MES,
         exp: 'ul',
         render: () => ulStyle,
         onclick: range => onclickMultiElementStructure(range, 'ul'),
@@ -173,7 +174,7 @@ initBehaviors({
         newLine: () => createElement('li')
     },
     ol: {
-        multi: true,
+        state: BEHAVIOR_STATE_MES,
         exp: 'ol',
         render: () => olStyle,
         onclick: range => onclickMultiElementStructure(range, 'ol'),
@@ -181,7 +182,7 @@ initBehaviors({
         newLine: () => createElement('li')
     },
     todo: {
-        multi: true,
+        state: BEHAVIOR_STATE_MES,
         exp: 'div.todo',
         render: () => todoStyle,
         onclick: range => onclickMultiElementStructure(range, 'todo'),
@@ -193,7 +194,7 @@ initBehaviors({
         }
     },
     code: {
-        textArea: true,
+        state: BEHAVIOR_STATE_TEXT_AREA,
         exp: 'pre',
         render: () => codeStyle,
         onclick: behaviorHighlight,

@@ -4,6 +4,7 @@
 
 import {behaviors, SELECT_VALUE} from '../vars/global-fileds'
 import {getElementBehavior, isKrichEditor, readSelectedColor} from './tools'
+import {isMultiEleStructBehavior, isNoStatusBehavior} from '../types/button-behavior'
 
 /**
  * 判断指定按钮是否激活
@@ -81,10 +82,10 @@ function findDiffButton(node, consumer) {
     let multiFlag
     while (!isKrichEditor(item)) {
         const behavior = getElementBehavior(item)
-        if (behavior && !(behavior.multi && multiFlag)) {
-            if (behavior.multi) multiFlag = true
+        if (behavior && !(isMultiEleStructBehavior(behavior) && multiFlag)) {
+            if (isMultiEleStructBehavior(behavior)) multiFlag = true
             record.add(behavior)
-            if (!behavior.noStatus && !compareBtnStatusWith(item)) {
+            if (!isNoStatusBehavior(behavior) && !compareBtnStatusWith(item)) {
                 consumer(behavior.button, item)
             }
         }
@@ -93,7 +94,7 @@ function findDiffButton(node, consumer) {
     for (let key in behaviors) {
         const behavior = behaviors[key]
         const button = behavior.button
-        if (!behavior.noStatus && !record.has(behavior) && isActive(button)) {
+        if (!isNoStatusBehavior(behavior) && !record.has(behavior) && isActive(button)) {
             consumer(button, null)
         }
     }

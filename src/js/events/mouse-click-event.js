@@ -9,6 +9,7 @@ import {getElementBehavior, isEmptyBodyElement, isKrichToolBar, parseRgbToHex} f
 import {editorRange} from './range-monitor'
 import {findParentTag} from '../utils/dom'
 import {KRange} from '../utils/range'
+import {isNoStatusBehavior} from '../types/button-behavior'
 
 export function registryMouseClickEvent() {
     KRICH_EDITOR.addEventListener('click', event => {
@@ -69,7 +70,7 @@ export function registryMouseClickEvent() {
             } else return
         } else {
             target.classList.toggle('active')
-            if (getElementBehavior(target).noStatus) {
+            if (isNoStatusBehavior(getElementBehavior(target))) {
                 setTimeout(() => target.classList.remove('active'), 333)
             }
         }

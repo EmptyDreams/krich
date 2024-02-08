@@ -1,18 +1,19 @@
-/**
- * @typedef {[number, number, number]|[number, number, number, number, number, 0]} KRangeData
- */
-
 class ButtonBehavior {
     /**
-     * 是否需要保存状态
-     * @type {true|undefined}
+     * 当前结构的各项状态
+     *
+     * 以下描述从最低位依次向最高位排列
+     *
+     * 1. 是否需要保存状态
+     * 2. 是否是使用换行符的多行文本结构
+     * 3. 是否是多元素结构
      */
-    noStatus
+    state
     /**
-     * 标记是否是使用换行符区分行的多行文本结构
-     * @type {undefined|boolean}
+     * 判断指定元素是否是当前样式
+     * @type {string & keyof HTMLElementTagNameMap | string | undefined}
      */
-    textArea
+    exp
     /**
      * 渲染函数，返回按钮的 HTML 内容
      * @type {function(): string}
@@ -42,11 +43,6 @@ class ButtonBehavior {
      */
     newLine
     /**
-     * 判断指定元素是否是当前样式
-     * @type {string & keyof HTMLElementTagNameMap | string | undefined}
-     */
-    exp
-    /**
      * 验证指定标签和按钮的状态是否一致
      *
      * 函数的两个参数依次为：按钮对象，指定标签的对象
@@ -60,17 +56,39 @@ class ButtonBehavior {
      */
     setter
     /**
-     * 标记当前样式是否是多元素结构
-     * @type {true|undefined}
-     */
-    multi
-    /**
      * 该样式的按钮对象
      * @type {HTMLElement|undefined}
      */
     button
 }
 
-class HoverTipNames {
-    code
+export const BEHAVIOR_STATE_NO_STATUS = 0b1
+export const BEHAVIOR_STATE_TEXT_AREA = 0b10
+export const BEHAVIOR_STATE_MES = 0b100
+
+/**
+ * 判断是否是 NoStatus 的 behavior
+ * @param behavior {ButtonBehavior?}
+ */
+export function isNoStatusBehavior(behavior) {
+    const state = behavior?.state ?? 0
+    return state & BEHAVIOR_STATE_NO_STATUS
+}
+
+/**
+ * 判断是否是 TextArea 的 behavior
+ * @param behavior {ButtonBehavior?}
+ */
+export function isTextAreaBehavior(behavior) {
+    const state = behavior?.state ?? 0
+    return state & BEHAVIOR_STATE_TEXT_AREA
+}
+
+/**
+ * 判断是否是多元素结构的 behavior
+ * @param behavior {ButtonBehavior?}
+ */
+export function isMultiEleStructBehavior(behavior) {
+    const state = behavior?.state ?? 0
+    return state & BEHAVIOR_STATE_MES
 }
