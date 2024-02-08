@@ -111,7 +111,7 @@ function enterEvent(event) {
     const {shiftKey, ctrlKey} = event
     let element
     function setCursorAt(node, index) {
-        getSelection().collapse(node, index)
+        getSelection().collapse(node.firstChild, index)
     }
     /**
      * 处理通用回车操作，包含：
