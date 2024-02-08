@@ -8,7 +8,7 @@ import {
     replaceElement,
     tryFixDom
 } from '../utils/dom'
-import {KRange, setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
+import {setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
 import {editorRange} from './range-monitor'
 import {
     createNewLine, getElementBehavior,
