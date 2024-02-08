@@ -17,6 +17,7 @@ import {getElementBehavior, readSelectedColor} from './tools'
 import {findParentTag} from './dom'
 import {TODO_MARKER} from '../vars/global-tag'
 import {highlightCode} from './highlight'
+import {registryEditorScrollEvent} from '../events/scroll-event'
 
 /**
  * 在指定容器内初始化编辑器，该容器应当是一个内容为空的标签
@@ -28,6 +29,7 @@ export function initKrich(optional) {
     registryMouseClickEvent()
     registryKeyboardEvent()
     registryRangeMonitor()
+    registryEditorScrollEvent()
     registryBeforeInputEventListener(KRICH_EDITOR, event => new Promise(resolve => {
         setTimeout(() => {
             resolve()
