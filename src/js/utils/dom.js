@@ -224,6 +224,8 @@ export function getRelCoords(target, parent) {
         x += item.offsetLeft
         y += item.offsetTop
         item = item.offsetParent
+        x -= item.scrollLeft
+        y -= item.scrollTop
     }
     return [x, y]
 }
