@@ -40,14 +40,18 @@
 
 ### 初始化
 
-1. 使用 git 指令克隆仓库：`git clone https://github.com/EmptyDreams/krich.git`
+1. 使用 git 指令克隆仓库：`git clone git@github.com:EmptyDreams/krich.git`
 2. 在仓库根目录下启动命令提示符
 3. 执行 `npm install`
 4. 执行 `npm install rollup -g`
 
 ### 运行
 
-1. 执行 `rollup -c -w`
+1. 执行 `rollup -c`
 2. 在浏览器中打开 `http://localhost:3000`
 
 如果 `3000` 与您的其它应用的端口号冲突，可以在 rollup 配置文件中修改这个端口号。
+
+### 更新
+
+在项目根目录执行 `git pull` 即可更新项目，如果您不是通过 git 克隆的仓库，那么该指令很可能将无法工作。
