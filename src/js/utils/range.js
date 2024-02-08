@@ -88,9 +88,6 @@ export class KRange extends Range {
                 if (this.body)
                     return super.selectNode(this.body)
             }
-        } else if (!checkLocationRelation(optional)) {
-            [startContainer, startOffset, endContainer, endOffset] =
-                [endContainer, endOffset, startContainer, startOffset]
         }
         if (!isTextNode(startContainer) && !isEmptyBodyElement(startContainer)) {
             const node = startContainer.childNodes[startOffset]
@@ -553,17 +550,4 @@ export class KRange extends Range {
         return range.deserialized(data)
     }
 
-}
-
-/**
- * 检查 Range 起点是否在终点之前
- * @param range {Range}
- */
-function checkLocationRelation(range) {
-    const {startContainer, startOffset, endContainer, endOffset} = range
-    if (startContainer === endContainer)
-        return startOffset <= endOffset
-    const node = startContainer.childNodes[startOffset] ?? startContainer
-    const otherNode = endContainer.childNodes[endOffset] ?? endContainer
-    return node.compareDocumentPosition(otherNode) & 4
 }
