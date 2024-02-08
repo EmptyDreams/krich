@@ -7,6 +7,8 @@ class ButtonBehavior {
      * 1. 是否需要保存状态
      * 2. 是否是使用换行符的多行文本结构
      * 3. 是否是多元素结构
+     *
+     * @type {undefined|number}
      */
     state
     /**
