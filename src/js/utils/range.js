@@ -481,7 +481,9 @@ export class KRange extends Range {
         let start, end
         if (lcaSpecialization) {
             const checker = it => {
-                const parent = findParentTag(it.parentNode, it => it.nodeName !== 'LI')
+                const parent = findParentTag(
+                    it.parentNode, it => it === commonAncestorContainer || it.nodeName !== 'LI'
+                )
                 return parent === commonAncestorContainer || (!parent && isKrichEditor(commonAncestorContainer))
             }
             start = startContainer === commonAncestorContainer ? firstChild : findParentTag(startContainer, checker)
