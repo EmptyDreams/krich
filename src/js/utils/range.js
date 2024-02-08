@@ -91,9 +91,7 @@ export class KRange extends Range {
         }
         if (!isTextNode(startContainer) && !isEmptyBodyElement(startContainer)) {
             const node = startContainer.childNodes[startOffset]
-            if (node) {
-                this.setStartBefore(node)
-            }
+            this.setStartBefore(node)
         } else {
             super.setStart(startContainer, startOffset)
         }
@@ -101,9 +99,7 @@ export class KRange extends Range {
             this.collapse(true)
         } else if (!isTextNode(endContainer) && !isEmptyBodyElement(endContainer)) {
             const node = endContainer.childNodes[endOffset]
-            if (node) {
-                this.setEndBefore(node)
-            }
+            this.setEndBefore(node)
         } else {
             super.setEnd(endContainer, endOffset)
         }
