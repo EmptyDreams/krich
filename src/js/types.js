@@ -9,6 +9,11 @@ class ButtonBehavior {
      */
     noStatus
     /**
+     * 标记是否是使用换行符区分行的多行文本结构
+     * @type {undefined|boolean}
+     */
+    textArea
+    /**
      * 渲染函数，返回按钮的 HTML 内容
      * @type {function(): string}
      */

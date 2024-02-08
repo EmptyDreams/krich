@@ -193,6 +193,7 @@ initBehaviors({
         }
     },
     code: {
+        textArea: true,
         exp: 'pre',
         render: () => codeStyle,
         onclick: behaviorHighlight,

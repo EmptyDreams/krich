@@ -8,15 +8,15 @@ import {
     replaceElement,
     tryFixDom
 } from '../utils/dom'
-import {setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
+import {KRange, setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
 import {editorRange} from './range-monitor'
 import {
-    createNewLine,
+    createNewLine, getElementBehavior,
     isEmptyLine,
     isMarkerNode,
     isMultiElementStructure
 } from '../utils/tools'
-import {highlightCode} from '../utils/highlight'
+import {insertTextToString, replaceStringByIndex} from '../utils/string-utils'
 
 export function registryKeyboardEvent() {
     const switchTask = key => {
@@ -103,75 +103,81 @@ function deleteEvent(event) {
  */
 function enterEvent(event) {
     const {
-        startContainer, endContainer,
+        startContainer,
         startOffset, endOffset,
         collapsed
     } = editorRange
+    const realStartContainer = editorRange.realStartContainer()
     const {shiftKey, ctrlKey} = event
     let element
-    function handlePre() {
-        const pre = findParentTag(startContainer, ['PRE'])
-        if (!pre) return false
+    function setCursorAt(node, index) {
+        getSelection().collapse(node, index)
+    }
+    /**
+     * 处理通用回车操作，包含：
+     *
+     * 1. `Shift Enter`: 直接跳转到下一行
+     * 2. `Ctrl Enter`: 在当前顶层元素下方插入一个新行
+     * 3. `Ctrl Shift Enter`: 在当前顶层元素的上方插入一个新行
+     */
+    function handleCommon() {
+        if ((!shiftKey && !ctrlKey) || !collapsed) return
         event.preventDefault()
-        const text = startContainer.textContent
-        /**
-         * 在指定位置插入换行符
-         * @param left {number}
-         */
-        const insertLF = left => {
-            startContainer.textContent = text.substring(0, left) + '\n' + text.substring(endOffset) + (text.endsWith('\n') ? '' : '\n')
-            editorRange.setStart(startContainer, left + 1)
-            editorRange.collapse(true)
+        const top = findParentTag(realStartContainer, TOP_LIST)
+        console.assert(!!top, '未找到顶层元素', realStartContainer)
+        if (shiftKey && !ctrlKey && getElementBehavior(top).textArea) {
+            let text = top.textContent
+            if (!text.endsWith('\n')) text += '\n'
+            const index = text.indexOf('\n', startOffset) + 1
+            top.textContent = insertTextToString(text, index, '\n')
+            setCursorAt(top, index + 1)
+            return true
         }
-        if (collapsed) {
-            if (shiftKey) {
-                const index = text.indexOf('\n', startOffset)
-                insertLF(index + 1)
-                return true
-            } else if (ctrlKey) {
-                element = createNewLine()
-                pre.insertAdjacentElement(event.altKey ? 'beforebegin' : 'afterend', element)
-                return false
-            }
+        element = createNewLine()
+        if (shiftKey) {
+            top.insertAdjacentElement('beforebegin', element)
+        } else {
+            top.insertAdjacentElement('afterend', element)
         }
-        insertLF(startOffset)
-        if (!highlightCode(editorRange, pre)) {
-            editorRange.active()
-        }
+    }
+    if (handleCommon()) return
+    /** 处理在 TextArea 中按回车的动作 */
+    function handleTextAreaEnter() {
+        const top = findParentTag(realStartContainer, TOP_LIST)
+        if (!getElementBehavior(top).textArea) return
+        event.preventDefault()
+        let text = top.textContent
+        if (!text.endsWith('\n')) text += '\n'
+        top.textContent = replaceStringByIndex(text, startOffset, endOffset, '\n')
+        setCursorAt(top, startOffset + 1)
         return true
     }
-    if (startContainer === endContainer && handlePre()) return
-    function handleOther() {
-        if (shiftKey) {
-            const pElement = findParentTag(startContainer, ['P'])
-            if (pElement) { // 如果在 p 标签中按下 Shift + Enter，则直接创建新行且不将输入指针后的内容放置在新的一行中
-                event.preventDefault()
-                element = createNewLine()
-                pElement.insertAdjacentElement('afterend', element)
+    if (!element) {
+        if (handleTextAreaEnter()) return
+    }
+    /** 处理在多元素结构中的回车动作 */
+    function handleMesEnter() {
+        const structure = findParentTag(
+            startContainer, item => isMultiElementStructure(item)
+        )
+        if (!structure) return
+        const lastChild = structure.lastChild
+        const lastChildNodes = lastChild.childNodes
+        const numCheckResult = lastChildNodes.length < 2 || (lastChildNodes.length < 3 && isMarkerNode(lastChildNodes[0]))
+        if (numCheckResult && !lastChild.textContent && startContainer.contains(getLastTextNode(structure))) {
+            /* 在多元素结构最后一个空行按下回车时自动退出 */
+            event.preventDefault()
+            if (structure.nodeName[0] === 'B') {
+                element = lastChild
+            } else {
+                element = lastChild.lastChild
+                lastChild.remove()
             }
-        } else {
-            const structure = findParentTag(
-                startContainer, item => isMultiElementStructure(item)
-            )
-            if (!structure) return
-            const lastChild = structure.lastChild
-            const lastChildNodes = lastChild.childNodes
-            const numCheckResult = lastChildNodes.length < 2 || (lastChildNodes.length < 3 && isMarkerNode(lastChildNodes[0]))
-            if (numCheckResult && !lastChild.textContent && startContainer.contains(getLastTextNode(structure))) {
-                /* 在多元素结构最后一个空行按下回车时自动退出 */
-                event.preventDefault()
-                if (structure.nodeName[0] === 'B') {
-                    element = lastChild
-                } else {
-                    element = lastChild.lastChild
-                    lastChild.remove()
-                }
-                structure.insertAdjacentElement('afterend', element)
-                if (!structure.firstChild) structure.remove()
-            }
+            structure.insertAdjacentElement('afterend', element)
+            if (!structure.firstChild) structure.remove()
         }
     }
-    if (collapsed && !element) handleOther()
+    if (collapsed && !element) handleMesEnter()
     if (element) {
         setCursorPositionBefore(element)
     }
