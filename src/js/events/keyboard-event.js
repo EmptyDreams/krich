@@ -135,7 +135,9 @@ function enterEvent(event) {
         )
         if (!structure) return
         const lastChild = structure.lastChild
-        if (lastChild.childNodes.length < 2 && !lastChild.textContent && startContainer.contains(getLastTextNode(structure))) {
+        const lastChildNodes = lastChild.childNodes
+        const numCheckResult = lastChildNodes.length < 2 || (lastChildNodes.length < 3 && isMarkerNode(lastChildNodes[0]))
+        if (numCheckResult && !lastChild.textContent && startContainer.contains(getLastTextNode(structure))) {
             /* 在多元素结构最后一个空行按下回车时自动退出 */
             event.preventDefault()
             if (structure.nodeName[0] === 'B') {
