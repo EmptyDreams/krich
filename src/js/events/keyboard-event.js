@@ -15,7 +15,7 @@ import {
     getElementBehavior,
     isEmptyLine,
     isMarkerNode,
-    isMultiElementStructure, isTextNode
+    isMultiElementStructure
 } from '../utils/tools'
 import {highlightCode} from '../utils/highlight'
 
@@ -57,7 +57,7 @@ export function registryKeyboardEvent() {
 function deleteEvent(event) {
     const range = editorRange
     if (!range.collapsed || range.startOffset !== 0) return
-    const {startContainer, startOffset} = range
+    const {startContainer} = range
     const topElement = findParentTag(startContainer, isMultiElementStructure)
     if (topElement && startContainer.contains(getFirstTextNode(topElement))) {
         // 在引用、列表开头使用删除键时直接取消当前行的样式
