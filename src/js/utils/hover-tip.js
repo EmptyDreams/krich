@@ -4,7 +4,7 @@ import {getRelCoords} from './dom'
 const HOVER_TIP_LIST = {
     code: () => {
         const list = highlightLanguagesGetter()
-        return `<div class="select" data-value="0"><span class="value">${list[0][0]}</span><div class="items">${list.map((it, index) => '<div data-value="${index}>"' + it[0] + '</div>')}</div></div>`
+        return `<div class="select" data-value="0"><span class="value">${list[0][0]}</span><div class="items">${list.map((it, index) => '<div data-value="' + index + '">' + it[0] + '</div>').join('')}</div></div>`
     }
 }
 
