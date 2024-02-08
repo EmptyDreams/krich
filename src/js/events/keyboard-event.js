@@ -143,7 +143,6 @@ function enterEvent(event) {
                 element = lastChild
             } else {
                 element = lastChild.lastChild
-                lastChild.remove()
             }
             let inserted = element
             const parent = findParentTag(structure.parentNode, TOP_LIST)
