@@ -2,10 +2,18 @@ import html from 'rollup-plugin-html'
 import resolve from '@rollup/plugin-node-resolve'
 import postcss from 'rollup-plugin-postcss'
 import postcssImport from 'postcss-import'
+import { getLogFilter } from 'rollup/getLogFilter'
+
+const logFilter = getLogFilter(['!code:CIRCULAR_DEPENDENCY'])
 
 // noinspection JSUnusedGlobalSymbols
 export const optional = {
     input: 'src/js/index.js',
+    onLog(level, log, handler) {
+        if (logFilter(log)) {
+            handler(level, log)
+        }
+    },
     plugins: [
         resolve({
             browser: true
