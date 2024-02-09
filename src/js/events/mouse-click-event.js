@@ -1,6 +1,5 @@
 import {
-    behaviors,
-    DATA_ID, KRICH_EDITOR,
+    DATA_ID, KRICH_EDITOR, KRICH_HOVER_TIP,
     KRICH_TOOL_BAR,
     markStatusCacheInvalid,
     SELECT_VALUE
@@ -18,6 +17,14 @@ export function registryMouseClickEvent() {
             new KRange(target).active()
         }
     })
+    KRICH_HOVER_TIP.addEventListener('click', event => {
+        const {target} = event
+        const top = findParentTag(target, it => it.classList?.contains('select'))
+        if (top) {
+            handleSelectList(top, target)
+            editorRange.active()
+        }
+    })
     KRICH_TOOL_BAR.addEventListener('click', event => {
         if (KRICH_TOOL_BAR.classList.contains('disable'))
             return
@@ -25,57 +32,65 @@ export function registryMouseClickEvent() {
         if (!range || range.body) return
         /** @type {HTMLElement} */
         let original = event.target
-        let target = original
-        if (isKrichToolBar(target)) return
-        let type, dataKey
-        while (true) {
-            dataKey = target.getAttribute(DATA_ID)
-            if (dataKey) {
-                type = dataKey
-                break
-            }
-            target = target.parentNode
-        }
+        if (isKrichToolBar(original)) return
+        const target = findParentTag(
+            original, it => it.hasAttribute?.(DATA_ID)
+        )
+        const behavior = getElementBehavior(target)
         const classList = target.classList
+        let skip, correct
         if (classList.contains('select')) {
-            if (original === target) return
-            const selectValueChecker = it => it.hasAttribute(SELECT_VALUE)
-            // 判断是否需要修正点击区域（点击到选择框的选项的子标签时需要进行修正）
-            const needFix = findParentTag(
-                original, item => item.classList?.contains('items')
-            ) && !selectValueChecker(original)
-            if (needFix)
-                original = findParentTag(original, selectValueChecker)
-            if (selectValueChecker(original)) {
-                target.getElementsByClassName('value')[0].innerHTML = original.innerHTML
-                const value = original.getAttribute(SELECT_VALUE)
-                target.setAttribute(SELECT_VALUE, value)
-            } else if (original.hasAttribute('title')) {
-                target.getElementsByClassName('value')[0]
-                    .setAttribute('style', original.getAttribute('style'))
-            } else if (original.classList.contains('submit')) {
-                const input = original.previousElementSibling
-                const value = input.value
-                    .replaceAll(/\s/g, '')
-                    .replaceAll('，', ',')
-                    .toLowerCase()
-                const color = parseRgbToHex(value)
-                if (color) {
-                    input.classList.remove('error')
-                    target.getElementsByClassName('value')[0]
-                        .setAttribute('style', 'background:' + color)
-                } else {
-                    return input.classList.add('error')
-                }
-            } else return
+            skip = handleSelectList(target, original)
         } else {
-            target.classList.toggle('active')
-            if (isNoStatusBehavior(getElementBehavior(target))) {
-                setTimeout(() => target.classList.remove('active'), 333)
+            classList.toggle('active')
+            if (isNoStatusBehavior(behavior)) {
+                setTimeout(() => classList.remove('active'), 333)
             }
         }
-        const correct = behaviors[dataKey].onclick?.(range, target)
-        if (correct) range.active()
-        markStatusCacheInvalid()
+        if (!skip) {
+            correct = behavior.onclick?.(range, target)
+            markStatusCacheInvalid()
+        }
+        if (skip || correct) range.active()
     })
+}
+
+/**
+ * 处理点击多选列表的事件
+ * @param select {Element} 列表对象
+ * @param target {Element} 被点击的元素
+ */
+function handleSelectList(select, target) {
+    if (select === target) return true
+    // 真实的被点击的选项
+    const value = select.getElementsByClassName('value')[0]
+    if (select.classList.contains('color')) {
+        const optional = findParentTag(
+            target, it => it.hasAttribute?.('style')
+        )
+        if (optional) {
+            value.setAttribute('style', optional.getAttribute('style'))
+        } else if (target.classList.contains('submit')) {
+            const input = target.previousElementSibling
+            const inputText = input.value
+                .replaceAll(/\s/g, '')
+                .replaceAll('，', ',')
+                .toLowerCase()
+            const color = parseRgbToHex(inputText)
+            if (color) {
+                input.classList.remove('error')
+                value.setAttribute('style', 'background:' + color)
+            } else {
+                input.classList.add('error')
+                return true
+            }
+        } else return true
+    } else {
+        const optional = findParentTag(
+            target, it => it.hasAttribute?.(SELECT_VALUE)
+        )
+        value.innerHTML = optional.innerHTML
+        const selectValue = value.getAttribute(SELECT_VALUE)
+        select.setAttribute(SELECT_VALUE, selectValue)
+    }
 }
