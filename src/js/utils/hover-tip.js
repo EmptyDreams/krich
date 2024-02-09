@@ -31,17 +31,14 @@ export function updateHoverTipPosition() {
     // noinspection JSUnresolvedReference
     const tipTarget = KRICH_HOVER_TIP.tip
     if (!tipTarget) return
-    const {t: top, l: left, b: bottom} = getRelCoords(tipTarget, KRICH_EDITOR)
+    const {t: top, l: left} = getRelCoords(tipTarget, KRICH_EDITOR)
     let styleTop, styleLeft = left + 5
     const tipHeight = KRICH_HOVER_TIP.offsetHeight
-    const editorHeight = KRICH_EDITOR.offsetHeight
     if (top - tipHeight > 6)
         styleTop = top - tipHeight - 5
-    else if (bottom + tipHeight + 6 < editorHeight)
-        styleTop = bottom + 5
     else {
         styleTop = 5
-        styleLeft = -10
+        styleLeft = -35
     }
     const style = KRICH_HOVER_TIP.style
     style.left = style.right = ''
