@@ -2,7 +2,12 @@
     本文件用于放置一些通用的工具函数
  */
 
-import {behaviors, DATA_ID, KRICH_EDITOR_CLASS, KRICH_TOOL_BAR_CLASS} from '../vars/global-fileds'
+import {
+    behaviors,
+    DATA_ID, KRICH_EC,
+    KRICH_EDITOR,
+    KRICH_TOOL_BAR
+} from '../vars/global-fileds'
 
 /**
  * 构建一个新的元素
@@ -57,12 +62,12 @@ export function isEmptyBodyElement(element) {
 }
 
 /**
- * 判断指定节点是否是编辑区容器
+ * 判断指定节点是否是编辑区或编辑区容器
  * @param node {Element|Node}
  * @return {boolean}
  */
 export function isKrichEditor(node) {
-    return node.classList?.contains?.(KRICH_EDITOR_CLASS)
+    return node === KRICH_EDITOR || node === KRICH_EC
 }
 
 /**
@@ -71,7 +76,7 @@ export function isKrichEditor(node) {
  * @return {boolean}
  */
 export function isKrichToolBar(node) {
-    return node.classList?.contains?.(KRICH_TOOL_BAR_CLASS)
+    return node === KRICH_TOOL_BAR
 }
 
 /**
