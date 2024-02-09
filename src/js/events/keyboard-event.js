@@ -109,6 +109,8 @@ function enterEvent(event) {
         collapsed
     } = editorRange
     const realStartContainer = editorRange.realStartContainer()
+    const isFixStartContainer = startContainer !== realStartContainer
+    const realStartOffset = isFixStartContainer ? 0 : startOffset
     const {shiftKey, ctrlKey} = event
     let element
     function setCursorAt(node, index) {
@@ -129,7 +131,7 @@ function enterEvent(event) {
         if (shiftKey && !ctrlKey && isTextAreaBehavior(getElementBehavior(top))) {
             let text = top.textContent
             if (!text.endsWith('\n')) text += '\n'
-            const index = text.indexOf('\n', startOffset) + 1
+            const index = text.indexOf('\n', realStartOffset) + 1
             top.textContent = insertTextToString(text, index, '\n')
             setCursorAt(top, index + 1)
             return true
@@ -149,8 +151,10 @@ function enterEvent(event) {
         event.preventDefault()
         let text = top.textContent
         if (!text.endsWith('\n')) text += '\n'
-        top.textContent = replaceStringByIndex(text, startOffset, endOffset, '\n')
-        setCursorAt(top, startOffset + 1)
+        const realEndOffset = isFixStartContainer ? (startOffset === endOffset ? 0 : text.length) : endOffset
+        console.log(isFixStartContainer, startOffset, endOffset, realStartOffset, realEndOffset)
+        top.textContent = replaceStringByIndex(text, realStartOffset, realEndOffset, '\n')
+        setCursorAt(top, realStartOffset + 1)
         return true
     }
     if (!element) {
