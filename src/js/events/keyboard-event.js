@@ -152,7 +152,6 @@ function enterEvent(event) {
         let text = top.textContent
         if (!text.endsWith('\n')) text += '\n'
         const realEndOffset = isFixStartContainer ? (startOffset === endOffset ? 0 : text.length) : endOffset
-        console.log(isFixStartContainer, startOffset, endOffset, realStartOffset, realEndOffset)
         top.textContent = replaceStringByIndex(text, realStartOffset, realEndOffset, '\n')
         setCursorAt(top, realStartOffset + 1)
         return true
