@@ -140,7 +140,7 @@ function enterEvent(event) {
             return true
         }
         element = createNewLine()
-        if (ctrlKey) {
+        if (shiftKey && ctrlKey) {
             top.insertAdjacentElement('beforebegin', element)
         } else {
             top.insertAdjacentElement('afterend', element)
