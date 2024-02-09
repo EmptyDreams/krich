@@ -50,6 +50,8 @@ export const KRICH_HOVER_TIP_CLASS = KRICH_CLASS + '-tip'
 export const DATA_ID = 'data-id'
 /** 多选框的 value 的 KEY */
 export const SELECT_VALUE = 'data-value'
+/** 悬浮窗记录名称的 KEY */
+export const HOVER_TIP_NAME = 'data-name'
 
 /**
  * EmptyBodyElement 激活标记

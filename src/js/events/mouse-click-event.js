@@ -1,5 +1,5 @@
 import {
-    DATA_ID, KRICH_EDITOR, KRICH_HOVER_TIP,
+    DATA_ID, HOVER_TIP_NAME, KRICH_EDITOR, KRICH_HOVER_TIP,
     KRICH_TOOL_BAR,
     markStatusCacheInvalid,
     SELECT_VALUE
@@ -9,6 +9,7 @@ import {editorRange} from './range-monitor'
 import {findParentTag} from '../utils/dom'
 import {KRange} from '../utils/range'
 import {isNoStatusBehavior} from '../types/button-behavior'
+import {HOVER_TIP_LIST} from '../utils/hover-tip'
 
 export function registryMouseClickEvent() {
     KRICH_EDITOR.addEventListener('click', event => {
@@ -61,13 +62,13 @@ export function registryMouseClickEvent() {
  * @param target {Element} 被点击的元素
  */
 function handleSelectList(select, target) {
-    if (select === target) return true
     // 真实的被点击的选项
     const value = select.getElementsByClassName('value')[0]
     if (select.classList.contains('color')) {
         const optional = findParentTag(
             target, it => it.hasAttribute?.('style')
         )
+        if (optional === select) return
         if (optional) {
             value.setAttribute('style', optional.getAttribute('style'))
         } else if (target.classList.contains('submit')) {
@@ -89,8 +90,14 @@ function handleSelectList(select, target) {
         const optional = findParentTag(
             target, it => it.hasAttribute?.(SELECT_VALUE)
         )
+        if (optional === select) return
         value.innerHTML = optional.innerHTML
-        const selectValue = value.getAttribute(SELECT_VALUE)
+        const selectValue = optional.getAttribute(SELECT_VALUE)
         select.setAttribute(SELECT_VALUE, selectValue)
+    }
+    // noinspection JSUnresolvedReference
+    if (KRICH_HOVER_TIP.tip) {
+        const value = HOVER_TIP_LIST[KRICH_HOVER_TIP.getAttribute(HOVER_TIP_NAME)]
+        value.onchange(select)
     }
 }

@@ -39,6 +39,7 @@ export function updateEditorRange() {
     } else if (pre = findParentTag(range.realStartContainer(), ['PRE'])) {
         disableToolBar()
         openHoverTip('code', pre)
+        editorRange = KRange.activated()
         return
     } else {
         KRICH_TOOL_BAR.classList.remove('disable')

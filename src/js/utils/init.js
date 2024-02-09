@@ -36,9 +36,8 @@ export function initKrich(optional) {
             const {data, inputType} = event
             let range = KRange.activated()
             const {startContainer, startOffset} = range
-            const ppn = startContainer.parentNode.parentNode
-            if (ppn.nodeName === 'PRE')
-                return highlightCode(range, ppn)
+            if (findParentTag(range.realStartContainer(), ['PRE']))
+                return
             /* 当用户输入位置所在文本与按钮列表不同时，将新输入的文本样式与按钮状态同步 */
             if (data && !statusCheckCache && range.collapsed) {
                 markStatusCacheEffect()

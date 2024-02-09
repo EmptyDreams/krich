@@ -3,7 +3,3 @@
 /**
  * @typedef {[number, number, number]|[number, number, number, number, number, 0]} KRangeData
  */
-
-class HoverTipNames {
-    code
-}

@@ -29,6 +29,5 @@ export function behaviorHighlight(range) {
         }
         code.textContent = codeContent
     }
-    highlightCode(offlineData, pre)
     return true
 }
