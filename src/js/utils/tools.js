@@ -8,6 +8,7 @@ import {
     KRICH_EDITOR,
     KRICH_TOOL_BAR
 } from '../vars/global-fileds'
+import {isMultiEleStructBehavior} from '../types/button-behavior'
 
 /**
  * 构建一个新的元素
@@ -121,7 +122,7 @@ export function isMarkerNode(node) {
  * @return {true|undefined}
  */
 export function isMultiElementStructure(node) {
-    return node.classList && isMultiElementStructure(getElementBehavior(node))
+    return node.classList && isMultiEleStructBehavior(getElementBehavior(node))
 }
 
 /**
