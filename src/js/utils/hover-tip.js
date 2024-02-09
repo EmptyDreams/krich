@@ -14,9 +14,11 @@ const HOVER_TIP_LIST = {
  * @param target {Element} 悬浮窗绑定的标签
  */
 export function openHoverTip(name, target) {
+    const classList = KRICH_HOVER_TIP.classList
+    if (classList.contains('active')) return
     KRICH_HOVER_TIP.innerHTML = HOVER_TIP_LIST[name]()
     KRICH_HOVER_TIP.tip = target
-    KRICH_HOVER_TIP.classList.add('active')
+    classList.add('active')
     updateHoverTipPosition()
 }
 
