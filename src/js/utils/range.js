@@ -528,7 +528,7 @@ export class KRange extends Range {
         const realStartContainer = this.realStartContainer()
         const fixed = startContainer !== realStartContainer
         let index = fixed ? 0 : startOffset
-        /** @type {Node} */
+        /** @type {Text|Node} */
         let insertedNode
         if (collapsed) {
             index = fixed ? 0 : startOffset
