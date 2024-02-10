@@ -53,6 +53,7 @@ import {editorRange} from './events/range-monitor'
 import {behaviorHighlight} from './behaviors/highlight'
 import {BEHAVIOR_STATE_MES, BEHAVIOR_STATE_NO_STATUS, BEHAVIOR_STATE_TEXT_AREA} from './types/button-behavior'
 
+// noinspection JSCheckFunctionSignatures
 initBehaviors({
     headerSelect: {
         state: BEHAVIOR_STATE_NO_STATUS,
@@ -199,7 +200,9 @@ initBehaviors({
         render: () => codeStyle,
         onclick: behaviorHighlight,
         builder: () => {
-            const pre = createElement('pre')
+            const pre = createElement('pre', {
+                spellcheck: false
+            })
             const code = createElement('code')
             code.innerHTML = '\n'
             pre.append(code)
