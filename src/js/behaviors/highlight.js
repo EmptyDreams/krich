@@ -1,6 +1,7 @@
 import {behaviors} from '../vars/global-fileds'
 import {findParentTag} from '../utils/dom'
 import {isEmptyLine} from '../utils/tools'
+import {KRange} from '../utils/range'
 
 /**
  * 代码高亮按钮点击
@@ -17,7 +18,9 @@ export function behaviorHighlight(range) {
         } else {
             line.insertAdjacentElement('afterend', pre)
         }
+        range.active(true)
     } else {
+        const offlineData = range.serialization()
         const allLines = range.getAllTopElements()
         allLines[0].insertAdjacentElement('afterend', pre)
         let codeContent = ''
@@ -26,6 +29,6 @@ export function behaviorHighlight(range) {
             line.remove()
         }
         code.textContent = codeContent
+        range.deserialized(offlineData).active(true)
     }
-    return true
 }

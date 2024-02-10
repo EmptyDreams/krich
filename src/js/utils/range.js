@@ -194,11 +194,14 @@ export class KRange extends Range {
         }
     }
 
-    /** 将当前区间设定为激活区间 */
-    active() {
+    /**
+     * 将当前区间设定为激活区间
+     * @param force {boolean} 是否强制激活
+     */
+    active(force = false) {
         KRICH_EDITOR.focus()
         const selection = getSelection()
-        if (selection.rangeCount && selection.getRangeAt(0) === this) return
+        if (!force && selection.rangeCount && selection.getRangeAt(0) === this) return
         selection.removeAllRanges()
         selection.addRange(this)
     }
