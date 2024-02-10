@@ -3,20 +3,21 @@ import {
     findParentTag,
     getFirstTextNode,
     getLastTextNode,
-    nextLeafNode,
-    prevLeafNode,
+    nextLeafNode, nextSiblingText,
+    prevLeafNode, prevSiblingText,
     replaceElement,
     tryFixDom
 } from '../utils/dom'
 import {setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
 import {editorRange} from './range-monitor'
 import {
+    createElement,
     createNewLine, getElementBehavior,
     isEmptyLine,
     isMarkerNode,
     isMultiElementStructure
 } from '../utils/tools'
-import {insertTextToString, replaceStringByIndex} from '../utils/string-utils'
+import {insertTextToString} from '../utils/string-utils'
 import {isTextAreaBehavior} from '../types/button-behavior'
 
 export function registryKeyboardEvent() {
@@ -108,16 +109,15 @@ function deleteEvent(event) {
 function enterEvent(event) {
     const {
         startContainer,
-        startOffset, endOffset,
+        startOffset,
         collapsed
     } = editorRange
     const realStartContainer = editorRange.realStartContainer()
     const isFixStartContainer = startContainer !== realStartContainer
-    const realStartOffset = isFixStartContainer ? 0 : startOffset
     const {shiftKey, ctrlKey} = event
     let element
     function setCursorAt(node, index) {
-        getSelection().collapse(node.firstChild, index)
+        getSelection().collapse(node, index)
     }
     /**
      * 处理通用回车操作，包含：
@@ -131,14 +131,8 @@ function enterEvent(event) {
         event.preventDefault()
         const top = findParentTag(realStartContainer, TOP_LIST)
         console.assert(!!top, '未找到顶层元素', realStartContainer)
-        if (shiftKey && !ctrlKey && isTextAreaBehavior(getElementBehavior(top))) {
-            let text = top.textContent
-            if (!text.endsWith('\n')) text += '\n'
-            const index = text.indexOf('\n', realStartOffset) + 1
-            top.textContent = insertTextToString(text, index, '\n')
-            setCursorAt(top, index + 1)
-            return true
-        }
+        if (shiftKey && !ctrlKey && isTextAreaBehavior(getElementBehavior(top)))
+            return
         element = createNewLine()
         if (shiftKey && ctrlKey) {
             top.insertAdjacentElement('beforebegin', element)
@@ -146,17 +140,45 @@ function enterEvent(event) {
             top.insertAdjacentElement('afterend', element)
         }
     }
-    if (handleCommon()) return
+    handleCommon()
     /** 处理在 TextArea 中按回车的动作 */
     function handleTextAreaEnter() {
         const top = findParentTag(realStartContainer, TOP_LIST)
         if (!isTextAreaBehavior(getElementBehavior(top))) return
         event.preventDefault()
-        let text = top.textContent
-        if (!text.endsWith('\n')) text += '\n'
-        const realEndOffset = isFixStartContainer ? (startOffset === endOffset ? 0 : text.length) : endOffset
-        top.textContent = replaceStringByIndex(text, realStartOffset, realEndOffset, '\n')
-        setCursorAt(top, realStartOffset + 1)
+        if (!top.textContent.endsWith('\n'))
+            getLastTextNode(top).textContent += '\n'
+        if (shiftKey) {
+            let item = getFirstTextNode(realStartContainer)
+            let index = isFixStartContainer ? 0 : startOffset
+            while (true) {
+                const text = item.textContent
+                const nextLine = text.indexOf('\n', index)
+                index = 0
+                if (nextLine >= 0) {
+                    item.textContent = insertTextToString(text, nextLine, '\n')
+                    setCursorAt(item, nextLine + 1)
+                    break
+                }
+                item = nextSiblingText(item)
+            }
+        } else if (collapsed) {
+            if (isFixStartContainer) {
+                const node = getFirstTextNode(realStartContainer)
+                node.textContent = '\n' + node.textContent
+                setCursorAt(node, 1)
+            } else {
+                startContainer.textContent = insertTextToString(startContainer.textContent, startOffset, '\n')
+                setCursorAt(startContainer, startOffset + 1)
+            }
+        } else {
+            const tmpBox = createElement('div', ['tmp'])
+            editorRange.surroundContents(tmpBox)
+            const node = prevSiblingText(tmpBox)
+            tmpBox.remove()
+            node.textContent += '\n'
+            setCursorPositionAfter(node)
+        }
         return true
     }
     if (!element) {
