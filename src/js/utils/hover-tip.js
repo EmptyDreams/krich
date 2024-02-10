@@ -87,10 +87,7 @@ export const HOVER_TIP_LIST = {
             }
             resetButton.onclick = () => {
                 errorSpan.classList.remove('active')
-                uploaderInput.value = ''
-                linkInput.value = ''
-                descrInput.value = ''
-                uploaderBackground.style.background = ''
+                uploaderInput.value = linkInput.value = descrInput.value = uploaderBackground.style.background = ''
                 linkInput.disabled = false
             }
         }
