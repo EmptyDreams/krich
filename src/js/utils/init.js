@@ -16,7 +16,6 @@ import {KRange} from './range'
 import {getElementBehavior, readSelectedColor} from './tools'
 import {findParentTag} from './dom'
 import {TODO_MARKER} from '../vars/global-tag'
-import {highlightCode} from './highlight'
 import {registryEditorScrollEvent} from '../events/scroll-event'
 
 /**

@@ -1,7 +1,6 @@
 import {behaviors} from '../vars/global-fileds'
 import {findParentTag} from '../utils/dom'
 import {isEmptyLine} from '../utils/tools'
-import {highlightCode} from '../utils/highlight'
 
 /**
  * 代码高亮按钮点击
@@ -11,7 +10,6 @@ export function behaviorHighlight(range) {
     const behavior = behaviors.code
     const pre = behavior.builder()
     const code = pre.firstChild
-    const offlineData = range.serialization()
     if (range.collapsed) {
         const line = findParentTag(range.startContainer, ['P'])
         if (isEmptyLine(line)) {
