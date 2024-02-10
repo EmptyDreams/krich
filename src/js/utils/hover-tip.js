@@ -24,14 +24,15 @@ export const HOVER_TIP_LIST = {
                 language = 'language-' + list[0][1]
             }
             pre.className = language
+            // noinspection JSIgnoredPromiseFromCall
             highlightCode(editorRange, pre)
             return `<div class="select" data-value="0"><span class="value">${list.find(it => language.endsWith('-' + it[1]))[0]}</span><div class="items">${list.map((it, index) => '<div data-value="' + index + '">' + it[0] + '</div>').join('')}</div></div>`
         },
-        onchange: (select) => {
+        onchange: async (select) => {
             const pre = KRICH_HOVER_TIP.tip
             const list = highlightLanguagesGetter()
             pre.className = 'language-' + list[parseInt(select.getAttribute(SELECT_VALUE))][1]
-            highlightCode(editorRange, pre)
+            await highlightCode(editorRange, pre)
         }
     }
 }

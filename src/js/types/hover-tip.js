@@ -10,7 +10,7 @@ class HoverTipValue {
     init
     /**
      * 当悬浮窗内有下拉菜单的值被修改时触发
-     * @type {function(select: Element)} 参数是下拉菜单的对象
+     * @type {function(select: Element): Promise<void>} 参数是下拉菜单的对象
      */
     onchange
 }

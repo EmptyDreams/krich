@@ -81,7 +81,7 @@ export let isComposing
 
 /**
  * 设置代码高亮
- * @param highlighter {function(Element)} 代码高亮函数
+ * @param highlighter {function(Element): Promise<void>|undefined} 代码高亮函数
  * @param languages {function(): ([string, string])[]} 获取支持的语言列表，该函数的返回值内部不会缓存
  */
 export function setHighlight(highlighter, languages) {

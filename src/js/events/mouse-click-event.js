@@ -19,14 +19,15 @@ export function registryMouseClickEvent() {
         }
     })
     KRICH_HOVER_TIP.addEventListener('click', event => {
+        event.preventDefault()
         const {target} = event
         const top = findParentTag(target, it => it.classList?.contains('select'))
         if (top) {
+            // noinspection JSIgnoredPromiseFromCall
             handleSelectList(top, target)
-            editorRange.active()
         }
     })
-    KRICH_TOOL_BAR.addEventListener('click', event => {
+    KRICH_TOOL_BAR.addEventListener('click', async event => {
         if (KRICH_TOOL_BAR.classList.contains('disable'))
             return
         const range = editorRange
@@ -41,7 +42,7 @@ export function registryMouseClickEvent() {
         const classList = target.classList
         let skip, correct
         if (classList.contains('select')) {
-            skip = handleSelectList(target, original)
+            skip = await handleSelectList(target, original)
         } else {
             classList.toggle('active')
             if (isNoStatusBehavior(behavior)) {
@@ -61,7 +62,7 @@ export function registryMouseClickEvent() {
  * @param select {Element} 列表对象
  * @param target {Element} 被点击的元素
  */
-function handleSelectList(select, target) {
+async function handleSelectList(select, target) {
     // 真实的被点击的选项
     const value = select.getElementsByClassName('value')[0]
     if (select.classList.contains('color')) {
@@ -98,6 +99,6 @@ function handleSelectList(select, target) {
     // noinspection JSUnresolvedReference
     if (KRICH_HOVER_TIP.tip) {
         const value = HOVER_TIP_LIST[KRICH_HOVER_TIP.getAttribute(HOVER_TIP_NAME)]
-        value.onchange(select)
+        await value.onchange(select)
     }
 }

@@ -11,9 +11,9 @@
         import KRich from './krich-es.js'
         document.addEventListener('DOMContentLoaded', () => {
             const krich = KRich('#krich')
-            krich.setHighlight(pre => {
-                Prism.highlightElement(pre)
-            }, () => [
+            krich.setHighlight(pre => new Promise(resolve => {
+                Prism.highlightElement(pre, false, () => resolve())
+            }), () => [
                 ['PlainText', 'txt'],
                 ['JavaScript', 'js']
             ])
