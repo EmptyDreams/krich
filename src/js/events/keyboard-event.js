@@ -232,12 +232,25 @@ function emptyBodyElementKeyEvent(event, body) {
         }
         case 'Backspace': case 'Delete':
             if (!isMarkerNode(body)) {
-                if (key[0] === 'B' && body.previousSibling) {
-                    setCursorPositionAfter(body.previousSibling)
-                } else {
-                    setCursorPositionBefore(body.nextSibling)
+                const priority = ['nextSibling', 'previousSibling']
+                let flag
+                for (let info of priority) {
+                    const sibling = body[info]
+                    if (sibling) {
+                        if (info[0] === 'n')
+                            setCursorPositionBefore(sibling)
+                        else
+                            setCursorPositionAfter(sibling)
+                        body.remove()
+                        flag = true
+                        break
+                    }
                 }
-                body.remove()
+                if (!flag) {
+                    const line = createNewLine()
+                    body.replaceWith(line)
+                    setCursorPositionBefore(line)
+                }
             }
             break
         case 'Enter':
