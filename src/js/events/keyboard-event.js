@@ -1,6 +1,6 @@
 import {KRICH_EDITOR, TOP_LIST} from '../vars/global-fileds'
 import {
-    findParentTag,
+    findParentTag, getFirstChildNode,
     getFirstTextNode,
     getLastTextNode,
     nextLeafNode, nextSiblingText,
@@ -15,7 +15,7 @@ import {
     createNewLine, getElementBehavior,
     isEmptyLine,
     isMarkerNode,
-    isMultiElementStructure
+    isMultiElementStructure, isTextNode
 } from '../utils/tools'
 import {insertTextToString} from '../utils/string-utils'
 import {isTextAreaBehavior} from '../types/button-behavior'
@@ -46,9 +46,37 @@ export function registryKeyboardEvent() {
                 case 'Backspace':
                     deleteEvent(event)
                     break
+                case 'Tab':
+                    tabEvent(event)
+                    break
             }
         }
     })
+}
+
+/**
+ * tab 事件
+ * @param event{KeyboardEvent}
+ */
+function tabEvent(event) {
+    const {startContainer, startOffset, collapsed} = editorRange
+    const realStartContainer = getFirstChildNode(editorRange.realStartContainer())
+    const TAB_CHAR = '    '
+    if (collapsed) {
+        if (!isTextNode(realStartContainer)) return
+        const index = startContainer === realStartContainer ? startOffset : 0
+        realStartContainer.textContent = insertTextToString(startContainer.textContent, index, TAB_CHAR)
+        setCursorAt(realStartContainer, index + 4)
+    } else {
+        if (!isTextNode(realStartContainer)) return
+        const tmpBox = createElement('div', ['tmp'])
+        editorRange.surroundContents(tmpBox)
+        const node = prevLeafNode(tmpBox)
+        console.assert(isTextNode(node), 'node 不是文本节点', node)
+        node.textContent += TAB_CHAR
+        setCursorPositionAfter(node)
+    }
+    event.preventDefault()
 }
 
 /**
@@ -56,10 +84,9 @@ export function registryKeyboardEvent() {
  * @param event {KeyboardEvent}
  */
 function deleteEvent(event) {
-    const range = editorRange
-    const {startContainer, startOffset} = range
-    if (!range.collapsed) return
-    const realStartContainer = range.realStartContainer()
+    const {startContainer, startOffset} = editorRange
+    if (!editorRange.collapsed) return
+    const realStartContainer = editorRange.realStartContainer()
     const pre = findParentTag(realStartContainer, ['PRE'])
     if (pre) {
         if (startContainer === realStartContainer && startOffset) return
@@ -116,9 +143,6 @@ function enterEvent(event) {
     const isFixStartContainer = startContainer !== realStartContainer
     const {shiftKey, ctrlKey} = event
     let element
-    function setCursorAt(node, index) {
-        getSelection().collapse(node, index)
-    }
     /**
      * 处理通用回车操作，包含：
      *
@@ -255,4 +279,8 @@ function emptyBodyElementKeyEvent(event, body) {
                 return
     }
     event.preventDefault()
+}
+
+function setCursorAt(node, index) {
+    getSelection().collapse(node, index)
 }
