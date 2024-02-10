@@ -1,13 +1,17 @@
+/** @type {string} */
+import imageHoverHtml from '../../resources/html/tools/libs/imageHover.html'
 import {
-    highlightLanguagesGetter,
     HOVER_TIP_NAME,
     KRICH_EDITOR,
     KRICH_HOVER_TIP,
-    SELECT_VALUE
+    SELECT_VALUE, TOP_LIST
 } from '../vars/global-fileds'
-import {getRelCoords} from './dom'
+import {findParentTag, getRelCoords} from './dom'
 import {highlightCode} from './highlight'
 import {editorRange} from '../events/range-monitor'
+import {highlightLanguagesGetter, imageHandler} from '../vars/global-exports-funtions'
+import {createElement, isEmptyLine} from './tools'
+import {KRange} from './range'
 
 /**
  * @type {{
@@ -26,13 +30,69 @@ export const HOVER_TIP_LIST = {
             pre.className = language
             // noinspection JSIgnoredPromiseFromCall
             highlightCode(editorRange, pre)
-            return `<div class="select" data-value="0"><span class="value">${list.find(it => language.endsWith('-' + it[1]))[0]}</span><div class="items">${list.map((it, index) => '<div data-value="' + index + '">' + it[0] + '</div>').join('')}</div></div>`
+            KRICH_HOVER_TIP.innerHTML = `<div class="select" data-value="0"><span class="value">${list.find(it => language.endsWith('-' + it[1]))[0]}</span><div class="items">${list.map((it, index) => '<div data-value="' + index + '">' + it[0] + '</div>').join('')}</div></div>`
         },
         onchange: async (select) => {
             const pre = KRICH_HOVER_TIP.tip
             const list = highlightLanguagesGetter()
             pre.className = 'language-' + list[parseInt(select.getAttribute(SELECT_VALUE))][1]
             await highlightCode(editorRange, pre)
+        }
+    },
+    img: {
+        init: () => {
+            KRICH_HOVER_TIP.innerHTML = imageHoverHtml
+            const [
+                uploaderInput, linkInput, descrInput,
+                cancelButton, submitButton, resetButton,
+                errorSpan
+            ] = ['file-selector', 'file-link', 'img-descr', 'cancel', 'submit', 'reset', 'error']
+                .map(it => KRICH_HOVER_TIP.getElementsByClassName(it)[0])
+            const uploaderBackground = uploaderInput.parentElement
+            let element
+            if (imageHandler) {
+                uploaderInput.onchange = event => {
+                    const imageFile = event.target.files[0]
+                    element = createElement('img')
+                    imageHandler(element, imageFile).then(() => {
+                        const url = element.getAttribute('src')
+                        uploaderBackground.style.backgroundImage = `url(${url})`
+                    })
+                    linkInput.disabled = true
+                }
+            }
+            cancelButton.onclick = () => closeHoverTip()
+            submitButton.onclick = () => {
+                errorSpan.classList.remove('active')
+                if (!element) {
+                    const url = linkInput.value
+                    if (!url) return errorSpan.classList.add('active')
+                    element = createElement('img', {
+                        src: url
+                    })
+                }
+                const descr = descrInput.value.trim()
+                if (!descr) {
+                    return errorSpan.classList.add('active')
+                }
+                element.setAttribute('alt', descr)
+                const line = findParentTag(editorRange.realStartContainer(), TOP_LIST)
+                if (isEmptyLine(line)) {
+                    line.replaceWith(element)
+                } else {
+                    line.insertAdjacentElement('afterend', element)
+                }
+                new KRange(element).active()
+                closeHoverTip()
+            }
+            resetButton.onclick = () => {
+                errorSpan.classList.remove('active')
+                uploaderInput.value = ''
+                linkInput.value = ''
+                descrInput.value = ''
+                uploaderBackground.style.background = ''
+                linkInput.disabled = false
+            }
         }
     }
 }
@@ -47,7 +107,7 @@ export function openHoverTip(name, target) {
     if (classList.contains('active')) return
     KRICH_HOVER_TIP.setAttribute(HOVER_TIP_NAME, name)
     KRICH_HOVER_TIP.tip = target
-    KRICH_HOVER_TIP.innerHTML = HOVER_TIP_LIST[name].init()
+    HOVER_TIP_LIST[name].init()
     classList.add('active')
     updateHoverTipPosition()
 }
@@ -63,12 +123,15 @@ export function updateHoverTipPosition() {
     // noinspection JSUnresolvedReference
     const tipTarget = KRICH_HOVER_TIP.tip
     if (!tipTarget) return
-    const {t: top, l: left} = getRelCoords(tipTarget, KRICH_EDITOR)
+    const {t: top, l: left, b: bottom} = getRelCoords(tipTarget, KRICH_EDITOR)
     let styleTop, styleLeft = left + 5
     const tipHeight = KRICH_HOVER_TIP.offsetHeight
-    if (top - tipHeight > 6)
+    const editorHeight = KRICH_EDITOR.offsetHeight
+    if (top - tipHeight > 6) {
         styleTop = top - tipHeight - 5
-    else {
+    } else if (bottom + tipHeight + 6 < editorHeight) {
+        styleTop = bottom + 5
+    } else {
         styleTop = 5
         styleLeft = -35
     }

@@ -1,0 +1,62 @@
+.krich-tip[data-name='img']
+  width 250px
+
+  .uploader
+    display flex
+    flex-direction column
+    margin-bottom 20px
+
+    .selector
+      margin-top 10px
+      position relative
+      width 100%
+      height 88px
+      border 5px dashed #0005
+      background-size contain
+      background-position center
+      background-repeat no-repeat
+
+      .file-selector
+        position absolute
+        top 0
+        left 0
+        opacity 0
+        width 100%
+        height 100%
+
+      &:before
+        content '+'
+        position absolute
+        left 50%
+        top 43%
+        transform translate(-50%, -50%)
+        font-size 75px
+        color #0006
+
+      &:hover
+        border-color #333a
+
+        &:before
+          color #444c
+
+  .link
+    display flex
+    flex-direction column
+    margin-bottom 16px
+
+  .descr
+    display flex
+    flex-direction column
+
+  .error
+    display none
+    color red
+
+    &.active
+      display block
+
+.krich-editor
+  img
+    display block
+    max-width 80%
+    margin auto

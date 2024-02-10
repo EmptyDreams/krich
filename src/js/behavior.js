@@ -31,6 +31,8 @@ import todoStyle from '../resources/html/tools/todo.html'
 /** @type {string} */
 import codeStyle from '../resources/html/tools/code.html'
 /** @type {string} */
+import imageStyle from '../resources/html/tools/image.html'
+/** @type {string} */
 import hrStyle from '../resources/html/tools/hr.html'
 import {
     behaviors,
@@ -52,8 +54,8 @@ import {TODO_MARKER} from './vars/global-tag'
 import {editorRange} from './events/range-monitor'
 import {behaviorHighlight} from './behaviors/highlight'
 import {BEHAVIOR_STATE_MES, BEHAVIOR_STATE_NO_STATUS, BEHAVIOR_STATE_TEXT_AREA} from './types/button-behavior'
+import {openHoverTip} from './utils/hover-tip'
 
-// noinspection JSCheckFunctionSignatures
 initBehaviors({
     headerSelect: {
         state: BEHAVIOR_STATE_NO_STATUS,
@@ -192,6 +194,16 @@ initBehaviors({
             const line = createElement('li')
             line.append(TODO_MARKER.cloneNode(false))
             return line
+        }
+    },
+    img: {
+        state: BEHAVIOR_STATE_NO_STATUS,
+        exp: 'img',
+        render: () => imageStyle,
+        onclick: range => {
+            openHoverTip('img', range.realStartContainer())
+            console.log()
+            return true
         }
     },
     code: {

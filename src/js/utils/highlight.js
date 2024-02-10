@@ -1,6 +1,6 @@
-import {highlight} from '../vars/global-fileds'
 import {KRange} from './range'
 import {editorRange} from '../events/range-monitor'
+import {highlight} from '../vars/global-exports-funtions'
 
 /**
  * 高亮代码

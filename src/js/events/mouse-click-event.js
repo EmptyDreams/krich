@@ -9,25 +9,27 @@ import {editorRange} from './range-monitor'
 import {findParentTag} from '../utils/dom'
 import {KRange} from '../utils/range'
 import {isNoStatusBehavior} from '../types/button-behavior'
-import {HOVER_TIP_LIST} from '../utils/hover-tip'
+import {closeHoverTip, HOVER_TIP_LIST} from '../utils/hover-tip'
 
 export function registryMouseClickEvent() {
     KRICH_EDITOR.addEventListener('click', event => {
+        closeHoverTip()
         const {target} = event
         if (isEmptyBodyElement(target)) {
             new KRange(target).active()
         }
     })
     KRICH_HOVER_TIP.addEventListener('click', event => {
-        event.preventDefault()
         const {target} = event
         const top = findParentTag(target, it => it.classList?.contains('select'))
         if (top) {
+            event.preventDefault()
             // noinspection JSIgnoredPromiseFromCall
             handleSelectList(top, target)
         }
     })
     KRICH_TOOL_BAR.addEventListener('click', async event => {
+        closeHoverTip()
         if (KRICH_TOOL_BAR.classList.contains('disable'))
             return
         const range = editorRange

@@ -5,7 +5,7 @@ import {KRange} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
 import {isEmptyBodyElement} from '../utils/tools'
 import {findParentTag} from '../utils/dom'
-import {closeHoverTip, openHoverTip} from '../utils/hover-tip'
+import {openHoverTip} from '../utils/hover-tip'
 
 /**
  * 编辑区最新的已激活的 KRange 对象
@@ -40,7 +40,6 @@ export function updateEditorRange() {
         disableToolBar()
         openHoverTip('code', pre)
         editorRange = KRange.activated()
-        return
     } else {
         KRICH_TOOL_BAR.classList.remove('disable')
         for (let element of range.getAllTopElements()) {
@@ -56,5 +55,4 @@ export function updateEditorRange() {
             syncButtonsStatus(range.startContainer)
         }
     }
-    closeHoverTip()
 }

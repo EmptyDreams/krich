@@ -25,6 +25,14 @@
                 ['PlainText', 'txt'],
                 ['JavaScript', 'js']
             ])
+            krich.setImgHandler((element, file) => new Promise(resolve => {
+                const reader = new FileReader()
+                reader.onload = event => {
+                    element.setAttribute('src', event.target.result)
+                    resolve()
+                }
+                reader.readAsDataURL(file)
+            }))
         })
     </script>
 </head>

@@ -21,25 +21,6 @@ export let KRICH_HOVER_TIP
 /** 编辑区容器 */
 export let KRICH_EC
 
-/**
- * 代码高亮器，留空表示不支持高亮
- *
- * 传入的参数为 pre 对象，直接修改传入的对象即可，无返回值
- *
- * @type {undefined|function(Element)}
- */
-export let highlight
-/**
- * 代码高亮支持的语言列表
- *
- * 数组第一个为默认选项
- *
- * 每个数组中的元素的第一个值是外部显示的值，第二个值是要赋值给 pre 的值
- *
- * @type {undefined|function(): ([string, string])[]}
- */
-export let highlightLanguagesGetter
-
 export const KRICH_CLASS = 'krich'
 export const KRICH_EDITOR_CLASS = KRICH_CLASS + '-editor'
 export const KRICH_TOOL_BAR_CLASS = KRICH_CLASS + '-tools'
@@ -78,16 +59,6 @@ export let statusCheckCache = true
  * @type {boolean|undefined}
  */
 export let isComposing
-
-/**
- * 设置代码高亮
- * @param highlighter {function(Element): Promise<void>|undefined} 代码高亮函数
- * @param languages {function(): ([string, string])[]} 获取支持的语言列表，该函数的返回值内部不会缓存
- */
-export function setHighlight(highlighter, languages) {
-    highlight = highlighter
-    highlightLanguagesGetter = languages
-}
 
 /**
  * 初始化 behaviors
