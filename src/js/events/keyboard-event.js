@@ -233,6 +233,8 @@ function emptyBodyElementKeyEvent(event, body) {
         case 'Backspace': case 'Delete':
             if (!isMarkerNode(body)) {
                 const priority = ['nextSibling', 'previousSibling']
+                if (key[0] === 'B')
+                    priority.reverse()
                 let flag
                 for (let info of priority) {
                     const sibling = body[info]
