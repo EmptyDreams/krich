@@ -1,21 +1,20 @@
 import {KRICH_EDITOR, TOP_LIST} from '../vars/global-fileds'
 import {
-    findParentTag, getFirstChildNode,
+    findParentTag,
     getFirstTextNode,
     getLastTextNode,
     nextLeafNode, nextSiblingText,
-    prevLeafNode, prevSiblingText,
+    prevLeafNode,
     replaceElement,
     tryFixDom
 } from '../utils/dom'
-import {setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
+import {setCursorAt, setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
 import {editorRange} from './range-monitor'
 import {
-    createElement,
     createNewLine, getElementBehavior,
     isEmptyLine,
     isMarkerNode,
-    isMultiElementStructure, isTextNode
+    isMultiElementStructure
 } from '../utils/tools'
 import {insertTextToString} from '../utils/string-utils'
 import {isTextAreaBehavior} from '../types/button-behavior'
@@ -59,24 +58,8 @@ export function registryKeyboardEvent() {
  * @param event{KeyboardEvent}
  */
 function tabEvent(event) {
-    const {startContainer, startOffset, collapsed} = editorRange
-    const realStartContainer = getFirstChildNode(editorRange.realStartContainer())
-    const TAB_CHAR = '    '
-    if (collapsed) {
-        if (!isTextNode(realStartContainer)) return
-        const index = startContainer === realStartContainer ? startOffset : 0
-        realStartContainer.textContent = insertTextToString(startContainer.textContent, index, TAB_CHAR)
-        setCursorAt(realStartContainer, index + 4)
-    } else {
-        if (!isTextNode(realStartContainer)) return
-        const tmpBox = createElement('div', ['tmp'])
-        editorRange.surroundContents(tmpBox)
-        const node = prevLeafNode(tmpBox)
-        console.assert(isTextNode(node), 'node 不是文本节点', node)
-        node.textContent += TAB_CHAR
-        setCursorPositionAfter(node)
-    }
     event.preventDefault()
+    editorRange.insertText('    ')
 }
 
 /**
@@ -170,8 +153,13 @@ function enterEvent(event) {
         const top = findParentTag(realStartContainer, TOP_LIST)
         if (!isTextAreaBehavior(getElementBehavior(top))) return
         event.preventDefault()
-        if (!top.textContent.endsWith('\n'))
+        if (!top.textContent.endsWith('\n')) {
+            const {endOffset, endContainer} = editorRange
             getLastTextNode(top).textContent += '\n'
+            editorRange.setStart(startContainer, startOffset)
+            if (collapsed) editorRange.collapse(true)
+            else endContainer.setEnd(endContainer, endOffset)
+        }
         if (shiftKey) {
             let item = getFirstTextNode(realStartContainer)
             let index = isFixStartContainer ? 0 : startOffset
@@ -186,22 +174,8 @@ function enterEvent(event) {
                 }
                 item = nextSiblingText(item)
             }
-        } else if (collapsed) {
-            if (isFixStartContainer) {
-                const node = getFirstTextNode(realStartContainer)
-                node.textContent = '\n' + node.textContent
-                setCursorAt(node, 1)
-            } else {
-                startContainer.textContent = insertTextToString(startContainer.textContent, startOffset, '\n')
-                setCursorAt(startContainer, startOffset + 1)
-            }
         } else {
-            const tmpBox = createElement('div', ['tmp'])
-            editorRange.surroundContents(tmpBox)
-            const node = prevSiblingText(tmpBox)
-            tmpBox.remove()
-            node.textContent += '\n'
-            setCursorPositionAfter(node)
+            editorRange.insertText('\n')
         }
         return true
     }
@@ -279,8 +253,4 @@ function emptyBodyElementKeyEvent(event, body) {
                 return
     }
     event.preventDefault()
-}
-
-function setCursorAt(node, index) {
-    getSelection().collapse(node, index)
 }

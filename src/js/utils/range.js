@@ -8,6 +8,7 @@ import {
     zipTree
 } from './dom'
 import {
+    createElement,
     isBrNode,
     isEmptyBodyElement,
     isEmptyLine,
@@ -16,6 +17,16 @@ import {
     isMultiElementStructure,
     isTextNode
 } from './tools'
+import {insertTextToString} from './string-utils'
+
+/**
+ * 将焦点设置到指定位置
+ * @param node {Node}
+ * @param index {number}
+ */
+export function setCursorAt(node, index) {
+    getSelection().collapse(node, index)
+}
 
 /**
  * 将光标移动到指定元素的结尾
@@ -505,6 +516,45 @@ export class KRange extends Range {
                 it => item.parentNode.nextSibling === it.parentNode
             )
         }
+    }
+
+    /**
+     * 插入文本，如果选区选择了一部分文字，将会替换选择的文字
+     * @param text
+     * @return {boolean} 是否插入成功，当选区开头前方是非文本节点时将插入失败
+     */
+    insertText(text) {
+        const {startContainer, startOffset, collapsed} = this
+        const realStartContainer = this.realStartContainer()
+        const fixed = startContainer !== realStartContainer
+        let index = fixed ? 0 : startOffset
+        /** @type {Node} */
+        let insertedNode
+        if (collapsed) {
+            index = fixed ? 0 : startOffset
+            insertedNode = realStartContainer
+        } else {
+            if (fixed || !startOffset) {
+                if (!isTextNode(prevLeafNode(realStartContainer)))
+                    return false
+            }
+            const tmpBox = createElement('div')
+            this.surroundContents(tmpBox)
+            insertedNode = prevLeafNode(tmpBox)
+            console.assert(isTextNode(insertedNode), 'inserted Node 应当是文本节点', insertedNode)
+            index = insertedNode.textContent.length
+            tmpBox.remove()
+        }
+        if (!isTextNode(insertedNode)) return false
+        if (isBrNode(insertedNode)) {
+            const node = document.createTextNode(text)
+            insertedNode.replaceWith(node)
+            insertedNode = node
+        } else {
+            insertedNode.textContent = insertTextToString(insertedNode.textContent, index, text)
+        }
+        setCursorAt(insertedNode, index + text.length)
+        return true
     }
 
     /**
