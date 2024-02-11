@@ -198,11 +198,10 @@ initBehaviors({
     },
     img: {
         state: BEHAVIOR_STATE_NO_STATUS,
-        exp: 'img',
+        exp: 'img.img',
         render: () => imageStyle,
         onclick: range => {
             openHoverTip('img', range.realStartContainer())
-            console.log()
             return true
         }
     },

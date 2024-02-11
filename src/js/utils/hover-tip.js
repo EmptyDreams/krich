@@ -53,7 +53,7 @@ export const HOVER_TIP_LIST = {
             if (imageHandler) {
                 uploaderInput.onchange = event => {
                     const imageFile = event.target.files[0]
-                    element = createElement('img')
+                    element = createElement('img', ['img'])
                     imageHandler(element, imageFile).then(() => {
                         const url = element.getAttribute('src')
                         uploaderBackground.style.backgroundImage = `url(${url})`
@@ -68,7 +68,8 @@ export const HOVER_TIP_LIST = {
                     const url = linkInput.value
                     if (!url) return errorSpan.classList.add('active')
                     element = createElement('img', {
-                        src: url
+                        src: url,
+                        class: 'img'
                     })
                 }
                 const descr = descrInput.value.trim()
