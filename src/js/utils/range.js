@@ -207,6 +207,19 @@ export class KRange extends Range {
     }
 
     /**
+     * 判断 `realStartContainer` 和 `realEndContainer` 中是否存在满足指定要求的变量
+     * @param predicate {function(Node): any}
+     * @return {any}
+     */
+    some(predicate) {
+        let result = predicate(this.realStartContainer())
+        if (result) return result
+        if (this.collapsed) return
+        result = this.realEndContainer()
+        if (result) return result
+    }
+
+    /**
      * @return {{next: (function(): {value: Node, done: boolean})}}
      */
     [Symbol.iterator]() {

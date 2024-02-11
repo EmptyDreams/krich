@@ -3,9 +3,10 @@
 import {EMPTY_BODY_ACTIVE_FLAG, isComposing, KRICH_CONTAINER, KRICH_EDITOR, KRICH_TOOL_BAR} from '../vars/global-fileds'
 import {KRange} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
-import {isEmptyBodyElement} from '../utils/tools'
+import {getElementBehavior, isEmptyBodyElement} from '../utils/tools'
 import {findParentTag} from '../utils/dom'
 import {openHoverTip} from '../utils/hover-tip'
+import {isTextAreaBehavior} from '../types/button-behavior'
 
 /**
  * 编辑区最新的已激活的 KRange 对象
@@ -26,20 +27,23 @@ export function updateEditorRange() {
         return
     }
     if (KRICH_EDITOR !== document.activeElement) return
-    let pre
+    let textArea
     const prev = editorRange
     const range = KRange.activated()
     editorRange = range
     KRICH_EDITOR.querySelectorAll(`.${EMPTY_BODY_ACTIVE_FLAG}`)
         .forEach(it => it.classList.remove(EMPTY_BODY_ACTIVE_FLAG))
-    if (range.body) {
-        range.active()
+    const rangeBody = range.body
+    if (rangeBody || (textArea = range.some(
+        it => findParentTag(it, node => isTextAreaBehavior(getElementBehavior(node)))
+    ))) {
         disableToolBar()
-        range.body.classList.add(EMPTY_BODY_ACTIVE_FLAG)
-    } else if (pre = findParentTag(range.realStartContainer(), ['PRE'])) {
-        disableToolBar()
-        openHoverTip('code', pre)
-        editorRange = KRange.activated()
+        if (rangeBody) {
+            rangeBody.classList.add(EMPTY_BODY_ACTIVE_FLAG)
+            range.active()
+        }
+        const target = rangeBody ?? textArea
+        getElementBehavior(target).hover?.(target)
     } else {
         KRICH_TOOL_BAR.classList.remove('disable')
         for (let element of range.getAllTopElements()) {

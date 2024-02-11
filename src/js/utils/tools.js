@@ -43,6 +43,7 @@ export function createNewLine() {
  * @return {ButtonBehavior|undefined}
  */
 export function getElementBehavior(element) {
+    if (!element.classList) return
     const dataId = element.getAttribute(DATA_ID)
     if (dataId)
         return behaviors[dataId]

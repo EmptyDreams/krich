@@ -58,6 +58,14 @@ class ButtonBehavior {
      */
     setter
     /**
+     * 当该元素作为 `KRange` 的 {@link KRange#body} 或光标移动到标签内部时触发
+     *
+     * 注意：当元素是 EmptyBodyElement 或 TextArea 时该函数才有效
+     *
+     * @type {undefined|function(item: Element)}
+     */
+    hover
+    /**
      * 该样式的按钮对象
      * @type {HTMLElement|undefined}
      */

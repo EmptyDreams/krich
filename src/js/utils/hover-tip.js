@@ -1,5 +1,7 @@
 /** @type {string} */
-import imageHoverHtml from '../../resources/html/tools/libs/imageHover.html'
+import imageHoverHtml from '../../resources/html/hoverTips/imageHover.html'
+/** @type {string} */
+import imageEditorHoverHtml from '../../resources/html/hoverTips/imageEditorHover.html'
 import {
     HOVER_TIP_NAME,
     KRICH_EDITOR,
@@ -92,6 +94,11 @@ export const HOVER_TIP_LIST = {
                 linkInput.disabled = false
             }
         }
+    },
+    imgEditor: {
+        init: () => {
+            KRICH_HOVER_TIP.innerHTML = imageEditorHoverHtml
+        }
     }
 }
 
@@ -107,6 +114,7 @@ export function openHoverTip(name, target) {
     KRICH_HOVER_TIP.tip = target
     HOVER_TIP_LIST[name].init()
     classList.add('active')
+    editorRange.active()
     updateHoverTipPosition()
 }
 

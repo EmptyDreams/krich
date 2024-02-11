@@ -203,6 +203,9 @@ initBehaviors({
         onclick: range => {
             openHoverTip('img', range.realStartContainer())
             return true
+        },
+        hover: img => {
+
         }
     },
     code: {
@@ -218,7 +221,8 @@ initBehaviors({
             code.innerHTML = '\n'
             pre.append(code)
             return pre
-        }
+        },
+        hover: pre => openHoverTip('code', pre)
     }
 })
 
