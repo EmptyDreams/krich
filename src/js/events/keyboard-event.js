@@ -1,4 +1,4 @@
-import {KRICH_EDITOR, TOP_LIST} from '../vars/global-fileds'
+import {KRICH_EDITOR, KRICH_HOVER_TIP, TOP_LIST} from '../vars/global-fileds'
 import {
     findParentTag,
     getFirstTextNode,
@@ -52,6 +52,10 @@ export function registryKeyboardEvent() {
                     break
             }
         }
+    })
+    KRICH_HOVER_TIP.addEventListener('keydown', event => {
+        if (event.key === 'Esc')
+            closeHoverTip()
     })
 }
 
