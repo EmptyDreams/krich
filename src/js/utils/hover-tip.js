@@ -46,23 +46,29 @@ export const HOVER_TIP_LIST = {
             const [
                 uploaderInput, linkInput,
                 sizeInput, descrInput,
-                errorSpan
-            ] = ['file-selector', 'file-link', 'size', 'img-descr', 'error']
+                errorSpan,
+                submitButton
+            ] = ['file-selector', 'file-link', 'size', 'img-descr', 'error', 'submit']
                 .map(it => KRICH_HOVER_TIP.getElementsByClassName(it)[0])
-            const oldIsImage = target.nodeName === 'IMG'
             const uploaderBackground = uploaderInput.parentElement
-            const imageElement = oldIsImage ? target : createElement('img', {
-                class: 'img',
-                style: 'width:' + sizeInput.value + '%'
-            })
+            let oldIsImage = target.nodeName === 'IMG'
+            let imageElement = oldIsImage ? target.cloneNode(false) :
+                createElement('img', ['img'])
             /** 将图片插入到 DOM 中 */
-            const insertImage = () => {
-                if (!oldIsImage) {
-                    if (isEmptyLine(target))
+            submitButton.onclick = () => {
+                if (imageElement.hasAttribute('src')) {
+                    descrInput.disabled = sizeInput.disabled = false
+                    imageElement.setAttribute('style', 'width:' + sizeInput.value + '%')
+                    if (oldIsImage || isEmptyLine(target)) {
                         target.replaceWith(imageElement)
-                    else
+                    } else {
                         target.insertAdjacentElement('afterend', imageElement)
+                    }
                     new KRange(imageElement).active()
+                    target = imageElement
+                    imageElement = imageElement.cloneNode(false)
+                    oldIsImage = true
+                    submitButton.disabled = true
                 }
             }
             // 如果传入的 target 是 IMG 标签，则同步悬浮窗与图片的数据
@@ -77,19 +83,19 @@ export const HOVER_TIP_LIST = {
                 if (style) {
                     sizeInput.value = style.substring(6, style.length - 1)
                 }
-                sizeInput.disabled = false
+                descrInput.disabled = sizeInput.disabled = false
             }
             // 如果用户设置的图片处理器，则为 uploader 添加相关事件
             if (imageHandler) {
                 uploaderInput.onchange = event => {
+                    sizeInput.disabled = true
                     const imageFile = event.target.files[0]
                     imageHandler(imageElement, imageFile).then(() => {
                         const url = imageElement.getAttribute('src')
                         uploaderBackground.style.backgroundImage = `url(${url})`
-                        insertImage()
+                        submitButton.disabled = false
                     })
                     linkInput.disabled = true
-                    sizeInput.disabled = false
                 }
             } else uploaderInput.disabled = true
             // 为 URL 输入栏添加事件
@@ -113,20 +119,21 @@ export const HOVER_TIP_LIST = {
                 }).catch(() => false)
                 if (status) {
                     imageElement.setAttribute('src', url)
-                    insertImage()
-                    sizeInput.disabled = false
+                    submitButton.disabled = false
                 } else {
                     errorSpan.classList.add('active')
                 }
             }
             // 为尺寸调整添加事件
             sizeInput.oninput = () => {
+                console.assert(target.nodeName === 'IMG', 'target 不是图片', target)
                 const value = parseInt(sizeInput.value)
-                imageElement.setAttribute('style', `width:${value}%`)
+                target.setAttribute('style', `width:${value}%`)
             }
             // 为描述栏添加事件
             descrInput.onchange = () => {
-                imageElement.setAttribute('alt', descrInput.value)
+                console.assert(target.nodeName === 'IMG', 'target 不是图片', target)
+                target.setAttribute('alt', descrInput.value)
             }
         }
     }
