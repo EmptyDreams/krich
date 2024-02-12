@@ -43,7 +43,7 @@ export function updateEditorRange() {
             range.active()
         }
         const target = rangeBody ?? textArea
-        getElementBehavior(target).hover?.(target)
+        getElementBehavior?.(target).hover?.(target)
     } else {
         KRICH_TOOL_BAR.classList.remove('disable')
         for (let element of range.getAllTopElements()) {
