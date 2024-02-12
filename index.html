@@ -33,6 +33,7 @@
                 }
                 reader.readAsDataURL(file)
             }))
+            krich.setImageStatusChecker(response => !response.url.includes('403'))
         })
     </script>
 </head>
