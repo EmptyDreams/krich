@@ -46,11 +46,13 @@ export const HOVER_TIP_LIST = {
             const [
                 uploaderInput, linkInput,
                 sizeInput, descrInput,
-                errorSpan
-            ] = ['file-selector', 'file-link', 'size', 'img-descr', 'error']
+                errorSpan,
+                resetButton
+            ] = ['file-selector', 'file-link', 'size', 'img-descr', 'error', 'reset']
                 .map(it => KRICH_HOVER_TIP.getElementsByClassName(it)[0])
             const oldIsImage = target.nodeName === 'IMG'
             const uploaderBackground = uploaderInput.parentElement
+            const backup = oldIsImage ? target.cloneNode(false) : null
             const imageElement = oldIsImage ? target : createElement('img', {
                 class: 'img',
                 style: 'width:' + sizeInput.value + '%'
@@ -127,6 +129,22 @@ export const HOVER_TIP_LIST = {
             // 为描述栏添加事件
             descrInput.onchange = () => {
                 imageElement.setAttribute('alt', descrInput.value)
+            }
+            // 为重置按钮添加事件
+            resetButton.onclick = () => {
+                uploaderInput.value = linkInput.value = ''
+                sizeInput.value = '30'
+                uploaderBackground.style.backgroundImage = ''
+                if (backup) {
+                    for (let attr of target.attributes) {
+                        target.removeAttribute(attr.name)
+                    }
+                    for (let attr of backup.attributes) {
+                        target.setAttribute(attr.name, attr.value)
+                    }
+                } else {
+                    imageElement?.remove?.()
+                }
             }
         }
     }
