@@ -54,7 +54,7 @@ export function registryKeyboardEvent() {
         }
     })
     KRICH_HOVER_TIP.addEventListener('keydown', event => {
-        if (event.key === 'Esc')
+        if (event.key === 'Escape')
             closeHoverTip()
     })
 }
