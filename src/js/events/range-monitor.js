@@ -5,7 +5,6 @@ import {KRange} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
 import {getElementBehavior, isEmptyBodyElement} from '../utils/tools'
 import {findParentTag} from '../utils/dom'
-import {openHoverTip} from '../utils/hover-tip'
 import {isTextAreaBehavior} from '../types/button-behavior'
 
 /**
