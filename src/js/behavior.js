@@ -201,7 +201,8 @@ initBehaviors({
         exp: 'img.img',
         render: () => imageStyle,
         onclick: range => {
-            openHoverTip('img', range.realStartContainer())
+            const line = findParentTag(range.realStartContainer(), TOP_LIST)
+            openHoverTip('img', line)
             return true
         },
         hover: img => openHoverTip('img', img)

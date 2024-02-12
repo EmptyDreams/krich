@@ -140,6 +140,7 @@ export const HOVER_TIP_LIST = {
  * @param otherArgs {any} 额外传入到 init 的参数
  */
 export function openHoverTip(name, target, ...otherArgs) {
+    console.assert(target instanceof Element, '只能绑定 Element，不能绑定 Node', target)
     const classList = KRICH_HOVER_TIP.classList
     if (classList.contains('active')) return
     KRICH_HOVER_TIP.setAttribute(HOVER_TIP_NAME, name)
