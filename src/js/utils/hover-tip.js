@@ -98,11 +98,17 @@ export const HOVER_TIP_LIST = {
                 const url = linkInput.value.trim()
                 uploaderInput.disabled = !!url
                 if (!url) return
+                if (!/^https?:\/\/\S+\.\S+(.*)$/.test(url)) {
+                    errorSpan.classList.add('active')
+                    return
+                }
                 // 检查 URL 是否可用
                 const status = await fetch(url, {
                     method: 'HEAD'
                 }).then(response => {
                     if (!response.ok) return false
+                    const type = response.headers.get('Content-Type')
+                    if (type && !type.startsWith('image/')) return false
                     return imageStatusChecker?.(response) ?? true
                 }).catch(() => false)
                 if (status) {
