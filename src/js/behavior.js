@@ -204,9 +204,7 @@ initBehaviors({
             openHoverTip('img', range.realStartContainer())
             return true
         },
-        hover: img => {
-
-        }
+        hover: img => openHoverTip('img', img)
     },
     code: {
         state: BEHAVIOR_STATE_TEXT_AREA,

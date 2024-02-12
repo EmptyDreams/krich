@@ -1,11 +1,11 @@
 /**
- * @typedef {'code'|'img'|'imgEditor'} HoverTipNames
+ * @typedef {'code'|'img'} HoverTipNames
  */
 
 class HoverTipValue {
     /**
      * 获取初始状态的悬浮窗
-     * @type {function()}
+     * @type {function(Node|Element, ...any)}
      */
     init
     /**

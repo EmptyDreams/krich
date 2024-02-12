@@ -40,3 +40,17 @@ export let imageHandler
 export function setImgHandler(handler) {
     imageHandler = handler
 }
+
+/**
+ * 检查图片是否能够成功拉取
+ * @type {function(Response): boolean}
+ */
+export let imageStatusChecker
+
+/**
+ * 设置图片状态检查器
+ * @param checker {function(Response): boolean}
+ */
+export function setImgStatusChecker(checker) {
+    imageStatusChecker = checker
+}

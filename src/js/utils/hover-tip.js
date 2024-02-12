@@ -1,17 +1,16 @@
 /** @type {string} */
 import imageHoverHtml from '../../resources/html/hoverTips/imageHover.html'
 /** @type {string} */
-import imageEditorHoverHtml from '../../resources/html/hoverTips/imageEditorHover.html'
 import {
     HOVER_TIP_NAME,
     KRICH_EDITOR,
     KRICH_HOVER_TIP,
-    SELECT_VALUE, TOP_LIST
+    SELECT_VALUE
 } from '../vars/global-fileds'
-import {findParentTag, getRelCoords} from './dom'
+import {getRelCoords} from './dom'
 import {highlightCode} from './highlight'
 import {editorRange} from '../events/range-monitor'
-import {highlightLanguagesGetter, imageHandler} from '../vars/global-exports-funtions'
+import {highlightLanguagesGetter, imageHandler, imageStatusChecker} from '../vars/global-exports-funtions'
 import {createElement, isEmptyLine} from './tools'
 import {KRange} from './range'
 
@@ -42,62 +41,87 @@ export const HOVER_TIP_LIST = {
         }
     },
     img: {
-        init: () => {
+        init: target => {
             KRICH_HOVER_TIP.innerHTML = imageHoverHtml
             const [
-                uploaderInput, linkInput, descrInput,
-                cancelButton, submitButton, resetButton,
+                uploaderInput, linkInput,
+                sizeInput, descrInput,
                 errorSpan
-            ] = ['file-selector', 'file-link', 'img-descr', 'cancel', 'submit', 'reset', 'error']
+            ] = ['file-selector', 'file-link', 'size', 'img-descr', 'error']
                 .map(it => KRICH_HOVER_TIP.getElementsByClassName(it)[0])
+            const oldIsImage = target.nodeName === 'IMG'
             const uploaderBackground = uploaderInput.parentElement
-            let element
+            const imageElement = oldIsImage ? target : createElement('img', {
+                class: 'img',
+                style: 'width:' + sizeInput.value + '%'
+            })
+            /** 将图片插入到 DOM 中 */
+            const insertImage = () => {
+                if (!oldIsImage) {
+                    if (isEmptyLine(target))
+                        target.replaceWith(imageElement)
+                    else
+                        target.insertAdjacentElement('afterend', imageElement)
+                    new KRange(imageElement).active()
+                }
+            }
+            // 如果传入的 target 是 IMG 标签，则同步悬浮窗与图片的数据
+            if (oldIsImage) {
+                const url = imageElement.getAttribute('src')
+                if (url.startsWith('data'))
+                    uploaderBackground.style.backgroundImage = `url(${url})`
+                else
+                    linkInput.value = url
+                descrInput.value = imageElement.getAttribute('alt')
+                const style = imageElement.getAttribute('style')
+                if (style) {
+                    sizeInput.value = style.substring(6, style.length - 1)
+                }
+                sizeInput.disabled = false
+            }
+            // 如果用户设置的图片处理器，则为 uploader 添加相关事件
             if (imageHandler) {
                 uploaderInput.onchange = event => {
                     const imageFile = event.target.files[0]
-                    element = createElement('img', ['img'])
-                    imageHandler(element, imageFile).then(() => {
-                        const url = element.getAttribute('src')
+                    imageHandler(imageElement, imageFile).then(() => {
+                        const url = imageElement.getAttribute('src')
                         uploaderBackground.style.backgroundImage = `url(${url})`
+                        insertImage()
                     })
                     linkInput.disabled = true
+                    sizeInput.disabled = false
                 }
-            }
-            cancelButton.onclick = () => closeHoverTip()
-            submitButton.onclick = () => {
+            } else uploaderInput.disabled = true
+            // 为 URL 输入栏添加事件
+            linkInput.onchange = async () => {
                 errorSpan.classList.remove('active')
-                if (!element) {
-                    const url = linkInput.value
-                    if (!url) return errorSpan.classList.add('active')
-                    element = createElement('img', {
-                        src: url,
-                        class: 'img'
-                    })
-                }
-                const descr = descrInput.value.trim()
-                if (!descr) {
-                    return errorSpan.classList.add('active')
-                }
-                element.setAttribute('alt', descr)
-                const line = findParentTag(editorRange.realStartContainer(), TOP_LIST)
-                if (isEmptyLine(line)) {
-                    line.replaceWith(element)
+                const url = linkInput.value.trim()
+                uploaderInput.disabled = !!url
+                if (!url) return
+                // 检查 URL 是否可用
+                const status = await fetch(url, {
+                    method: 'HEAD'
+                }).then(response => {
+                    if (!response.ok) return false
+                    return imageStatusChecker?.(response) ?? true
+                }).catch(() => false)
+                if (status) {
+                    imageElement.setAttribute('src', url)
+                    insertImage()
+                    sizeInput.disabled = false
                 } else {
-                    line.insertAdjacentElement('afterend', element)
+                    errorSpan.classList.add('active')
                 }
-                new KRange(element).active()
-                closeHoverTip()
             }
-            resetButton.onclick = () => {
-                errorSpan.classList.remove('active')
-                uploaderInput.value = linkInput.value = descrInput.value = uploaderBackground.style.background = ''
-                linkInput.disabled = false
+            // 为尺寸调整添加事件
+            sizeInput.oninput = () => {
+                const value = parseInt(sizeInput.value)
+                imageElement.setAttribute('style', `width:${value}%`)
             }
-        }
-    },
-    imgEditor: {
-        init: () => {
-            KRICH_HOVER_TIP.innerHTML = imageEditorHoverHtml
+            // 为描述栏添加事件
+            descrInput.onchange = () => {
+                imageElement.setAttribute('alt', descrInput.value)
+            }
         }
     }
 }
@@ -106,13 +130,14 @@ export const HOVER_TIP_LIST = {
  * 打开一个悬浮窗
  * @param name {HoverTipNames} 悬浮窗名称
  * @param target {Element} 悬浮窗绑定的标签
+ * @param otherArgs {any} 额外传入到 init 的参数
  */
-export function openHoverTip(name, target) {
+export function openHoverTip(name, target, ...otherArgs) {
     const classList = KRICH_HOVER_TIP.classList
     if (classList.contains('active')) return
     KRICH_HOVER_TIP.setAttribute(HOVER_TIP_NAME, name)
     KRICH_HOVER_TIP.tip = target
-    HOVER_TIP_LIST[name].init()
+    HOVER_TIP_LIST[name].init(target, ...otherArgs)
     classList.add('active')
     editorRange.active()
     updateHoverTipPosition()
