@@ -6,6 +6,7 @@ import {syncButtonsStatus} from '../utils/btn'
 import {getElementBehavior, isEmptyBodyElement} from '../utils/tools'
 import {findParentTag} from '../utils/dom'
 import {isTextAreaBehavior} from '../types/button-behavior'
+import {closeHoverTip} from '../utils/hover-tip'
 
 /**
  * 编辑区最新的已激活的 KRange 对象
@@ -44,6 +45,8 @@ export function updateEditorRange() {
         const target = rangeBody ?? textArea
         getElementBehavior(target)?.hover?.(target)
     } else {
+        if (range.startContainer !== prev?.startContainer || range.startOffset !== prev.startOffset)
+            closeHoverTip()
         KRICH_TOOL_BAR.classList.remove('disable')
         for (let element of range.getAllTopElements()) {
             for (let it of [element, ...element.querySelectorAll('*')]) {

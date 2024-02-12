@@ -4,7 +4,7 @@ import {
     markStatusCacheInvalid,
     SELECT_VALUE
 } from '../vars/global-fileds'
-import {getElementBehavior, isEmptyBodyElement, isKrichToolBar, parseRgbToHex} from '../utils/tools'
+import {getElementBehavior, isEmptyBodyElement, isKrichEditor, isKrichToolBar, parseRgbToHex} from '../utils/tools'
 import {editorRange} from './range-monitor'
 import {findParentTag} from '../utils/dom'
 import {KRange} from '../utils/range'
@@ -14,7 +14,9 @@ import {closeHoverTip, HOVER_TIP_LIST} from '../utils/hover-tip'
 export function registryMouseClickEvent() {
     KRICH_EDITOR.addEventListener('click', event => {
         const {target} = event
-        if (isEmptyBodyElement(target)) {
+        if (isKrichEditor(target)) {
+            closeHoverTip()
+        } else if (isEmptyBodyElement(target)) {
             new KRange(target).active()
         }
     })
