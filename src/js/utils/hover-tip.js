@@ -5,9 +5,9 @@ import {
     HOVER_TIP_NAME,
     KRICH_EDITOR,
     KRICH_HOVER_TIP,
-    SELECT_VALUE
+    SELECT_VALUE, TOP_LIST
 } from '../vars/global-fileds'
-import {getRelCoords} from './dom'
+import {findParentTag, getRelCoords} from './dom'
 import {highlightCode} from './highlight'
 import {editorRange} from '../events/range-monitor'
 import {highlightLanguagesGetter, imageHandler, imageStatusChecker} from '../vars/global-exports-funtions'
@@ -58,6 +58,7 @@ export const HOVER_TIP_LIST = {
             /** 将图片插入到 DOM 中 */
             const insertImage = () => {
                 if (!oldIsImage) {
+                    target = findParentTag(target, TOP_LIST)
                     if (isEmptyLine(target))
                         target.replaceWith(imageElement)
                     else
