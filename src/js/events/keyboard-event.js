@@ -18,6 +18,7 @@ import {
 } from '../utils/tools'
 import {insertTextToString} from '../utils/string-utils'
 import {isTextAreaBehavior} from '../types/button-behavior'
+import {closeHoverTip} from '../utils/hover-tip'
 
 export function registryKeyboardEvent() {
     const switchTask = key => {
@@ -34,6 +35,7 @@ export function registryKeyboardEvent() {
         if (task) setTimeout(task, 0)
     })
     KRICH_EDITOR.addEventListener('keydown', event => {
+        closeHoverTip()
         const body = editorRange?.body
         if (body) {
             emptyBodyElementKeyEvent(event, body)

@@ -13,7 +13,6 @@ import {closeHoverTip, HOVER_TIP_LIST} from '../utils/hover-tip'
 
 export function registryMouseClickEvent() {
     KRICH_EDITOR.addEventListener('click', event => {
-        closeHoverTip()
         const {target} = event
         if (isEmptyBodyElement(target)) {
             new KRange(target).active()

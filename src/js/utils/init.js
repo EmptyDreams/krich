@@ -6,8 +6,15 @@ import {registryBeforeInputEventListener} from '../events/before-input'
 import {
     behaviors,
     DATA_ID,
-    initContainerQuery, KRICH_CLASS, KRICH_EC_CLASS, KRICH_EDITOR, KRICH_EDITOR_CLASS, KRICH_HOVER_TIP_CLASS,
-    KRICH_TOOL_BAR, KRICH_TOOL_BAR_CLASS, markStatusCacheEffect,
+    initContainerQuery,
+    KRICH_CLASS,
+    KRICH_EC_CLASS,
+    KRICH_EDITOR,
+    KRICH_EDITOR_CLASS,
+    KRICH_HOVER_TIP_CLASS,
+    KRICH_TOOL_BAR,
+    KRICH_TOOL_BAR_CLASS,
+    markStatusCacheEffect,
     SELECT_VALUE,
     statusCheckCache
 } from '../vars/global-fileds'
@@ -17,6 +24,7 @@ import {getElementBehavior, readSelectedColor} from './tools'
 import {findParentTag} from './dom'
 import {TODO_MARKER} from '../vars/global-tag'
 import {registryEditorScrollEvent} from '../events/scroll-event'
+import {registryIntersectionObserverEvent} from '../events/intersection-observer-event'
 
 /**
  * 在指定容器内初始化编辑器，该容器应当是一个内容为空的标签
@@ -29,6 +37,7 @@ export function initKrich(optional) {
     registryKeyboardEvent()
     registryRangeMonitor()
     registryEditorScrollEvent()
+    registryIntersectionObserverEvent()
     registryBeforeInputEventListener(KRICH_EDITOR, event => new Promise(resolve => {
         setTimeout(() => {
             resolve()
@@ -78,7 +87,7 @@ function initContainer(optional) {
         Object.getOwnPropertyNames(behaviors)
             .map(it => behaviors[it].render())
             .join('')
-    }</div><div class="${KRICH_EC_CLASS}"><div class="${KRICH_HOVER_TIP_CLASS}"></div><div class="${KRICH_EDITOR_CLASS}" spellcheck contenteditable><p><br></p></div></div>`
+    }</div><div class="${KRICH_EC_CLASS}"><div class="${KRICH_HOVER_TIP_CLASS}" tabindex="-1"></div><div class="${KRICH_EDITOR_CLASS}" spellcheck contenteditable><p><br></p></div></div>`
     container.classList.add(KRICH_CLASS)
     initContainerQuery(container)
     for (let child of KRICH_TOOL_BAR.children) {
