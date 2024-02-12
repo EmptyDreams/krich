@@ -221,7 +221,6 @@ export function prevSiblingText(node, limit) {
  * }}
  */
 export function getRelCoords(target, parent) {
-    console.assert(parent.contains(target), 'parent 必须包含 target', parent, target)
     const targetBox = target.getBoundingClientRect()
     const parentBox = parent.getBoundingClientRect()
     return {
