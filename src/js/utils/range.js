@@ -215,7 +215,7 @@ export class KRange extends Range {
         let result = predicate(this.realStartContainer())
         if (result) return result
         if (this.collapsed) return
-        result = this.realEndContainer()
+        result = predicate(this.realEndContainer())
         if (result) return result
     }
 
