@@ -19,7 +19,7 @@ import {
 } from '../vars/global-fileds'
 import {compareBtnListStatusWith} from './btn'
 import {KRange} from './range'
-import {getElementBehavior} from './tools'
+import {getElementBehavior, readSelectedColor} from './tools'
 import {findParentTag} from './dom'
 import {TODO_MARKER} from '../vars/global-tag'
 import {registryEditorScrollEvent} from '../events/scroll-event'
@@ -92,12 +92,16 @@ function initContainer(optional) {
         const dataId = child.getAttribute(DATA_ID)
         behaviors[dataId].button = child
         if (child.classList.contains('color')) {
-            child.lastChild.onchange = () => {
-                if (!editorRange) return
+            const syncColor = () => input.style.background = readSelectedColor(child)
+            const input = child.lastChild
+            input.onchange = () => {
+                console.assert(!!editorRange, '正常情况下唤醒颜色选择器时 editorRange 必然不会空')
+                syncColor()
                 const behavior = getElementBehavior(child)
                 behavior.onclick(editorRange, child)
                 markStatusCacheInvalid()
             }
+            syncColor()
         }
     }
 }

@@ -2,9 +2,15 @@
   .color
     display flex
     flex-direction column
+    justify-content center
 
   input
     width 60%
-    height 10px
+    height 3px
     padding 0
-    border none
+    border 1px solid black
+    border-radius 3px
+
+    &::-webkit-color-swatch-wrapper,
+    &::-webkit-color-swatch
+      border none
