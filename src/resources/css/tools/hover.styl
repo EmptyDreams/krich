@@ -1,0 +1,19 @@
+.krich-tools:not(.disable)>*:not(.select)
+  position relative
+
+  &:before
+    content attr(data-desc)
+    position absolute
+    top 40px
+    width auto
+    background #333d
+    color white
+    border 1px solid white
+    border-radius 6px
+    z-index 1
+    opacity 0
+    transition all .3s
+    padding 10px
+
+  &:hover:before
+    opacity 1
