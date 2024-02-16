@@ -14,10 +14,10 @@ import {
     isEmptyLine,
     isKrichEditor,
     isMarkerNode,
-    isMultiElementStructure,
     isTextNode
 } from './tools'
 import {insertTextToString} from './string-utils'
+import {isMultiEleStruct} from '../types/button-behavior'
 
 /**
  * 将焦点设置到指定位置
@@ -412,7 +412,7 @@ export class KRange extends Range {
         let lines = this.getAllTopElements()
         let length = lines.length
         while (true) {
-            lines = lines.flatMap(it => isMultiElementStructure(it) ? Array.from(it.children) : [it])
+            lines = lines.flatMap(it => isMultiEleStruct(it) ? Array.from(it.children) : [it])
             const newLength = lines.length
             if (newLength === length) break
             length = newLength

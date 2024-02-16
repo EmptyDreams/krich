@@ -1,3 +1,5 @@
+import {getElementBehavior} from '../utils/tools'
+
 class ButtonBehavior {
     /**
      * 当前结构的各项状态
@@ -78,27 +80,30 @@ export const BEHAVIOR_STATE_MES = 0b100
 
 /**
  * 判断是否是 NoStatus 的 behavior
- * @param behavior {ButtonBehavior?}
+ * @param item {ButtonBehavior|Element|undefined}
  */
-export function isNoStatusBehavior(behavior) {
-    const state = behavior?.state ?? 0
+export function isNoStatus(item) {
+    if (!item) return
+    const state = item.state ?? getElementBehavior(item).state ?? 0
     return state & BEHAVIOR_STATE_NO_STATUS
 }
 
 /**
  * 判断是否是 TextArea 的 behavior
- * @param behavior {ButtonBehavior?}
+ * @param item {ButtonBehavior|Element|undefined}
  */
-export function isTextAreaBehavior(behavior) {
-    const state = behavior?.state ?? 0
+export function isTextArea(item) {
+    if (!item) return
+    const state = item.state ?? getElementBehavior(item).state ?? 0
     return state & BEHAVIOR_STATE_TEXT_AREA
 }
 
 /**
  * 判断是否是多元素结构的 behavior
- * @param behavior {ButtonBehavior?}
+ * @param item {ButtonBehavior|Element|undefined}
  */
-export function isMultiEleStructBehavior(behavior) {
-    const state = behavior?.state ?? 0
+export function isMultiEleStruct(item) {
+    if (!item) return
+    const state = item.state ?? getElementBehavior(item).state ?? 0
     return state & BEHAVIOR_STATE_MES
 }

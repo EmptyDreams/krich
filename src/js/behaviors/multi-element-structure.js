@@ -1,7 +1,7 @@
 import {findParentTag} from '../utils/dom'
 import {behaviors, KRICH_TOOL_BAR} from '../vars/global-fileds'
 import {KRange} from '../utils/range'
-import {isMultiElementStructure} from '../utils/tools'
+import {isMultiEleStruct} from '../types/button-behavior'
 
 /**
  * 多元素结构的点击事件
@@ -29,8 +29,8 @@ function helper(range, key) {
         behavior.builder(KRICH_TOOL_BAR.querySelector(`*[data-id="${key}"]`))
     const startContainer = range.realStartContainer()
     const endContainer = range.realEndContainer()
-    const startTopContainer = findParentTag(startContainer, isMultiElementStructure)
-    const endTopContainer = findParentTag(endContainer, isMultiElementStructure)
+    const startTopContainer = findParentTag(startContainer, isMultiEleStruct)
+    const endTopContainer = findParentTag(endContainer, isMultiEleStruct)
     if (startTopContainer && startTopContainer === endTopContainer && startTopContainer.matches(behavior.exp)) {
         /* 如果选择范围在目标结构当中，且仅选中了一个结构的部分或全部内容 */
         /**

@@ -5,7 +5,7 @@ import {KRange} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
 import {getElementBehavior, isEmptyBodyElement} from '../utils/tools'
 import {findParentTag} from '../utils/dom'
-import {isTextAreaBehavior} from '../types/button-behavior'
+import {isTextArea} from '../types/button-behavior'
 import {closeHoverTip} from '../utils/hover-tip'
 
 /**
@@ -34,9 +34,9 @@ export function updateEditorRange() {
     KRICH_EDITOR.querySelectorAll(`.${EMPTY_BODY_ACTIVE_FLAG}`)
         .forEach(it => it.classList.remove(EMPTY_BODY_ACTIVE_FLAG))
     const rangeBody = range.body
-    if (rangeBody || (textArea = range.some(
-        it => findParentTag(it, node => isTextAreaBehavior(getElementBehavior(node)))
-    ))) {
+    if (rangeBody ||
+        (textArea = range.some(it => findParentTag(it, isTextArea)))
+    ) {
         disableToolBar()
         if (rangeBody) {
             rangeBody.classList.add(EMPTY_BODY_ACTIVE_FLAG)

@@ -8,7 +8,6 @@ import {
     KRICH_EDITOR,
     KRICH_TOOL_BAR, TITLE_LIST
 } from '../vars/global-fileds'
-import {isMultiEleStructBehavior} from '../types/button-behavior'
 
 /**
  * 构建一个新的元素
@@ -39,7 +38,7 @@ export function createNewLine() {
 }
 
 /**
- * @param element {HTMLElement}
+ * @param element {Element}
  * @return {ButtonBehavior|undefined}
  */
 export function getElementBehavior(element) {
@@ -115,15 +114,6 @@ export function isEmptyLine(node) {
  */
 export function isMarkerNode(node) {
     return node.classList?.contains?.('marker')
-}
-
-/**
- * 判断指定节点是否是多元素结构
- * @param node {Node|Element}
- * @return {true|undefined}
- */
-export function isMultiElementStructure(node) {
-    return node.classList && isMultiEleStructBehavior(getElementBehavior(node))
 }
 
 /**

@@ -8,7 +8,7 @@ import {getElementBehavior, isEmptyBodyElement, isKrichEditor, isKrichToolBar} f
 import {editorRange} from './range-monitor'
 import {findParentTag} from '../utils/dom'
 import {KRange} from '../utils/range'
-import {isNoStatusBehavior} from '../types/button-behavior'
+import {isNoStatus} from '../types/button-behavior'
 import {closeHoverTip, HOVER_TIP_LIST} from '../utils/hover-tip'
 
 export function registryMouseClickEvent() {
@@ -51,7 +51,7 @@ export function registryMouseClickEvent() {
                 skip = await handleSelectList(target, original)
             } else {
                 classList.toggle('active')
-                if (isNoStatusBehavior(behavior)) {
+                if (isNoStatus(behavior)) {
                     setTimeout(() => classList.remove('active'), 333)
                 }
             }

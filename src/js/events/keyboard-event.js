@@ -11,13 +11,12 @@ import {
 import {setCursorAt, setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
 import {editorRange} from './range-monitor'
 import {
-    createNewLine, getElementBehavior,
+    createNewLine,
     isEmptyLine,
-    isMarkerNode,
-    isMultiElementStructure
+    isMarkerNode
 } from '../utils/tools'
 import {insertTextToString} from '../utils/string-utils'
-import {isTextAreaBehavior} from '../types/button-behavior'
+import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
 import {closeHoverTip, updateHoverTipPosition} from '../utils/hover-tip'
 
 export function registryKeyboardEvent() {
@@ -36,11 +35,7 @@ export function registryKeyboardEvent() {
     })
     KRICH_EDITOR.addEventListener('keydown', event => {
         // noinspection JSUnresolvedReference
-        if (KRICH_HOVER_TIP.tip &&
-            !editorRange.some(
-                it => findParentTag(it, node => isTextAreaBehavior(getElementBehavior(node)))
-            )
-        ) {
+        if (KRICH_HOVER_TIP.tip && !editorRange.some(it => findParentTag(it, isTextArea))) {
             closeHoverTip()
         } else {
             setTimeout(updateHoverTipPosition, 0)
@@ -102,7 +97,7 @@ function deleteEvent(event) {
         return
     }
     if (startOffset) return
-    const topElement = findParentTag(startContainer, isMultiElementStructure)
+    const topElement = findParentTag(startContainer, isMultiEleStruct)
     if (topElement && startContainer.contains(getFirstTextNode(topElement))) {
         // 在引用、列表开头使用删除键时直接取消当前行的样式
         event.preventDefault()
@@ -124,7 +119,7 @@ function deleteEvent(event) {
             }
         } else {
             const parent = findParentTag(startContainer.parentNode, TOP_LIST)
-            if (parent && isMultiElementStructure(parent) && parent.childElementCount < 2 && firstTopNode === parent) {
+            if (parent && isMultiEleStruct(parent) && parent.childElementCount < 2 && firstTopNode === parent) {
                 event.preventDefault()
                 parent.replaceWith(startContainer)
                 setCursorPositionAfter(startContainer)
@@ -159,8 +154,7 @@ function enterEvent(event) {
         event.preventDefault()
         const top = findParentTag(realStartContainer, TOP_LIST)
         console.assert(!!top, '未找到顶层元素', realStartContainer)
-        if (shiftKey && !ctrlKey && isTextAreaBehavior(getElementBehavior(top)))
-            return
+        if (shiftKey && !ctrlKey && isTextArea(top)) return
         element = createNewLine()
         if (shiftKey && ctrlKey) {
             top.insertAdjacentElement('beforebegin', element)
@@ -172,7 +166,7 @@ function enterEvent(event) {
     /** 处理在 TextArea 中按回车的动作 */
     function handleTextAreaEnter() {
         const top = findParentTag(realStartContainer, TOP_LIST)
-        if (!isTextAreaBehavior(getElementBehavior(top))) return
+        if (!isTextArea(top)) return
         event.preventDefault()
         if (!top.textContent.endsWith('\n')) {
             const {endOffset, endContainer} = editorRange
@@ -205,9 +199,7 @@ function enterEvent(event) {
     }
     /** 处理在多元素结构中的回车动作 */
     function handleMesEnter() {
-        const structure = findParentTag(
-            startContainer, item => isMultiElementStructure(item)
-        )
+        const structure = findParentTag(startContainer, isMultiEleStruct)
         if (!structure) return
         const lastChild = structure.lastChild
         const lastChildNodes = lastChild.childNodes
