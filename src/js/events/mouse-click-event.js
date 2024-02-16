@@ -39,7 +39,7 @@ export function registryMouseClickEvent() {
         if (!range || range.body) return
         /** @type {HTMLElement} */
         let original = event.target
-        if (isKrichToolBar(original)) return
+        if (isKrichToolBar(original)) return true
         const target = findParentTag(
             original, it => it.hasAttribute?.(DATA_ID)
         )
@@ -74,7 +74,7 @@ async function handleSelectList(select, target) {
         const optional = findParentTag(
             target, it => it.hasAttribute?.('style')
         )
-        if (optional === select) return
+        if (optional === select) return true
         if (optional) {
             value.setAttribute('style', optional.getAttribute('style'))
         } else if (target.classList.contains('submit')) {
@@ -96,7 +96,7 @@ async function handleSelectList(select, target) {
         const optional = findParentTag(
             target, it => it.hasAttribute?.(SELECT_VALUE)
         )
-        if (optional === select) return
+        if (!optional) return true
         value.innerHTML = optional.innerHTML
         const selectValue = optional.getAttribute(SELECT_VALUE)
         select.setAttribute(SELECT_VALUE, selectValue)
