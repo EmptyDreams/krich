@@ -6,7 +6,7 @@ import {
     behaviors,
     DATA_ID, KRICH_EC,
     KRICH_EDITOR,
-    KRICH_TOOL_BAR
+    KRICH_TOOL_BAR, TITLE_LIST
 } from '../vars/global-fileds'
 import {isMultiEleStructBehavior} from '../types/button-behavior'
 
@@ -105,7 +105,7 @@ export function isBrNode(node) {
  * @return {boolean}
  */
 export function isEmptyLine(node) {
-    return node.nodeName === 'P' && isBrNode(node.firstChild)
+    return ['P', ...TITLE_LIST].includes(node.nodeName) && isBrNode(node.firstChild)
 }
 
 /**

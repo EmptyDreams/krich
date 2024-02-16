@@ -107,6 +107,12 @@ function deleteEvent(event) {
         if (firstTopNode === startContainer) {
             // 在编辑器开头按下删除键时屏蔽此次按键
             event.preventDefault()
+            if (startContainer.nodeName !== 'P') {
+                const line = createNewLine()
+                // noinspection JSCheckFunctionSignatures
+                startContainer.replaceWith(line)
+                setCursorPositionBefore(line)
+            }
         } else {
             const parent = findParentTag(startContainer.parentNode, TOP_LIST)
             if (parent && isMultiElementStructure(parent) && parent.childElementCount < 2 && firstTopNode === parent) {
