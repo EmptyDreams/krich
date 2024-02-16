@@ -43,7 +43,7 @@ export function registryKeyboardEvent() {
         ) {
             closeHoverTip()
         } else {
-            updateHoverTipPosition()
+            setTimeout(updateHoverTipPosition, 0)
         }
         const body = editorRange?.body
         if (body) {
