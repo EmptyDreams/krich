@@ -141,30 +141,20 @@ export function equalsKrichNode(arg0, arg1) {
 }
 
 /**
- * 将一个“#abc”“#abcdef”或“0,1,2”格式的字符串转化为十六进制形式，并尽可能减少字符串长度
- * @param src {string}
- * @return {string|null} 转换失败时返回 null
+ * 获取一个颜色选择器选择的结果
+ * @param btn {HTMLElement} 按钮对象
+ * @return {string} `#` 开头的 16 进制的 RGB 色码
  */
-export function parseRgbToHex(src) {
-    if (!src.startsWith('#')) {
-        const list = src.split(',')
-        if (list.length !== 3) {
-            return null
-        } else {
-            src = '#' + list.map(it => parseInt(it).toString(16).padStart(2, '#')).join('')
-        }
-    }
-    if (!/^#([0-9a-f]{3}){1,2}$/.test(src)) return null
-    if (/^#([0-9a-f])\1([0-9a-f])\2([0-9a-f])\3$/.test(src))
-        src = '#' + src[1] + src[2] + src[4]
-    return src
+export function readSelectedColor(btn) {
+    // noinspection JSUnresolvedReference
+    return btn.lastChild.value
 }
 
 /**
- * 获取一个颜色选择器选择的结果
- * @param btn {HTMLElement} 按钮对象
- * @return {string} 16 进制的 RGB 色码
+ * 设置一个颜色选择器的值
+ * @param btn {HTMLElement}
+ * @param value {string} `#开头的` 16 进制的 RGB 色码
  */
-export function readSelectedColor(btn) {
-    return btn.getElementsByClassName('value')[0].getAttribute('style').substring(11)
+export function setSelectedColor(btn, value) {
+    btn.lastChild.value = value
 }

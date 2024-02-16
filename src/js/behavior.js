@@ -46,8 +46,7 @@ import {
 import {behaviorHeader} from './behaviors/header'
 import {KRange} from './utils/range'
 import {findParentTag, zipTree} from './utils/dom'
-import {createElement, isEmptyBodyElement, readSelectedColor} from './utils/tools'
-import {handleTemplate} from './utils/template'
+import {createElement, isEmptyBodyElement, readSelectedColor, setSelectedColor} from './utils/tools'
 import {onclickMultiElementStructure} from './behaviors/multi-element-structure'
 import {onclickHr} from './behaviors/hr'
 import {TODO_MARKER} from './vars/global-tag'
@@ -116,24 +115,22 @@ initBehaviors({
     },
     color: {
         exp: 'span[style^="color:"]',
-        render: () => handleTemplate(colorStyle),
+        render: () => colorStyle,
         onclick: (range, btn) => colorOnclick(range, btn, 'color'),
         builder: btn => createElement('span', {style: 'color:' + readSelectedColor(btn)}),
         verify: (btn, item) => readSelectedColor(btn) === item.getAttribute('style').substring(6),
         setter: (btn, item) => {
-            const value = item ? item.getAttribute('style').substring(6) : btn.getAttribute(SELECT_VALUE)
-            btn.getElementsByClassName('value')[0].setAttribute('style', `background:${value}`)
+            setSelectedColor(btn, item ? item.getAttribute('style').substring(6) : btn.getAttribute(SELECT_VALUE))
         }
     },
     background: {
         exp: 'span[style^="background:"]',
-        render: () => handleTemplate(backgroundStyle),
+        render: () => backgroundStyle,
         onclick: (range, btn) => colorOnclick(range, btn, 'background'),
         builder: btn => createElement('span', {style: 'background:' + readSelectedColor(btn)}),
-        verify: (btn, item) => readSelectedColor(btn) === item.getAttribute('style').substring(11),
+        verify: (btn, item) => btn.value === item.getAttribute('style').substring(11),
         setter: (btn, item) => {
-            const value = item ? item.getAttribute('style').substring(11) : btn.getAttribute(SELECT_VALUE)
-            btn.getElementsByClassName('value')[0].setAttribute('style', `background:${value}`)
+            setSelectedColor(btn, item ? item.getAttribute('style').substring(11) : btn.getAttribute(SELECT_VALUE))
         }
     },
     clear: {
@@ -322,7 +319,7 @@ function removeNodeReserveChild(node) {
 /**
  * 颜色选择器点击事件
  * @param range {KRange} 选择范围
- * @param btn {HTMLElement} 按钮对象
+ * @param btn {HTMLInputElement} 按钮对象
  * @param key {string} 样式名称
  * @return {boolean}
  */

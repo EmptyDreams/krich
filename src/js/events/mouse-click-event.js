@@ -4,7 +4,7 @@ import {
     markStatusCacheInvalid,
     SELECT_VALUE
 } from '../vars/global-fileds'
-import {getElementBehavior, isEmptyBodyElement, isKrichEditor, isKrichToolBar, parseRgbToHex} from '../utils/tools'
+import {getElementBehavior, isEmptyBodyElement, isKrichEditor, isKrichToolBar} from '../utils/tools'
 import {editorRange} from './range-monitor'
 import {findParentTag} from '../utils/dom'
 import {KRange} from '../utils/range'
@@ -45,18 +45,20 @@ export function registryMouseClickEvent() {
         )
         const behavior = getElementBehavior(target)
         const classList = target.classList
-        let skip, correct
-        if (classList.contains('select')) {
-            skip = await handleSelectList(target, original)
-        } else {
-            classList.toggle('active')
-            if (isNoStatusBehavior(behavior)) {
-                setTimeout(() => classList.remove('active'), 333)
-            }
-        }
+        let skip = classList.contains('color'), correct
         if (!skip) {
-            correct = behavior.onclick?.(range, target)
-            markStatusCacheInvalid()
+            if (classList.contains('select')) {
+                skip = await handleSelectList(target, original)
+            } else {
+                classList.toggle('active')
+                if (isNoStatusBehavior(behavior)) {
+                    setTimeout(() => classList.remove('active'), 333)
+                }
+            }
+            if (!skip) {
+                correct = behavior.onclick?.(range, target)
+                markStatusCacheInvalid()
+            }
         }
         if (skip || correct) range.active()
     })
@@ -69,38 +71,14 @@ export function registryMouseClickEvent() {
  */
 async function handleSelectList(select, target) {
     // 真实的被点击的选项
+    const optional = findParentTag(
+        target, it => it.hasAttribute?.(SELECT_VALUE)
+    )
+    if (!optional) return true
     const value = select.getElementsByClassName('value')[0]
-    if (select.classList.contains('color')) {
-        const optional = findParentTag(
-            target, it => it.hasAttribute?.('style')
-        )
-        if (optional === select) return true
-        if (optional) {
-            value.setAttribute('style', optional.getAttribute('style'))
-        } else if (target.classList.contains('submit')) {
-            const input = target.previousElementSibling
-            const inputText = input.value
-                .replaceAll(/\s/g, '')
-                .replaceAll('，', ',')
-                .toLowerCase()
-            const color = parseRgbToHex(inputText)
-            if (color) {
-                input.classList.remove('error')
-                value.setAttribute('style', 'background:' + color)
-            } else {
-                input.classList.add('error')
-                return true
-            }
-        } else return true
-    } else {
-        const optional = findParentTag(
-            target, it => it.hasAttribute?.(SELECT_VALUE)
-        )
-        if (!optional) return true
-        value.innerHTML = optional.innerHTML
-        const selectValue = optional.getAttribute(SELECT_VALUE)
-        select.setAttribute(SELECT_VALUE, selectValue)
-    }
+    value.innerHTML = optional.innerHTML
+    const selectValue = optional.getAttribute(SELECT_VALUE)
+    select.setAttribute(SELECT_VALUE, selectValue)
     // noinspection JSUnresolvedReference
     if (KRICH_HOVER_TIP.tip) {
         const value = HOVER_TIP_LIST[KRICH_HOVER_TIP.getAttribute(HOVER_TIP_NAME)]

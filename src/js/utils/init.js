@@ -14,13 +14,12 @@ import {
     KRICH_HOVER_TIP_CLASS,
     KRICH_TOOL_BAR,
     KRICH_TOOL_BAR_CLASS,
-    markStatusCacheEffect,
-    SELECT_VALUE,
+    markStatusCacheEffect, markStatusCacheInvalid,
     statusCheckCache
 } from '../vars/global-fileds'
 import {compareBtnListStatusWith} from './btn'
 import {KRange} from './range'
-import {getElementBehavior, readSelectedColor} from './tools'
+import {getElementBehavior} from './tools'
 import {findParentTag} from './dom'
 import {TODO_MARKER} from '../vars/global-tag'
 import {registryEditorScrollEvent} from '../events/scroll-event'
@@ -44,8 +43,7 @@ export function initKrich(optional) {
             const {data, inputType} = event
             let range = KRange.activated()
             const {startContainer, startOffset} = range
-            if (findParentTag(range.realStartContainer(), ['PRE']))
-                return
+            if (findParentTag(range.realStartContainer(), ['PRE'])) return
             /* 当用户输入位置所在文本与按钮列表不同时，将新输入的文本样式与按钮状态同步 */
             if (data && !statusCheckCache && range.collapsed) {
                 markStatusCacheEffect()
@@ -94,8 +92,12 @@ function initContainer(optional) {
         const dataId = child.getAttribute(DATA_ID)
         behaviors[dataId].button = child
         if (child.classList.contains('color')) {
-            child.setAttribute(SELECT_VALUE, readSelectedColor(child))
-            child.getElementsByTagName('input')[0].onblur = () => editorRange?.active?.()
+            child.lastChild.onchange = () => {
+                if (!editorRange) return
+                const behavior = getElementBehavior(child)
+                behavior.onclick(editorRange, child)
+                markStatusCacheInvalid()
+            }
         }
     }
 }

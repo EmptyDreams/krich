@@ -3,7 +3,7 @@
 */
 
 import {behaviors, SELECT_VALUE} from '../vars/global-fileds'
-import {getElementBehavior, isKrichEditor, readSelectedColor} from './tools'
+import {getElementBehavior, isKrichEditor} from './tools'
 import {isMultiEleStructBehavior, isNoStatusBehavior} from '../types/button-behavior'
 
 /**
@@ -13,11 +13,14 @@ import {isMultiEleStructBehavior, isNoStatusBehavior} from '../types/button-beha
  */
 export function isActive(button) {
     const selectValue = button.getAttribute(SELECT_VALUE)
-    if (button.classList.contains('color'))
-        return readSelectedColor(button) !== selectValue
+    const classList = button.classList
+    if (classList.contains('color')) {
+        // noinspection JSUnresolvedReference
+        return button.value !== selectValue
+    }
     if (selectValue)
         return selectValue !== '0'
-    return button.classList.contains('active')
+    return classList.contains('active')
 }
 
 /**
