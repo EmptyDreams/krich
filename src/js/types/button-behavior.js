@@ -84,7 +84,7 @@ export const BEHAVIOR_STATE_MES = 0b100
  */
 export function isNoStatus(item) {
     if (!item) return
-    const state = item.state ?? getElementBehavior(item).state ?? 0
+    const state = item.state ?? getElementBehavior(item)?.state ?? 0
     return state & BEHAVIOR_STATE_NO_STATUS
 }
 
@@ -94,7 +94,7 @@ export function isNoStatus(item) {
  */
 export function isTextArea(item) {
     if (!item) return
-    const state = item.state ?? getElementBehavior(item).state ?? 0
+    const state = item.state ?? getElementBehavior(item)?.state ?? 0
     return state & BEHAVIOR_STATE_TEXT_AREA
 }
 
@@ -104,6 +104,6 @@ export function isTextArea(item) {
  */
 export function isMultiEleStruct(item) {
     if (!item) return
-    const state = item.state ?? getElementBehavior(item).state ?? 0
+    const state = item.state ?? getElementBehavior(item)?.state ?? 0
     return state & BEHAVIOR_STATE_MES
 }
