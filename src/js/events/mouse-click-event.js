@@ -33,9 +33,12 @@ export function registryMouseClickEvent() {
     })
     KRICH_TOOL_BAR.addEventListener('click', async event => {
         closeHoverTip()
-        if (KRICH_TOOL_BAR.classList.contains('disable'))
-            return
         const range = editorRange
+        if (KRICH_TOOL_BAR.classList.contains('disable')) {
+            event.preventDefault()
+            range.active()
+            return
+        }
         if (!range || range.body) return
         /** @type {HTMLElement} */
         let original = event.target
