@@ -167,9 +167,11 @@ export function findParentTag(node, checker) {
 
 /** 尝试修复 DOM 中的结构错误 */
 export function tryFixDom() {
-    // 自动将没有内容的 code 添加零宽空格
+    // 自动将没有内容的 code 添加换行符
     KRICH_EDITOR.querySelectorAll('pre>code>br:only-child')
         .forEach(it => it.outerHTML = '\n')
+    KRICH_EDITOR.querySelectorAll('pre>code:empty')
+        .forEach(it => it.textContent = '\n')
     // 自动为没有多选框的代办列表的 li 添加多选框
     Array.from(KRICH_EDITOR.querySelectorAll(`${behaviors.todo.exp}>li`))
         .filter(it => !it.firstElementChild?.classList?.contains?.('marker'))
