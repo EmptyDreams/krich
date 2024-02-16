@@ -16,7 +16,9 @@ export function registryMouseClickEvent() {
         const {target} = event
         if (isKrichEditor(target)) {
             closeHoverTip()
-        } else if (isEmptyBodyElement(target)) {
+        }
+        if (isEmptyBodyElement(target)) {
+            closeHoverTip()
             new KRange(target).active()
         }
     })
