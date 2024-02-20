@@ -18,6 +18,7 @@ import {
 import {insertTextToString} from '../utils/string-utils'
 import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
 import {closeHoverTip, updateHoverTipPosition} from '../utils/hover-tip'
+import {handleHotkeys} from '../hotkeys'
 
 export function registryKeyboardEvent() {
     const switchTask = key => {
@@ -30,7 +31,7 @@ export function registryKeyboardEvent() {
         }
     }
     KRICH_EDITOR.addEventListener('keyup', event => {
-        const task = switchTask(event.key)
+        const task = switchTask(event.code)
         if (task) setTimeout(task, 0)
     })
     KRICH_EDITOR.addEventListener('keydown', event => {
@@ -46,7 +47,7 @@ export function registryKeyboardEvent() {
         if (body) {
             emptyBodyElementKeyEvent(event, body)
         } else {
-            switch (event.key) {
+            switch (event.code) {
                 case 'Enter':
                     enterEvent(event)
                     break
@@ -56,11 +57,15 @@ export function registryKeyboardEvent() {
                 case 'Tab':
                     tabEvent(event)
                     break
+                default:
+                    handleHotkeys(event, false)
+                    break
             }
         }
     })
+    KRICH_EDITOR.addEventListener('keyup', event => handleHotkeys(event, true))
     KRICH_HOVER_TIP.addEventListener('keydown', event => {
-        if (event.key === 'Escape')
+        if (event.code === 'Escape')
             closeHoverTip()
     })
 }
@@ -231,7 +236,7 @@ function enterEvent(event) {
  * @param body {Element}
  */
 function emptyBodyElementKeyEvent(event, body) {
-    const key = event.key
+    const key = event.code
     switch (key) {
         case 'ArrowLeft': case 'ArrowUp': {
             const prev = prevLeafNode(body)

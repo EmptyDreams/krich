@@ -14,6 +14,7 @@ import {KRange} from '../utils/range'
 import {compareBtnListStatusWith} from '../utils/btn'
 import {getElementBehavior} from '../utils/tools'
 import {TODO_MARKER} from '../vars/global-tag'
+import {clickButton} from '../behavior'
 
 let codeHighlight
 
@@ -36,8 +37,7 @@ export function registryBeforeInputEventListener() {
             newRange.setEnd(startContainer, startOffset)
             const offline = newRange.serialization()
             for (let child of buttonList) {
-                const behavior = getElementBehavior(child)
-                behavior.onclick(KRange.deserialized(offline), child)
+                clickButton(getElementBehavior(child), KRange.deserialized(offline))
             }
             newRange.deserialized(offline)
             newRange.collapse(false)

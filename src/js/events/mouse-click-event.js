@@ -10,6 +10,7 @@ import {findParentTag} from '../utils/dom'
 import {KRange} from '../utils/range'
 import {isNoStatus} from '../types/button-behavior'
 import {closeHoverTip, HOVER_TIP_LIST} from '../utils/hover-tip'
+import {clickButton} from '../behavior'
 
 export let isNewClickCycle = true
 
@@ -67,7 +68,7 @@ export function registryMouseClickEvent() {
                 }
             }
             if (!skip) {
-                correct = behavior.onclick?.(range, target)
+                correct = clickButton(behavior, range)
                 markStatusCacheInvalid()
             }
         }

@@ -18,6 +18,8 @@ import {
 import {getElementBehavior, readSelectedColor} from './tools'
 import {registryEditorScrollEvent} from '../events/scroll-event'
 import {registryIntersectionObserverEvent} from '../events/intersection-observer-event'
+import {initKeyList} from '../hotkeys'
+import {clickButton} from '../behavior'
 
 /**
  * 在指定容器内初始化编辑器，该容器应当是一个内容为空的标签
@@ -32,6 +34,7 @@ export function initKrich(optional) {
     registryEditorScrollEvent()
     registryIntersectionObserverEvent()
     registryBeforeInputEventListener()
+    initKeyList()
 }
 
 /**
@@ -58,8 +61,7 @@ function initContainer(optional) {
             input.onchange = () => {
                 console.assert(!!editorRange, '正常情况下唤醒颜色选择器时 editorRange 必然不会空')
                 syncColor()
-                const behavior = getElementBehavior(child)
-                behavior.onclick(editorRange, child)
+                clickButton(getElementBehavior(child))
                 markStatusCacheInvalid()
             }
             syncColor()
