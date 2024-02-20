@@ -2,26 +2,20 @@ import krichStyle from '../../resources/css/main.styl'
 import {registryMouseClickEvent} from '../events/mouse-click-event'
 import {registryKeyboardEvent} from '../events/keyboard-event'
 import {editorRange, registryRangeMonitor} from '../events/range-monitor'
-import {registryBeforeInputEventListener} from '../events/before-input'
+import {registryBeforeInputEventListener} from '../events/before-input-event'
 import {
     behaviors,
     DATA_ID,
     initContainerQuery,
     KRICH_CLASS,
     KRICH_EC_CLASS,
-    KRICH_EDITOR,
     KRICH_EDITOR_CLASS,
     KRICH_HOVER_TIP_CLASS,
     KRICH_TOOL_BAR,
     KRICH_TOOL_BAR_CLASS,
-    markStatusCacheEffect, markStatusCacheInvalid,
-    statusCheckCache
+    markStatusCacheInvalid,
 } from '../vars/global-fileds'
-import {compareBtnListStatusWith} from './btn'
-import {KRange} from './range'
 import {getElementBehavior, readSelectedColor} from './tools'
-import {findParentTag} from './dom'
-import {TODO_MARKER} from '../vars/global-tag'
 import {registryEditorScrollEvent} from '../events/scroll-event'
 import {registryIntersectionObserverEvent} from '../events/intersection-observer-event'
 
