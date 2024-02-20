@@ -66,7 +66,7 @@ const hotkeysList = {
     'Period': [{    // ctrl + . -> 上标
         fn: KEY_CTRL,
         i: 'sup'
-    }],
+    }]
 }
 
 export function initKeyList() {
@@ -88,17 +88,14 @@ export function initKeyList() {
  */
 export function handleHotkeys(event, doIt) {
     const item = lookup(event)?.i
-    if (item) {
-        event.preventDefault()
-        if (doIt) {
-            if (typeof item === 'string') {
-                clickButton(item, null, true)
-            } else {
-                item()
-            }
+    if (!item) return
+    event.preventDefault()
+    if (doIt) {
+        if (typeof item === 'string') {
+            clickButton(item, null, true)
+        } else {
+            item()
         }
-    } else {
-        console.log(event.code)
     }
 }
 
