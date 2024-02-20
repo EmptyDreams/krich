@@ -264,7 +264,7 @@ export function zipTree(container) {
      */
     const mergeEqualsNode = firstNode => {
         let item = firstNode
-        let sibling = item.nextSibling
+        let sibling = item?.nextSibling
         while (sibling) {
             const nextSibling = sibling.nextSibling
             if (item.nodeName === sibling.nodeName) {   // 判断两个节点是同一种节点
