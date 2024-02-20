@@ -36,7 +36,7 @@ export function registryMouseClickEvent() {
         const range = editorRange
         if (KRICH_TOOL_BAR.classList.contains('disable')) {
             event.preventDefault()
-            range.active()
+            range?.active?.()
             return
         }
         if (!range || range.body) return
