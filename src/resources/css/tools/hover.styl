@@ -2,11 +2,12 @@
   position relative
 
   &:before
-    content attr(data-desc)
     position absolute
     top 40px
-    width auto
     background #333d
+    font-size 0.75em
+    font-weight normal
+    text-align center
     color white
     border 1px solid white
     border-radius 6px
@@ -14,6 +15,8 @@
     opacity 0
     transition all .3s
     padding 10px
+    word-break keep-all
 
   &:hover:before
+    content attr(data-desc)
     opacity 1
