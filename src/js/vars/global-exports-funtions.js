@@ -1,3 +1,16 @@
+import {GLOBAL_EVENT_FUN_LIST} from './global-fileds'
+
+/**
+ * 取消编辑器与 document 的绑定。
+ *
+ * 注意：该函数并非完全销毁编辑器，仅用于取消与编辑器与 document 的绑定！
+ */
+export function disconnect() {
+    for (let key in GLOBAL_EVENT_FUN_LIST) {
+        document.removeEventListener(key, GLOBAL_EVENT_FUN_LIST[key])
+    }
+}
+
 /**
  * 代码高亮器，留空表示不支持高亮
  *

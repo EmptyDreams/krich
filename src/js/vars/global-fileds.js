@@ -1,3 +1,5 @@
+import {updateEditorRange} from '../events/range-monitor'
+
 /**
  * 编辑器容器
  * @type {HTMLElement}
@@ -42,6 +44,13 @@ export const EMPTY_BODY_ACTIVE_FLAG = 'eb-active'
 
 export const TITLE_LIST = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6']
 export const TOP_LIST = ['P', 'BLOCKQUOTE', 'UL', 'OL', 'HR', 'DIV', 'PRE', 'IMG', ...TITLE_LIST]
+/**
+ * 注册在全局的事件的函数
+ * @type {{[key: string]: function}}
+ */
+export const GLOBAL_EVENT_FUN_LIST = {
+    selectionchange: updateEditorRange
+}
 
 /**
  * 工具栏上的按钮的样式
