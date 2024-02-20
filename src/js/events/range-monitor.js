@@ -24,6 +24,7 @@ export function updateEditorRange() {
     if (!KRICH_CONTAINER.contains(document.activeElement)) {
         editorRange = null
         disableToolBar()
+        closeHoverTip()
         return
     }
     if (KRICH_EDITOR !== document.activeElement) return
