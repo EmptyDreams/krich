@@ -28,6 +28,13 @@ const hotkeysList = {
         fn: KEY_CTRL | KEY_ALT,
         i: 'clear'
     }],
+    'KeyF': [{      // ctrl + f -> 前景色
+        fn: KEY_CTRL,
+        i: 'color'
+    }, {            // ctrl + shift + f -> 背景色
+        fn: KEY_CTRL | KEY_SHIFT,
+        i: 'background'
+    }],
     'KeyH': [{      // ctrl + shift + h -> 分隔线
        fn: KEY_CTRL | KEY_SHIFT,
        i: 'hr'
