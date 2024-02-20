@@ -1,23 +1,29 @@
-.krich-tools:not(.disable)>*:not(.select)
-  position relative
+.krich-tools:not(.disable)
+  *[data-desc]
+    position relative
 
-  &:before
-    position absolute
-    top 40px
-    background #333d
-    font-size 0.75em
-    font-weight normal
-    text-align center
-    color white
-    border 1px solid white
-    border-radius 6px
-    z-index 1
-    opacity 0
-    transition all .3s
-    padding 10px
-    word-break keep-all
-    white-space pre
+    &:before
+      position absolute
+      top 110%
+      background #333d
+      font-size 0.75em
+      font-weight normal
+      text-align center
+      color white
+      border 1px solid white
+      border-radius 6px
+      z-index 1
+      opacity 0
+      transition all .3s
+      padding 10px
+      word-break keep-all
+      white-space pre
 
-  &:hover:before
-    content attr(data-desc)
-    opacity 1
+    &:hover:before
+      content attr(data-desc)
+      opacity 1
+
+  .select *[data-desc]:before
+    top 50%
+    left 110%
+    transform translateY(-50%)
