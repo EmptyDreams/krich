@@ -1,20 +1,28 @@
 import {
-    DATA_ID, HOVER_TIP_NAME, KRICH_EDITOR, KRICH_HOVER_TIP,
+    DATA_ID, HOVER_TIP_NAME, KRICH_CONTAINER, KRICH_EDITOR, KRICH_HOVER_TIP,
     KRICH_TOOL_BAR,
     markStatusCacheInvalid,
     SELECT_VALUE
 } from '../vars/global-fileds'
 import {getElementBehavior, isEmptyBodyElement, isKrichEditor, isKrichToolBar} from '../utils/tools'
-import {editorRange} from './range-monitor'
+import {editorRange, isFirstRange} from './range-monitor'
 import {findParentTag} from '../utils/dom'
 import {KRange} from '../utils/range'
 import {isNoStatus} from '../types/button-behavior'
 import {closeHoverTip, HOVER_TIP_LIST} from '../utils/hover-tip'
 
+export let isNewClickCycle = true
+
+/** 标记一个鼠标的周期开始 */
+export function markClickCycleStart() {
+    isNewClickCycle = false
+}
+
 export function registryMouseClickEvent() {
+    KRICH_CONTAINER.addEventListener('click', () => isNewClickCycle = true)
     KRICH_EDITOR.addEventListener('click', event => {
         const {target} = event
-        if (isKrichEditor(target)) {
+        if (!isFirstRange && isKrichEditor(target)) {
             closeHoverTip()
         }
         if (isEmptyBodyElement(target)) {

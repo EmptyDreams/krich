@@ -7,12 +7,18 @@ import {getElementBehavior, isEmptyBodyElement} from '../utils/tools'
 import {findParentTag} from '../utils/dom'
 import {isTextArea} from '../types/button-behavior'
 import {closeHoverTip} from '../utils/hover-tip'
+import {isNewClickCycle, markClickCycleStart} from './mouse-click-event'
 
 /**
  * 编辑区最新的已激活的 KRange 对象
  * @type {KRange}
  */
 export let editorRange
+/**
+ * 标识当前 range 获取前编辑器是否没有获得焦点
+ * @type {boolean|undefined}
+ */
+export let isFirstRange = true
 
 export function registryRangeMonitor() {
     document.addEventListener('selectionchange', updateEditorRange)
@@ -23,6 +29,7 @@ export function updateEditorRange() {
     const disableToolBar = () => KRICH_TOOL_BAR.classList.add('disable')
     if (!KRICH_CONTAINER.contains(document.activeElement)) {
         editorRange = null
+        isFirstRange = true
         disableToolBar()
         closeHoverTip()
         return
@@ -30,6 +37,10 @@ export function updateEditorRange() {
     if (KRICH_EDITOR !== document.activeElement) return
     let textArea
     const prev = editorRange
+    if (isNewClickCycle) {
+        isFirstRange = !prev
+        markClickCycleStart()
+    }
     const range = KRange.activated()
     editorRange = range
     KRICH_EDITOR.querySelectorAll(`.${EMPTY_BODY_ACTIVE_FLAG}`)
