@@ -26,8 +26,9 @@ export const optional = {
                 if (options.format === 'iife') {
                     return code.replace(
                         new RegExp(`^(var\\s${options.name}\\s=\\s\\(function\\s\\(exports\\)\\s{)`),
-                        `var ${options.name} = function(_optional) {\n    let exports = {}`
+                        `const ${options.name} = function(_optional) {\n    let exports = {}`
                     ).replace(/^\s*}\)\({\s*}\);\s*$/m, '}')
+                        .replace('return exports;', `return Object.freeze(exports)`)
                 } else {
                     const endIndex = code.lastIndexOf('// ESM：封装终点')
                     const subCode = code.substring(0, endIndex)
