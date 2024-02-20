@@ -34,12 +34,14 @@ export function registryKeyboardEvent() {
         if (task) setTimeout(task, 0)
     })
     KRICH_EDITOR.addEventListener('keydown', event => {
-        // noinspection JSUnresolvedReference
-        if (KRICH_HOVER_TIP.tip && !editorRange.some(it => findParentTag(it, isTextArea))) {
-            closeHoverTip()
-        } else {
-            setTimeout(updateHoverTipPosition, 0)
-        }
+        setTimeout(() => {
+            // noinspection JSUnresolvedReference
+            if (KRICH_HOVER_TIP.tip && !editorRange.some(it => findParentTag(it, isTextArea))) {
+                closeHoverTip()
+            } else {
+                updateHoverTipPosition()
+            }
+        }, 0)
         const body = editorRange?.body
         if (body) {
             emptyBodyElementKeyEvent(event, body)
