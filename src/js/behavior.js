@@ -101,17 +101,17 @@ initBehaviors({
         onclick: range => execCommonCommand('inlineCode', range),
         builder: () => createElement('code', ['inline'])
     },
-    sup: {
-        exp: 'sup',
-        render: () => supStyle,
-        onclick: range => execCommonCommand('sup', range, false, ['sub']),
-        builder: () => createElement('sup')
-    },
     sub: {
         exp: 'sub',
         render: () => subStyle,
         onclick: range => execCommonCommand('sub', range, false, ['sup']),
         builder: () => createElement('sub')
+    },
+    sup: {
+        exp: 'sup',
+        render: () => supStyle,
+        onclick: range => execCommonCommand('sup', range, false, ['sub']),
+        builder: () => createElement('sup')
     },
     color: {
         exp: 'span[style^="color:"]',
