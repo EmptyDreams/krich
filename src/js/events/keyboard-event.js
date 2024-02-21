@@ -58,12 +58,11 @@ export function registryKeyboardEvent() {
                     tabEvent(event)
                     break
                 default:
-                    handleHotkeys(event, false)
+                    handleHotkeys(event)
                     break
             }
         }
     })
-    KRICH_EDITOR.addEventListener('keyup', event => handleHotkeys(event, true))
     KRICH_HOVER_TIP.addEventListener('keydown', event => {
         if (event.code === 'Escape')
             closeHoverTip()

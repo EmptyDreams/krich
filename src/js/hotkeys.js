@@ -91,13 +91,12 @@ export function initKeyList() {
 /**
  * 处理快捷键
  * @param event {KeyboardEvent} 事件对象
- * @param doIt {boolean} 是否修改 DOM 结构
  */
-export function handleHotkeys(event, doIt) {
+export function handleHotkeys(event) {
     const item = lookup(event)?.i
     if (!item) return
     event.preventDefault()
-    if (doIt) {
+    if (!event.repeat) {
         if (typeof item === 'string') {
             clickButton(item, null, true)
         } else {
