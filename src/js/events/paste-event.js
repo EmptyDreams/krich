@@ -1,5 +1,15 @@
+// noinspection JSDeprecatedSymbols
+
 import {KRICH_EDITOR, TOP_LIST} from '../vars/global-fileds'
-import {eachDomTree, findParentTag, insertAfterEnd, prevLeafNode, zipTree} from '../utils/dom'
+import {
+    eachDomTree,
+    findParentTag, getFirstChildNode,
+    getLastChildNode,
+    insertAfterEnd,
+    insertBefore,
+    prevLeafNode,
+    zipTree
+} from '../utils/dom'
 import {
     createElement,
     getElementBehavior,
@@ -9,7 +19,6 @@ import {
 import {KRange} from '../utils/range'
 import {highlightCode} from '../utils/highlight'
 import {editorRange} from './range-monitor'
-import {isTextArea} from '../types/button-behavior'
 
 export function registryPasteEvent() {
     /**
@@ -84,18 +93,24 @@ export function registryPasteEvent() {
                 }
             }
         }
+        if (line) result.push(line)
         return result
     }
 
     const KEY_HTML = 'text/html'
     const KEY_TEXT = 'text/plain'
-    const htmlParser = new DOMParser()
-    KRICH_EDITOR.addEventListener('paste', event => {
-        const clipboardData = event.clipboardData
-        const types = clipboardData.types
+    /**
+     * 处理粘贴操作
+     * @param range {KRange} 操作的区域
+     * @param dataTransfer {DataTransfer} 粘贴的内容
+     * @return {[KRange, KRange]|undefined} 插入的内容的起点和终点
+     */
+    function handlePaste(range, dataTransfer) {
+        const {types} = dataTransfer
+        const startRange = new KRange()
+        const endRange = new KRange()
         if (types.includes(KEY_HTML)) {
-            event.preventDefault()
-            const content = clipboardData.getData(KEY_HTML)
+            const content = dataTransfer.getData(KEY_HTML)
                 .replaceAll('\r', '')
                 .replaceAll('\n', '<br>')
             const targetBody = htmlParser.parseFromString(content, KEY_HTML).querySelector('body')
@@ -104,7 +119,6 @@ export function registryPasteEvent() {
             for (let line of lines) {
                 zipTree(line)
             }
-            const range = KRange.activated()
             let realStart, tmpBox
             if (!range.collapsed) {
                 tmpBox = createElement('div', ['tmp'])
@@ -113,46 +127,80 @@ export function registryPasteEvent() {
                 tmpBox.remove()
             }
             if (!realStart) realStart = range.realStartContainer()
-            if (isEmptyLine(realStart)) {
+            const resultStart = getFirstChildNode(lines[0])
+            const resultEnd = getLastChildNode(lines[lines.length - 1])
+            if (isKrichEditor(realStart)) {
+                realStart.appendChild(...lines)
+            } else if (isEmptyLine(realStart)) {
                 realStart.replaceWith(...lines)
             } else if (isEmptyBodyElement(realStart)) {
                 insertAfterEnd(realStart, ...lines)
             } else if (isBrNode(realStart)) {
                 realStart.parentElement.replaceWith(...lines)
             } else {
-                insertAfterEnd(findParentTag(realStart, TOP_LIST), ...lines)
+                const topLine = findParentTag(realStart, TOP_LIST)
+                const [left, right] = range.splitNode(
+                    findParentTag(realStart, it => it.parentNode === topLine)
+                )
+                const first = lines.shift()
+                const fun = left ? insertAfterEnd : insertBefore
+                fun(left ?? right, ...(first.firstChild ? first.childNodes : [first]))
+                zipTree(topLine)
+                if (lines.length)
+                    insertAfterEnd(topLine, ...lines)
             }
             lines.forEach(it => {
                 if (it.nodeName === 'PRE') {
                     // noinspection JSIgnoredPromiseFromCall
-                    highlightCode(KRange.activated(), it)
+                    highlightCode(null, it)
                 } else {
                     it.querySelectorAll('pre')
-                        .forEach(value => highlightCode(KRange.activated(), value))
+                        .forEach(value => highlightCode(null, value))
                 }
             })
+            startRange.setStartBefore(resultStart)
+            endRange.setEndAfter(resultEnd)
         } else if (types.includes(KEY_TEXT)) {
-            // empty body
-        } else {
-            event.preventDefault()
-        }
-    })
-    KRICH_EDITOR.addEventListener('drop', event => {
-        if (!editorRange) return
-        const target = event.target
-        const body = editorRange.body
-        if (body) {
-            if (isKrichEditor(target)) {
-                target.append(body)
-            } else {
-                findParentTag(target, TOP_LIST).insertAdjacentElement('afterend', body)
-            }
-            new KRange(body).active()
-        } else if (editorRange.some(it => findParentTag(it, isTextArea)) && !findParentTag(target, ['PRE'])) {
-            // empty body
+            const [node, startOffset, endOffset] = range.insertText(dataTransfer.getData(KEY_TEXT))
+            startRange.setStart(node, startOffset)
+            endRange.setEnd(node, endOffset)
         } else {
             return
         }
+        startRange.collapse(true)
+        endRange.collapse(false)
+        return [startRange, endRange]
+    }
+
+    let isInside
+    const htmlParser = new DOMParser()
+    KRICH_EDITOR.addEventListener('paste', event => {
         event.preventDefault()
+        const result = handlePaste(editorRange, event.clipboardData)
+        if (result) result[1].active()
+    })
+    KRICH_EDITOR.addEventListener('dragstart', () => isInside = true)
+    // noinspection JSUnresolvedReference
+    const isIncompatible = !document.caretRangeFromPoint && !document.caretPositionFromPoint
+    KRICH_EDITOR.addEventListener('drop', event => {
+        event.preventDefault()
+        if (isIncompatible) return
+        const {clientX, clientY, dataTransfer} = event
+        const isInsideCpy = isInside
+        isInside = false
+        let tmpBox
+        let transfer = dataTransfer
+        if (isInsideCpy) {
+            console.assert(!!editorRange, '此时 editorRange 不可能为空')
+            tmpBox = createElement('span')
+            editorRange.surroundContents(tmpBox)
+            // noinspection HtmlRequiredLangAttribute
+            const html = '<html><body>' + tmpBox.innerHTML + '</body></html>'
+            transfer = new DataTransfer()
+            transfer.setData(KEY_HTML, html)
+        }
+        handlePaste(KRange.clientPos(clientX, clientY), transfer)
+        KRange.clientPos(clientX, clientY).active()
+        if (tmpBox) tmpBox.remove()
     })
 }

@@ -220,6 +220,15 @@ export class KRange extends Range {
     }
 
     /**
+     * 判断 `realStartContainer` 和 `realEndContainer` 中是否均满足指定要求
+     * @param predicate {function(Node): any}
+     * @return {boolean}
+     */
+    every(predicate) {
+        return !this.some(it => !predicate(it))
+    }
+
+    /**
      * @return {{next: (function(): {value: Node, done: boolean})}}
      */
     [Symbol.iterator]() {
@@ -436,13 +445,10 @@ export class KRange extends Range {
     /**
      * 通过 KRange 选区切分 DOM 结构
      *
-     * 注意：不应该对 collapsed 的 KRange 调用该函数
-     *
      * @param root {Node} 切分的根，切分时不会影响 [root] 的父级节点
      * @return {[Node|Element|null, Node|Element, Node|Element|null]} 中间为选区选中的范围
      */
     splitNode(root) {
-        console.assert(!this.collapsed, '对于 collapsed 的 KRange 不应当调用 splitNode 函数')
         /**
          * 通过下标切分文本节点
          * @param node {Node} 切分起始节点
@@ -480,6 +486,7 @@ export class KRange extends Range {
         }
         const {startContainer, startOffset, endContainer, endOffset} = this
         const left = startOffset ? splitNodeHelper(startContainer, startOffset) : null
+        if (this.collapsed) return [left, left === root ? null : root]
         const mid = splitNodeHelper(endContainer, endOffset - (startContainer === endContainer ? startOffset : 0))
         return [left, mid, root === mid ? null : root]
     }
@@ -536,8 +543,8 @@ export class KRange extends Range {
 
     /**
      * 插入文本，如果选区选择了一部分文字，将会替换选择的文字
-     * @param text
-     * @return {boolean} 是否插入成功，当选区开头前方是非文本节点时将插入失败
+     * @param text {string}
+     * @return {[Node, number, number]|false} 插入失败返回 false，否则返回插入的位置
      */
     insertText(text) {
         const {startContainer, startOffset, collapsed} = this
@@ -569,8 +576,9 @@ export class KRange extends Range {
         } else {
             insertedNode.textContent = insertTextToString(insertedNode.textContent, index, text)
         }
-        setCursorAt(insertedNode, index + text.length)
-        return true
+        const pos = index + text.length
+        setCursorAt(insertedNode, pos)
+        return [insertedNode, index, pos]
     }
 
     /**
@@ -610,6 +618,28 @@ export class KRange extends Range {
     static deserialized(data) {
         const range = new KRange()
         return range.deserialized(data)
+    }
+
+    /**
+     * 通过相对于 document 的坐标获取 KRange
+     * @param x {number}
+     * @param y {number}
+     * @return {KRange}
+     */
+    static clientPos(x, y) {
+        let result
+        // noinspection JSUnresolvedReference
+        if (document.caretPositionFromPoint) {
+            const pos = document.caretPositionFromPoint(x, y)
+            result = new KRange()
+            // noinspection JSUnresolvedReference
+            result.setStart(pos.offsetNode, pos.offset)
+            result.collapse(true)
+        } else {
+            // noinspection JSDeprecatedSymbols
+            result = new KRange(document.caretRangeFromPoint(x, y))
+        }
+        return result
     }
 
 }

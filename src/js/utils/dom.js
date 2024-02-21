@@ -242,6 +242,17 @@ export function insertAfterEnd(pos, ...values) {
 }
 
 /**
+ * 在指定节点前方插入指定的节点
+ * @param pos {Node}
+ * @param values {Node}
+ */
+export function insertBefore(pos, ...values) {
+    for (let item of values) {
+        pos.parentNode.insertBefore(item, pos)
+    }
+}
+
+/**
  * 压缩 DOM 树结构
  * @param container {Element}
  */
