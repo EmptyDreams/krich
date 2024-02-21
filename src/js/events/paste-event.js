@@ -9,6 +9,7 @@ import {
 import {KRange} from '../utils/range'
 import {highlightCode} from '../utils/highlight'
 import {editorRange} from './range-monitor'
+import {isTextArea} from '../types/button-behavior'
 
 export function registryPasteEvent() {
     /**
@@ -137,16 +138,21 @@ export function registryPasteEvent() {
         }
     })
     KRICH_EDITOR.addEventListener('drop', event => {
-        const body = editorRange?.body
+        if (!editorRange) return
+        const target = event.target
+        const body = editorRange.body
         if (body) {
-            event.preventDefault()
-            const target = event.target
             if (isKrichEditor(target)) {
                 target.append(body)
             } else {
                 findParentTag(target, TOP_LIST).insertAdjacentElement('afterend', body)
             }
             new KRange(body).active()
+        } else if (editorRange.some(it => findParentTag(it, isTextArea)) && !findParentTag(target, ['PRE'])) {
+            // empty body
+        } else {
+            return
         }
+        event.preventDefault()
     })
 }
