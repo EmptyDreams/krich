@@ -269,9 +269,10 @@ initBehaviors({
         },
         hover: pre => openHoverTip('code', pre),
         translator: item => {
-            removeAllAttributes(item)
-            item.setAttribute('spellcheck', false)
-            return item
+            const result = behaviors.code.builder()
+            item.querySelectorAll('br').forEach(it => it.outerHTML = '\n')
+            result.textContent = item.textContent
+            return result
         }
     }
 })

@@ -7,6 +7,7 @@ import {
     isTextNode
 } from '../utils/tools'
 import {KRange} from '../utils/range'
+import {highlightCode} from '../utils/highlight'
 
 export function registryPasteEvent() {
     /**
@@ -36,6 +37,12 @@ export function registryPasteEvent() {
             while (behavior) {
                 const newNode = behavior.translator(node)
                 if (newNode === node) break
+                if (newNode.firstChild) {
+                    next = eachDomTree(node, true, false, _ => true, body) ?? 0
+                    node.replaceWith(newNode)
+                    root = null
+                    break
+                }
                 if (leaf) leaf.append(newNode)
                 else root = newNode
                 leaf = newNode
@@ -113,6 +120,15 @@ export function registryPasteEvent() {
             } else {
                 insertAfterEnd(findParentTag(realStart, TOP_LIST), ...lines)
             }
+            lines.forEach(it => {
+                if (it.nodeName === 'PRE') {
+                    // noinspection JSIgnoredPromiseFromCall
+                    highlightCode(KRange.activated(), it)
+                } else {
+                    it.querySelectorAll('pre')
+                        .forEach(value => highlightCode(KRange.activated(), value))
+                }
+            })
         } else if (types.includes(KEY_TEXT)) {
             // empty body
         } else {
