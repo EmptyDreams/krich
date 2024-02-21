@@ -13,14 +13,19 @@
             const krich = KRich('#krich')
             krich.setHighlight(pre => new Promise(resolve => {
                 let language = pre.className
-                language = language.substring(language.indexOf('-') + 1)
-                Prism.plugins.autoloader.loadLanguages(language, () => {
+                language = language.substring(language.indexOf('-') + 1) || 'txt'
+                const run = () => {
                     pre.firstChild.innerHTML = Prism.highlight(pre.textContent, Prism.languages[language], language)
                     resolve()
-                }, err => {
-                    console.error(err)
-                    resolve()
-                })
+                }
+                if (language in Prism.languages) {
+                    run()
+                } else {
+                    Prism.plugins.autoloader.loadLanguages(language, run, err => {
+                        console.error(err)
+                        resolve()
+                    })
+                }
             }), () => [
                 ['PlainText', 'txt'],
                 ['JavaScript', 'js']
