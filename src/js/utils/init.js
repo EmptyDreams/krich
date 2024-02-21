@@ -49,7 +49,7 @@ function initContainer(optional) {
         Object.getOwnPropertyNames(behaviors)
             .map(it => behaviors[it].render())
             .join('')
-    }</div><div class="${KRICH_EC_CLASS}"><div class="${KRICH_HOVER_TIP_CLASS}" tabindex="-1"></div><div class="${KRICH_EDITOR_CLASS}" spellcheck contenteditable><p><br></p></div></div>`
+    }</div><div class="${KRICH_EC_CLASS}" translate="no"><div class="${KRICH_HOVER_TIP_CLASS}" tabindex="-1"></div><div class="${KRICH_EDITOR_CLASS}" spellcheck contenteditable><p><br></p></div></div>`
     container.classList.add(KRICH_CLASS)
     initContainerQuery(container)
     for (let child of KRICH_TOOL_BAR.children) {
