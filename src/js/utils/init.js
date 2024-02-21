@@ -20,6 +20,7 @@ import {registryEditorScrollEvent} from '../events/scroll-event'
 import {registryIntersectionObserverEvent} from '../events/intersection-observer-event'
 import {initKeyList} from '../hotkeys'
 import {clickButton} from '../behavior'
+import {registryPasteEvent} from '../events/paste-event'
 
 /**
  * 在指定容器内初始化编辑器，该容器应当是一个内容为空的标签
@@ -34,6 +35,7 @@ export function initKrich(optional) {
     registryEditorScrollEvent()
     registryIntersectionObserverEvent()
     registryBeforeInputEventListener()
+    registryPasteEvent()
     initKeyList()
 }
 

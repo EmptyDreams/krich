@@ -20,3 +20,17 @@ export function insertTextToString(src, index, value) {
 export function replaceStringByIndex(src, startInclude, endExclude, value) {
     return src.substring(0, startInclude) + value + src.substring(endExclude)
 }
+
+/**
+ * 将 `rgb(x, x, x)` 格式的字符串转换为 `#xxxxxx` 格式的字符串
+ * @param rgb {string}
+ */
+export function rgbToHex(rgb) {
+    const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/)
+    console.assert(!!match, '指定字符串不满足 rbg(x, x, x) 的格式！', rgb)
+    let result = '#'
+    for (let i = 1; i < 4; ++i) {
+        result += parseInt(match[i]).toString(16).padStart(2, '0')
+    }
+    return result
+}

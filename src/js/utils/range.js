@@ -118,7 +118,7 @@ export class KRange extends Range {
 
     /**
      * 获取真实的起始节点
-     * @return {Node}
+     * @return {Node|Element}
      */
     realStartContainer() {
         const {startContainer, startOffset} = this
@@ -127,7 +127,7 @@ export class KRange extends Range {
 
     /**
      * 获取真实的终止节点
-     * @return {Node}
+     * @return {Node|Element}
      */
     realEndContainer() {
         const {endContainer, endOffset} = this

@@ -46,7 +46,13 @@ import {
 import {behaviorHeader} from './behaviors/header'
 import {KRange} from './utils/range'
 import {findParentTag, zipTree} from './utils/dom'
-import {createElement, isEmptyBodyElement, readSelectedColor, setSelectedColor} from './utils/tools'
+import {
+    createElement,
+    isEmptyBodyElement,
+    readSelectedColor,
+    removeAllAttributes,
+    setSelectedColor
+} from './utils/tools'
 import {onclickMultiElementStructure} from './behaviors/multi-element-structure'
 import {onclickHr} from './behaviors/hr'
 import {TODO_MARKER} from './vars/global-tag'
@@ -54,13 +60,15 @@ import {editorRange} from './events/range-monitor'
 import {behaviorHighlight} from './behaviors/highlight'
 import {BEHAVIOR_STATE_MES, BEHAVIOR_STATE_NO_STATUS, BEHAVIOR_STATE_TEXT_AREA} from './types/button-behavior'
 import {openHoverTip} from './utils/hover-tip'
+import {rgbToHex} from './utils/string-utils'
 
 initBehaviors({
     headerSelect: {
         state: BEHAVIOR_STATE_NO_STATUS,
         exp: ['P', ...TITLE_LIST].join(','),
         render: () => headerSelectStyle,
-        onclick: behaviorHeader
+        onclick: behaviorHeader,
+        translator: removeAllAttributes
     },
     blockquote: {
         state: BEHAVIOR_STATE_MES,
@@ -69,68 +77,104 @@ initBehaviors({
         onclick: range => onclickMultiElementStructure(range, 'blockquote'),
         verify: () => true,
         builder: () => createElement('blockquote'),
-        newLine: () => false
+        newLine: () => false,
+        translator: removeAllAttributes
     },
     bold: {
-        exp: 'b',
+        exp: 'b,strong',
         render: () => boldStyle,
         onclick: range => execCommonCommand('bold', range),
-        builder: () => createElement('b')
+        builder: () => createElement('b'),
+        translator: removeAllAttributes
     },
     underline: {
         exp: 'u',
         render: () => underlineStyle,
         onclick: range => execCommonCommand('underline', range),
-        builder: () => createElement('u')
+        builder: () => createElement('u'),
+        translator: removeAllAttributes
     },
     italic: {
         exp: 'i',
         render: () => italicStyle,
         onclick: range => execCommonCommand('italic', range),
-        builder: () => createElement('i')
+        builder: () => createElement('i'),
+        translator: removeAllAttributes
     },
     through: {
         exp: 'span.through',
         render: () => throughStyle,
         onclick: range => execCommonCommand('through', range, false),
-        builder: () => createElement('span', ['through'])
+        builder: () => createElement('span', ['through']),
+        translator: removeAllAttributes
     },
     inlineCode: {
         exp: 'code.inline',
         render: () => inlineCodeStyle,
         onclick: range => execCommonCommand('inlineCode', range),
-        builder: () => createElement('code', ['inline'])
+        builder: () => createElement('code', ['inline']),
+        translator: removeAllAttributes
     },
     sub: {
         exp: 'sub',
         render: () => subStyle,
         onclick: range => execCommonCommand('sub', range, false, ['sup']),
-        builder: () => createElement('sub')
+        builder: () => createElement('sub'),
+        translator: removeAllAttributes
     },
     sup: {
         exp: 'sup',
         render: () => supStyle,
         onclick: range => execCommonCommand('sup', range, false, ['sub']),
-        builder: () => createElement('sup')
+        builder: () => createElement('sup'),
+        translator: removeAllAttributes
     },
     color: {
-        exp: 'span[style^="color:"]',
+        exp: (() => {
+            const exps = ['^="color:"', '*=";color:"']
+            const names = ['span', 'font']
+            return exps.map(it => '[style' + it + ']')
+                .flatMap(it => names.map(name => name + it))
+                .join()
+        })(),
         render: () => colorStyle,
         onclick: (range, btn) => colorOnclick(range, btn, 'color'),
         builder: btn => createElement('span', {style: 'color:' + readSelectedColor(btn)}),
         verify: (btn, item) => readSelectedColor(btn) === item.getAttribute('style').substring(6),
         setter: (btn, item) => {
             setSelectedColor(btn, item ? item.getAttribute('style').substring(6) : btn.getAttribute(SELECT_VALUE))
+        },
+        translator: item => {
+            const style = item.style
+            const color = rgbToHex(style.color)
+            style.color = ''
+            return createElement('span', {
+                style: 'color:' + color
+            })
         }
     },
     background: {
-        exp: 'span[style^="background:"]',
+        exp: (() => {
+            const exps = ['background:#', 'background:rgb', 'background-color:']
+            const names = ['span', 'font']
+            return exps.map(it => '[style*="' + it + '"]')
+                .flatMap(it => names.map(name => name + it))
+                .join()
+        })(),
         render: () => backgroundStyle,
         onclick: (range, btn) => colorOnclick(range, btn, 'background'),
         builder: btn => createElement('span', {style: 'background:' + readSelectedColor(btn)}),
         verify: (btn, item) => btn.value === item.getAttribute('style').substring(11),
         setter: (btn, item) => {
             setSelectedColor(btn, item ? item.getAttribute('style').substring(11) : btn.getAttribute(SELECT_VALUE))
+        },
+        translator: item => {
+            const style = item.style
+            const color = rgbToHex(style.backgroundColor)
+            style.backgroundColor = ''
+            return createElement('span', {
+                style: 'background:' + color
+            })
         }
     },
     clear: {
@@ -163,7 +207,8 @@ initBehaviors({
         state: BEHAVIOR_STATE_NO_STATUS,
         exp: 'hr',
         render: () => hrStyle,
-        onclick: onclickHr
+        onclick: onclickHr,
+        translator: removeAllAttributes
     },
     ul: {
         state: BEHAVIOR_STATE_MES,
@@ -171,7 +216,8 @@ initBehaviors({
         render: () => ulStyle,
         onclick: range => onclickMultiElementStructure(range, 'ul'),
         builder: () => createElement('ul'),
-        newLine: () => createElement('li')
+        newLine: () => createElement('li'),
+        translator: translateList
     },
     ol: {
         state: BEHAVIOR_STATE_MES,
@@ -179,7 +225,8 @@ initBehaviors({
         render: () => olStyle,
         onclick: range => onclickMultiElementStructure(range, 'ol'),
         builder: () => createElement('ol'),
-        newLine: () => createElement('li')
+        newLine: () => createElement('li'),
+        translator: translateList
     },
     todo: {
         state: BEHAVIOR_STATE_MES,
@@ -191,7 +238,8 @@ initBehaviors({
             const line = createElement('li')
             line.append(TODO_MARKER.cloneNode(false))
             return line
-        }
+        },
+        translator: translateList
     },
     img: {
         state: BEHAVIOR_STATE_NO_STATUS,
@@ -202,7 +250,8 @@ initBehaviors({
             openHoverTip('img', line)
             return true
         },
-        hover: img => openHoverTip('img', img)
+        hover: img => openHoverTip('img', img),
+        translator: removeAllAttributes
     },
     code: {
         state: BEHAVIOR_STATE_TEXT_AREA,
@@ -218,7 +267,12 @@ initBehaviors({
             pre.append(code)
             return pre
         },
-        hover: pre => openHoverTip('code', pre)
+        hover: pre => openHoverTip('code', pre),
+        translator: item => {
+            removeAllAttributes(item)
+            item.setAttribute('spellcheck', false)
+            return item
+        }
     }
 })
 
@@ -340,4 +394,18 @@ function removeNodeReserveChild(node) {
 function colorOnclick(range, btn, key) {
     const isDef = readSelectedColor(btn) === btn.getAttribute(SELECT_VALUE)
     return execCommonCommand(key, range, false, null, isDef ? 2 : 1)
+}
+
+/**
+ * 转换指定列表
+ * @param item {Element}
+ */
+function translateList(item) {
+    for (let value of [item, ...item.children]) {
+        if (value.nodeName === 'LI')
+            removeAllAttributes(value)
+        else
+            value.remove()
+    }
+    return item
 }

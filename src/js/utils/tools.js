@@ -38,7 +38,7 @@ export function createNewLine() {
 }
 
 /**
- * @param element {Element}
+ * @param element {Node|Element}
  * @return {ButtonBehavior|undefined}
  */
 export function getElementBehavior(element) {
@@ -104,7 +104,7 @@ export function isBrNode(node) {
  * @return {boolean}
  */
 export function isEmptyLine(node) {
-    return ['P', ...TITLE_LIST].includes(node.nodeName) && isBrNode(node.firstChild)
+    return ['P', ...TITLE_LIST].includes(node.nodeName) && (!node.firstChild || isBrNode(node.firstChild))
 }
 
 /**
@@ -147,4 +147,15 @@ export function readSelectedColor(btn) {
  */
 export function setSelectedColor(btn, value) {
     btn.lastChild.value = value
+}
+
+/**
+ * 移除一个节点上的所有属性
+ * @param item {Element}
+ */
+export function removeAllAttributes(item) {
+    while (item.hasAttributes()) {
+        item.removeAttribute(item.attributes[0].name)
+    }
+    return item
 }

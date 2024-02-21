@@ -18,12 +18,11 @@ import {TODO_MARKER} from '../vars/global-tag'
  * @param start {Node} 起点
  * @param forward {boolean} 是否正向遍历
  * @param first {boolean} 首个元素是否触发 consumer
- * @param consumer {function(Node): any} 返回 true 或其它为 true 的值结束遍历
+ * @param consumer {function(Node|Element): any} 返回 true 或其它为 true 的值结束遍历
  * @param limit {Node|Element?} 遍历范围限制，留空表示 KRICH_EDITOR
  * @return {any} consumer 的返回值将会从此返回，若 consumer 返回了 true 则返回 consumer 最后一次传入的节点对象
  */
 export function eachDomTree(start, forward, first, consumer, limit) {
-    console.assert(KRICH_EDITOR.contains(start), 'eachDomTree 仅允许遍历 KRICH_EDITOR 内的节点', start)
     function calcResult(node, value) {
         return value === true ? node : value
     }
@@ -35,17 +34,15 @@ export function eachDomTree(start, forward, first, consumer, limit) {
     function dfs(item) {
         if (isMarkerNode(item)) return
         let result
+        const childNodes = Array.from(item.childNodes ?? [])
         if (forward) {
             result = consumer(item)
             if (result) return calcResult(item, result)
         }
-        const childNodes = item.childNodes
-        if (childNodes) {
-            const list = forward ? childNodes : Array.from(childNodes).reverse()
-            for (let item of list) {
-                result = dfs(item)
-                if (result) return result
-            }
+        if (!forward) childNodes.reverse()
+        for (let item of childNodes) {
+            result = dfs(item)
+            if (result) return result
         }
         if (!forward) {
             result = consumer(item)
@@ -230,6 +227,17 @@ export function getRelCoords(target, parent) {
         l: targetBox.x - parentBox.x,
         r: targetBox.right - parentBox.x,
         b: targetBox.bottom - parentBox.y
+    }
+}
+
+/**
+ * 在指定节点后方插入指定的节点
+ * @param pos {Node}
+ * @param values {Node}
+ */
+export function insertAfterEnd(pos, ...values) {
+    for (let i = values.length - 1; i >= 0; i--) {
+        pos.parentNode.insertBefore(values[i], pos.nextSibling)
     }
 }
 

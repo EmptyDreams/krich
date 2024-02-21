@@ -72,6 +72,14 @@ class ButtonBehavior {
      * @type {HTMLElement|undefined}
      */
     button
+    /**
+     * 将外部输入的节点转换为标准节点，允许丢失样式信息，允许直接修改传入的节点
+     *
+     * 转换时如果返回了新的节点，无需复制其子节点
+     *
+     * @type {undefined|function(Node|Element): Node|Element}
+     */
+    translator
 }
 
 export const BEHAVIOR_STATE_NO_STATUS = 0b1
