@@ -24,13 +24,8 @@ export const HOVER_TIP_LIST = {
         init: () => {
             const pre = KRICH_HOVER_TIP.tip
             const list = highlightLanguagesGetter()
-            let language = pre.className
-            if (!language || language.endsWith('-none')) {
-                language = 'language-' + list[0][1]
-            }
+            let language = pre.className || 'language-' + list[0][1]
             pre.className = language
-            // noinspection JSIgnoredPromiseFromCall
-            highlightCode(editorRange, pre)
             KRICH_HOVER_TIP.innerHTML = `<div class="select" data-value="0"><span class="value">${list.find(it => language.endsWith('-' + it[1]))[0]}</span><div class="items">${list.map((it, index) => '<div data-value="' + index + '">' + it[0] + '</div>').join('')}</div></div>`
         },
         onchange: async (select) => {
@@ -153,7 +148,6 @@ export function openHoverTip(name, target, ...otherArgs) {
     KRICH_HOVER_TIP.tip = target
     HOVER_TIP_LIST[name].init(target, ...otherArgs)
     classList.add('active')
-    editorRange.active()
     updateHoverTipPosition()
 }
 
