@@ -23,11 +23,14 @@ export function registryMouseClickEvent() {
     KRICH_CONTAINER.addEventListener('click', () => isNewClickCycle = true)
     KRICH_EDITOR.addEventListener('click', event => {
         const {target} = event
-        if (!isFirstRange && isKrichEditor(target)) {
+        if ((!isFirstRange && isKrichEditor(target)) || isEmptyBodyElement(target)) {
             closeHoverTip()
         }
+    })
+    KRICH_EDITOR.addEventListener('mousedown', event => {
+        if (!editorRange?.collapsed) return
+        const {target} = event
         if (isEmptyBodyElement(target)) {
-            closeHoverTip()
             new KRange(target).active()
         }
     })

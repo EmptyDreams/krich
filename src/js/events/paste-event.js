@@ -3,11 +3,12 @@ import {eachDomTree, findParentTag, insertAfterEnd, prevLeafNode, zipTree} from 
 import {
     createElement,
     getElementBehavior,
-    isBrNode, isEmptyBodyElement, isEmptyLine,
+    isBrNode, isEmptyBodyElement, isEmptyLine, isKrichEditor,
     isTextNode
 } from '../utils/tools'
 import {KRange} from '../utils/range'
 import {highlightCode} from '../utils/highlight'
+import {editorRange} from './range-monitor'
 
 export function registryPasteEvent() {
     /**
@@ -133,6 +134,19 @@ export function registryPasteEvent() {
             // empty body
         } else {
             event.preventDefault()
+        }
+    })
+    KRICH_EDITOR.addEventListener('drop', event => {
+        const body = editorRange?.body
+        if (body) {
+            event.preventDefault()
+            const target = event.target
+            if (isKrichEditor(target)) {
+                target.append(body)
+            } else {
+                findParentTag(target, TOP_LIST).insertAdjacentElement('afterend', body)
+            }
+            new KRange(body).active()
         }
     })
 }
