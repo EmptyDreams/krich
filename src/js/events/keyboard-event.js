@@ -1,4 +1,4 @@
-import {KRICH_EDITOR, KRICH_HOVER_TIP, TOP_LIST} from '../vars/global-fileds'
+import {KRICH_CONTAINER, KRICH_EDITOR, KRICH_HOVER_TIP, TOP_LIST} from '../vars/global-fileds'
 import {
     findParentTag,
     getFirstTextNode,
@@ -63,7 +63,7 @@ export function registryKeyboardEvent() {
             }
         }
     })
-    KRICH_HOVER_TIP.addEventListener('keydown', event => {
+    KRICH_CONTAINER.addEventListener('keydown', event => {
         if (event.code === 'Escape')
             closeHoverTip()
     })
