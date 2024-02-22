@@ -1,7 +1,7 @@
 import {findParentTag} from '../utils/dom'
 import {TOP_LIST} from '../vars/global-fileds'
-import {createElement, createNewLine, isEmptyLine, isMarkerNode} from '../utils/tools'
-import {setCursorPositionBefore} from '../utils/range'
+import {createElement, isEmptyLine} from '../utils/tools'
+import {KRange} from '../utils/range'
 
 /**
  * 分割线的点击事件
@@ -15,12 +15,5 @@ export function onclickHr(range) {
     } else {
         posLine.insertAdjacentElement('afterend', hr)
     }
-    const {previousSibling, nextSibling} = hr
-    if (!previousSibling || isMarkerNode(previousSibling) || previousSibling.nodeName === 'HR') {
-        hr.insertAdjacentElement('beforebegin', createNewLine())
-    }
-    if (!nextSibling || nextSibling.nodeName === 'HR') {
-        hr.insertAdjacentElement('afterend', createNewLine())
-    }
-    setCursorPositionBefore(hr.nextSibling)
+    new KRange(hr).active()
 }
