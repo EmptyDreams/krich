@@ -13,6 +13,7 @@ import {editorRange} from '../events/range-monitor'
 import {highlightLanguagesGetter, imageHandler, imageStatusChecker} from '../vars/global-exports-funtions'
 import {createElement, isEmptyLine} from './tools'
 import {KRange} from './range'
+import {uploadImage} from './image-handler'
 
 /**
  * @type {{
@@ -85,7 +86,7 @@ export const HOVER_TIP_LIST = {
                 uploaderInput.onchange = event => {
                     sizeInput.disabled = true
                     const imageFile = event.target.files[0]
-                    imageHandler(imageElement, imageFile).then(() => {
+                    uploadImage(imageFile, imageElement).then(() => {
                         const url = imageElement.getAttribute('src')
                         uploaderBackground.style.backgroundImage = `url(${url})`
                         submitButton.disabled = false

@@ -18,6 +18,7 @@ import {
 import {KRange, setCursorPositionAfter} from '../utils/range'
 import {highlightCode} from '../utils/highlight'
 import {editorRange} from './range-monitor'
+import {uploadImage} from '../utils/image-handler'
 
 export function registryPasteEvent() {
     /**
@@ -103,7 +104,7 @@ export function registryPasteEvent() {
      * @param range {KRange} 操作的区域
      * @param dataTransfer {DataTransfer} 粘贴的内容
      */
-    function handlePaste(range, dataTransfer) {
+    async function handlePaste(range, dataTransfer) {
         const {types} = dataTransfer
         if (types.includes(KEY_HTML)) {
             const content = dataTransfer.getData(KEY_HTML)
@@ -167,6 +168,18 @@ export function registryPasteEvent() {
             KRange.deserialized(offlineData).active()
         } else if (types.includes(KEY_TEXT)) {
             range.insertText(dataTransfer.getData(KEY_TEXT))
+        } else if (types.includes('Files')) {
+            let pos = findParentTag(range.realStartContainer(), TOP_LIST)
+            for (let file of dataTransfer.files) {
+                if (!file.type.startsWith('image/')) continue
+                const image = await uploadImage(file)
+                if (isEmptyLine(pos))
+                    pos.replaceWith(image)
+                else
+                    pos.insertAdjacentElement('afterend', image)
+                pos = image
+            }
+            new KRange(pos).active()
         }
     }
 
@@ -174,11 +187,14 @@ export function registryPasteEvent() {
     const htmlParser = new DOMParser()
     KRICH_EDITOR.addEventListener('paste', event => {
         event.preventDefault()
+        // noinspection JSIgnoredPromiseFromCall
         handlePaste(editorRange, event.clipboardData)
     })
     KRICH_EDITOR.addEventListener('dragstart', () => isInside = true)
     // noinspection JSUnresolvedReference
     const isIncompatible = !document.caretRangeFromPoint && !document.caretPositionFromPoint
+    if (isIncompatible)
+        console.warn('您的浏览器不支持 caretRangeFromPoint 和 caretPositionFromPoint，krich 无法定位您的鼠标位置，拖动功能将不可用！')
     KRICH_EDITOR.addEventListener('drop', event => {
         event.preventDefault()
         if (isIncompatible) return
@@ -196,6 +212,7 @@ export function registryPasteEvent() {
             transfer = new DataTransfer()
             transfer.setData(KEY_HTML, html)
         }
+        // noinspection JSIgnoredPromiseFromCall
         handlePaste(KRange.clientPos(clientX, clientY), transfer)
     })
 }
