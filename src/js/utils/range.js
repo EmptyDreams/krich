@@ -219,14 +219,14 @@ export class KRange extends Range {
         if (result) return result
     }
 
-    /**
-     * 判断 `realStartContainer` 和 `realEndContainer` 中是否均满足指定要求
-     * @param predicate {function(Node): any}
-     * @return {boolean}
-     */
-    every(predicate) {
-        return !this.some(it => !predicate(it))
-    }
+    // /**
+    //  * 判断 `realStartContainer` 和 `realEndContainer` 中是否均满足指定要求
+    //  * @param predicate {function(Node): any}
+    //  * @return {boolean}
+    //  */
+    // every(predicate) {
+    //     return !this.some(it => !predicate(it))
+    // }
 
     /**
      * @return {{next: (function(): {value: Node, done: boolean})}}

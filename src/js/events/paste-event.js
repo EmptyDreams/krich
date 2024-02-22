@@ -126,8 +126,13 @@ export function registryPasteEvent() {
             if (!realStart) realStart = range.realStartContainer()
             const lastPos = getLastChildNode(lines[lines.length - 1])
             const updateOfflineData = () => {
-                setCursorPositionAfter(lastPos)
-                offlineData = KRange.activated().serialization()
+                if (isEmptyBodyElement(lastPos)) {
+                    offlineData = new KRange(lastPos)
+                } else {
+                    setCursorPositionAfter(lastPos)
+                    offlineData = KRange.activated()
+                }
+                offlineData = offlineData.serialization()
             }
             let offlineData
             if (isKrichEditor(realStart)) {
