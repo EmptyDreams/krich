@@ -257,7 +257,12 @@ export function insertBefore(pos, ...values) {
  * @param container {Element}
  */
 export function zipTree(container) {
-    console.assert(!isKrichEditor(container), '不能直接对编辑器 content 进行压缩')
+    if (isKrichEditor(container)) {
+        for (let line of container.children) {
+            zipTree(line)
+        }
+        return
+    }
     /** 移除为空的节点 */
     const removeEmptyNode = () => {
         let item = getFirstTextNode(container)

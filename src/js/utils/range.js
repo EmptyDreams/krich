@@ -272,14 +272,15 @@ export class KRange extends Range {
             } else {
                 container.append(...list[1].childNodes)
                 list[1].append(container)
-                while (list[0]?.lastChild) {
-                    list[1].insertBefore(list[0].lastChild, list[1].firstChild)
+                for (let i = list.length - 1; i >= 0; i--) {
+                    const item = list[i]
+                    if (!item || item === commonAncestorContainer) continue
+                    while (item.firstChild) {
+                        commonAncestorContainer.insertBefore(item.firstChild, commonAncestorContainer.firstChild)
+                    }
+                    item.remove()
                 }
-                if (list[2])
-                    list[1].append(...list[2].childNodes)
-                list[0]?.remove?.()
-                list[2]?.remove?.()
-                zipTree(list[1])
+                zipTree(commonAncestorContainer)
             }
         }
     }
