@@ -200,12 +200,12 @@ export function registryPasteEvent() {
     const isIncompatible = !document.caretRangeFromPoint && !document.caretPositionFromPoint
     if (isIncompatible)
         console.warn('您的浏览器不支持 caretRangeFromPoint 和 caretPositionFromPoint，krich 无法定位您的鼠标位置，拖动功能将不可用！')
+    KRICH_EDITOR.addEventListener('dragend', () => isInside = false)
     KRICH_EDITOR.addEventListener('drop', event => {
         event.preventDefault()
         if (isIncompatible) return
         const {clientX, clientY, dataTransfer} = event
         const isInsideCpy = isInside
-        isInside = false
         let transfer = dataTransfer
         if (isInsideCpy) {
             console.assert(!!editorRange, '此时 editorRange 不可能为空')
