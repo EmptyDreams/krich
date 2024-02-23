@@ -379,8 +379,10 @@ export class KRange extends Range {
                 if (nextPos > index) {
                     return [item, index - pos]
                 } else if (nextPos === index) {
-                    while (isEmptyBodyElement(item) && emptyCount-- > 0) {
-                        item = nextLeafNode(item)
+                    while (emptyCount-- > 0) {
+                        const next = nextLeafNode(item)
+                        if (!next || (!isBrNode(next) && !isEmptyBodyElement(next))) break
+                        item = next
                     }
                     if (type > 0)
                         return [item, index - pos]
