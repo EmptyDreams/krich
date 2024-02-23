@@ -10,7 +10,7 @@ import {
 import {setCursorAt, setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
 import {editorRange} from './range-monitor'
 import {
-    createNewLine,
+    createNewLine, getElementBehavior,
     isEmptyLine,
     isMarkerNode
 } from '../utils/tools'
@@ -224,7 +224,18 @@ function enterEvent(event) {
                 element = lastChild.lastChild
                 lastChild.remove()
             }
-            structure.insertAdjacentElement('afterend', element)
+            let newLine = element
+            let insertPos = structure
+            const parentLine = findParentTag(structure.parentNode, TOP_LIST)
+            if (isMultiEleStruct(parentLine)) {
+                const created = getElementBehavior(parentLine).newLine()
+                if (created) {
+                    created.append(element)
+                    newLine = created
+                }
+                insertPos = findParentTag(structure, it => it.parentNode === parentLine)
+            }
+            insertPos.insertAdjacentElement('afterend', newLine)
             if (!structure.firstChild) structure.remove()
         }
     }
