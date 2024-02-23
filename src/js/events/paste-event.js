@@ -6,7 +6,7 @@ import {
     findParentTag, getLastChildNode,
     insertAfterEnd,
     insertBefore,
-    prevLeafNode,
+    prevLeafNode, tryFixDom,
     zipTree
 } from '../utils/dom'
 import {
@@ -196,7 +196,10 @@ export function registryPasteEvent() {
         // noinspection JSIgnoredPromiseFromCall
         handlePaste(editorRange, event.clipboardData)
     })
-    KRICH_EDITOR.addEventListener('dragstart', () => isInside = true)
+    KRICH_EDITOR.addEventListener('dragstart', event => {
+        if (editorRange.body && isMarkerNode(editorRange.body)) event.preventDefault()
+        else isInside = true
+    })
     // noinspection JSUnresolvedReference
     const isIncompatible = !document.caretRangeFromPoint && !document.caretPositionFromPoint
     if (isIncompatible)
@@ -220,5 +223,6 @@ export function registryPasteEvent() {
         // noinspection JSIgnoredPromiseFromCall
         handlePaste(KRange.clientPos(clientX, clientY), transfer)
         tmpBox.remove()
+        tryFixDom()
     })
 }

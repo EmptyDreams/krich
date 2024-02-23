@@ -165,6 +165,18 @@ export function findParentTag(node, checker) {
 
 /** 尝试修复 DOM 中的结构错误 */
 export function tryFixDom() {
+    // 删除没有内容的列表行
+    KRICH_EDITOR.querySelectorAll('li')
+        .forEach(it => {
+            if (isMarkerNode(it.lastChild)) {
+                const parent = it.parentNode
+                if (parent.childElementCount < 2) {
+                    parent.remove()
+                } else {
+                    it.remove()
+                }
+            }
+        })
     // 自动将没有内容的 code 添加换行符
     KRICH_EDITOR.querySelectorAll('pre>code>br:only-child')
         .forEach(it => it.outerHTML = '\n')
