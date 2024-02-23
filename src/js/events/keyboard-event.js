@@ -1,7 +1,7 @@
-import {KRICH_CONTAINER, KRICH_EDITOR, KRICH_HOVER_TIP, TOP_LIST} from '../vars/global-fileds'
+import {KRICH_CONTAINER, KRICH_EDITOR, KRICH_HOVER_TIP, markStatusCacheInvalid, TOP_LIST} from '../vars/global-fileds'
 import {
-    findParentTag, getFirstChildNode,
-    getFirstTextNode, getLastChildNode,
+    findParentTag,
+    getFirstTextNode,
     getLastTextNode,
     nextLeafNode, nextSiblingText,
     prevLeafNode, replaceElement,
@@ -10,9 +10,9 @@ import {
 import {setCursorAt, setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
 import {editorRange} from './range-monitor'
 import {
-    createNewLine, isBrNode,
+    createNewLine,
     isEmptyLine,
-    isMarkerNode, isTextNode
+    isMarkerNode
 } from '../utils/tools'
 import {insertTextToString} from '../utils/string-utils'
 import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
@@ -25,6 +25,8 @@ export function registryKeyboardEvent() {
             case 'Enter':   // 将顶层的 div 替换为 p
                 return () => KRICH_EDITOR.querySelectorAll('div:not([class])')
                     .forEach(it => replaceElement(it, document.createElement('p')))
+            case 'Backspace': case 'Delete':
+                return markStatusCacheInvalid
         }
     }
     KRICH_EDITOR.addEventListener('keyup', event => {
@@ -126,11 +128,12 @@ function deleteEvent(event) {
                 setCursorPositionBefore(line)
             }
         } else {
-            const parent = findParentTag(startContainer.parentNode, TOP_LIST)
-            if (parent && isMultiEleStruct(parent) && parent.childElementCount < 2 && firstTopNode === parent) {
+            const parent = startContainer.parentNode
+            const parentLine = findParentTag(parent, TOP_LIST)
+            if (parentLine && isMultiEleStruct(parentLine) && parent.childElementCount < 2 && firstTopNode === parentLine) {
                 event.preventDefault()
-                parent.replaceWith(startContainer)
-                setCursorPositionAfter(startContainer)
+                parentLine.replaceWith(startContainer)
+                setCursorPositionBefore(startContainer)
             }
         }
     }
