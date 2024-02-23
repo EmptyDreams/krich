@@ -239,7 +239,11 @@ initBehaviors({
             line.append(TODO_MARKER.cloneNode(false))
             return line
         },
-        translator: translateList
+        translator: item => {
+            translateList(item)
+            item.className = 'todo'
+            return item
+        }
     },
     img: {
         state: BEHAVIOR_STATE_NO_STATUS,
@@ -403,7 +407,7 @@ function colorOnclick(range, btn, key) {
  */
 function translateList(item) {
     removeAllAttributes(item)
-    for (let value of item.children) {
+    for (let value of Array.from(item.children)) {
         if (value.nodeName === 'LI')
             removeAllAttributes(value)
         else

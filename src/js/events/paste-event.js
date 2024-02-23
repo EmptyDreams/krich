@@ -12,7 +12,7 @@ import {
 import {
     createElement,
     getElementBehavior,
-    isBrNode, isEmptyBodyElement, isEmptyLine, isKrichEditor,
+    isBrNode, isEmptyBodyElement, isEmptyLine, isKrichEditor, isMarkerNode,
     isTextNode
 } from '../utils/tools'
 import {KRange, setCursorPositionAfter} from '../utils/range'
@@ -35,7 +35,7 @@ export function registryPasteEvent() {
             if (next === 0) break
             if (next) node = next
             next = node.firstChild ?? eachDomTree(node, true, false, () => true, body) ?? 0
-            if (node.nodeName === 'LI') continue
+            if (node.nodeName === 'LI' || isMarkerNode(node)) continue
             let behavior = getElementBehavior(node)
             if (!behavior) {
                 if (!isTextNode(node)) {
