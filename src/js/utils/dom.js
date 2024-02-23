@@ -49,7 +49,8 @@ export function eachDomTree(start, forward, first, consumer, limit) {
             if (result) return calcResult(item, result)
         }
     }
-    const isTail = start === (limit ?? KRICH_EDITOR)
+    const parentNode = start.parentNode
+    const isTail = !parentNode || (start === (limit ?? KRICH_EDITOR))
     const childNodes = isTail ? [start] : Array.from(start.parentNode.childNodes)
     if (forward) childNodes.reverse()
     const index = childNodes.indexOf(start)
@@ -61,7 +62,7 @@ export function eachDomTree(start, forward, first, consumer, limit) {
             if (result) return result
         }
     }
-    return isTail ? null : eachDomTree(start.parentNode, forward, false, consumer, limit)
+    return isTail ? null : eachDomTree(parentNode, forward, false, consumer, limit)
 }
 
 /**
