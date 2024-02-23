@@ -1,19 +1,18 @@
 import {KRICH_CONTAINER, KRICH_EDITOR, KRICH_HOVER_TIP, TOP_LIST} from '../vars/global-fileds'
 import {
-    findParentTag,
-    getFirstTextNode,
+    findParentTag, getFirstChildNode,
+    getFirstTextNode, getLastChildNode,
     getLastTextNode,
     nextLeafNode, nextSiblingText,
-    prevLeafNode,
-    replaceElement,
+    prevLeafNode, replaceElement,
     tryFixDom
 } from '../utils/dom'
 import {setCursorAt, setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
 import {editorRange} from './range-monitor'
 import {
-    createNewLine,
+    createNewLine, isBrNode,
     isEmptyLine,
-    isMarkerNode
+    isMarkerNode, isTextNode
 } from '../utils/tools'
 import {insertTextToString} from '../utils/string-utils'
 import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
@@ -26,8 +25,6 @@ export function registryKeyboardEvent() {
             case 'Enter':   // 将顶层的 div 替换为 p
                 return () => KRICH_EDITOR.querySelectorAll('div:not([class])')
                     .forEach(it => replaceElement(it, document.createElement('p')))
-            case 'Backspace': case 'Delete':
-                return tryFixDom
         }
     }
     KRICH_EDITOR.addEventListener('keyup', event => {
@@ -83,8 +80,13 @@ function tabEvent(event) {
  * @param event {KeyboardEvent}
  */
 function deleteEvent(event) {
-    const {startContainer, startOffset} = editorRange
-    if (!editorRange.collapsed) return
+    const {startContainer, startOffset, collapsed} = editorRange
+    if (!collapsed) {
+        event.preventDefault()
+        editorRange.insertText('')
+        tryFixDom()
+        return
+    }
     const realStartContainer = editorRange.realStartContainer()
     const pre = findParentTag(realStartContainer, ['PRE'])
     if (pre) {

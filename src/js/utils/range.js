@@ -544,8 +544,8 @@ export class KRange extends Range {
 
     /**
      * 插入文本，如果选区选择了一部分文字，将会替换选择的文字
-     * @param text {string}
-     * @return {[Node, number, number]|false} 插入失败返回 false，否则返回插入的位置
+     * @param text {string} 要插入的文本
+     * @return {boolean} 是否插入成功
      */
     insertText(text) {
         const {startContainer, startOffset, collapsed} = this
@@ -555,23 +555,34 @@ export class KRange extends Range {
         /** @type {Text|Node} */
         let insertedNode
         if (collapsed) {
-            index = fixed ? 0 : startOffset
+            if (!text || !isTextNode(realStartContainer)) return false
             insertedNode = realStartContainer
         } else {
-            if (fixed || !startOffset) {
-                if (!isTextNode(prevLeafNode(realStartContainer)))
-                    return false
-            }
-            const tmpBox = createElement('div')
+            const tmpBox = createElement('a')
             this.surroundContents(tmpBox)
-            insertedNode = prevLeafNode(tmpBox)
-            console.assert(isTextNode(insertedNode), 'inserted Node 应当是文本节点', insertedNode)
-            index = insertedNode.textContent.length
-            tmpBox.remove()
+            index = 0
+            if (text) {
+                insertedNode = createElement('br')
+                tmpBox.replaceWith(insertedNode)
+            } else {
+                const list = [[nextLeafNode, setCursorPositionBefore], [prevLeafNode, setCursorPositionAfter]]
+                for (let value of list) {
+                    insertedNode = value[0](tmpBox)
+                    if (insertedNode) {
+                        tmpBox.remove()
+                        value[1](insertedNode)
+                        return true
+                    }
+                }
+                KRICH_EDITOR.innerHTML = '<p><br></p>'
+                setCursorPositionBefore(KRICH_EDITOR)
+                return true
+            }
         }
         if (!isTextNode(insertedNode)) return false
         if (isBrNode(insertedNode)) {
             const node = document.createTextNode(text)
+            // noinspection JSCheckFunctionSignatures
             insertedNode.replaceWith(node)
             insertedNode = node
         } else {
@@ -579,7 +590,7 @@ export class KRange extends Range {
         }
         const pos = index + text.length
         setCursorAt(insertedNode, pos)
-        return [insertedNode, index, pos]
+        return true
     }
 
     /**
