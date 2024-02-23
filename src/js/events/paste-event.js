@@ -19,6 +19,7 @@ import {KRange, setCursorPositionAfter} from '../utils/range'
 import {highlightCode} from '../utils/highlight'
 import {editorRange} from './range-monitor'
 import {uploadImage} from '../utils/image-handler'
+import {isMultiEleStruct} from '../types/button-behavior'
 
 export function registryPasteEvent() {
     /**
@@ -147,7 +148,7 @@ export function registryPasteEvent() {
                 const topLine = findParentTag(realStart, TOP_LIST)
                 const first = lines[0]
                 let offset = 0
-                if (!isEmptyBodyElement(first)) {
+                if (!isEmptyBodyElement(first) && !isMultiEleStruct(first)) {
                     offset = 1
                     const [left, right] = range.splitNode(
                         findParentTag(realStart, it => it.parentNode === topLine)
