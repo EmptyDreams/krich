@@ -275,8 +275,8 @@ export class KRange extends Range {
                 for (let i = list.length - 1; i >= 0; i--) {
                     const item = list[i]
                     if (!item || item === commonAncestorContainer) continue
-                    while (item.firstChild) {
-                        commonAncestorContainer.insertBefore(item.firstChild, commonAncestorContainer.firstChild)
+                    while (item.lastChild) {
+                        commonAncestorContainer.insertBefore(item.lastChild, commonAncestorContainer.firstChild)
                     }
                     item.remove()
                 }
