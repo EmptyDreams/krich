@@ -460,6 +460,7 @@ export class KRange extends Range {
          * @return {Node|undefined} 生成的树结构的顶层节点
          */
         function splitNodeHelper(node, offset, tree) {
+            if (!tree && !offset && !root.contains(prevLeafNode(node))) return
             /** @type {Node} */
             let newNode
             const initNewNode = () => newNode = node.cloneNode(false)
@@ -488,7 +489,7 @@ export class KRange extends Range {
             }
         }
         const {startContainer, startOffset, endContainer, endOffset, collapsed} = this
-        const left = startOffset ? splitNodeHelper(startContainer, startOffset) : null
+        const left = splitNodeHelper(startContainer, startOffset)
         if (collapsed) return [left, left === root ? null : root]
         const mid = splitNodeHelper(endContainer, endOffset - (startContainer === endContainer ? startOffset : 0))
         return [left, mid, root === mid ? null : root]
