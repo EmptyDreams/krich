@@ -249,7 +249,7 @@ export class KRange extends Range {
     }
 
     /**
-     * 使用指定的容器包裹范围内选中的节点（不能跨行）
+     * 使用指定的容器包裹范围内选中的节点
      * @param container {Element} 容器
      * @param lca {Element?} 切割范围限制，留空自动决定
      * @return {void}
