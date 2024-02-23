@@ -402,7 +402,8 @@ function colorOnclick(range, btn, key) {
  * @param item {Element}
  */
 function translateList(item) {
-    for (let value of [item, ...item.children]) {
+    removeAllAttributes(item)
+    for (let value of item.children) {
         if (value.nodeName === 'LI')
             removeAllAttributes(value)
         else
