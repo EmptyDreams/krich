@@ -17,7 +17,7 @@ import {
 } from '../utils/tools'
 import {KRange, setCursorPositionAfter} from '../utils/range'
 import {highlightCode} from '../utils/highlight'
-import {editorRange} from './range-monitor'
+import {editorRange, updateEditorRange} from './range-monitor'
 import {uploadImage} from '../utils/image-handler'
 import {isMultiEleStruct} from '../types/button-behavior'
 
@@ -112,10 +112,12 @@ export function registryPasteEvent() {
                 .replaceAll('\r', '')
                 .replaceAll('\n', '<br>')
             const targetBody = htmlParser.parseFromString(content, KEY_HTML).querySelector('body')
-            translate(targetBody)
+            if (!isInside) {
+                translate(targetBody)
+            }
             const lines = packLine(targetBody)
-            for (let line of lines) {
-                zipTree(line)
+            if (!isInside) {    // 来自外部的内容先压缩一遍
+                lines.forEach(zipTree)
             }
             let realStart, tmpBox
             if (!range.collapsed) {
@@ -197,7 +199,8 @@ export function registryPasteEvent() {
         handlePaste(editorRange, event.clipboardData)
     })
     KRICH_EDITOR.addEventListener('dragstart', event => {
-        if (editorRange?.body && isMarkerNode(editorRange.body)) event.preventDefault()
+        if (!editorRange) updateEditorRange()
+        if (editorRange.body && isMarkerNode(editorRange.body)) event.preventDefault()
         else isInside = true
     })
     // noinspection JSUnresolvedReference
@@ -222,7 +225,7 @@ export function registryPasteEvent() {
         }
         // noinspection JSIgnoredPromiseFromCall
         handlePaste(KRange.clientPos(clientX, clientY), transfer)
-        tmpBox.remove()
+        if (tmpBox) tmpBox.remove()
         tryFixDom()
     })
 }
