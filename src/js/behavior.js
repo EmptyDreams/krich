@@ -247,7 +247,7 @@ initBehaviors({
     },
     img: {
         state: BEHAVIOR_STATE_NO_STATUS,
-        exp: 'img.img',
+        exp: 'img:not(.inline)',
         render: () => imageStyle,
         onclick: range => {
             const line = findParentTag(range.realStartContainer(), TOP_LIST)
@@ -255,7 +255,14 @@ initBehaviors({
             return true
         },
         hover: img => openHoverTip('img', img),
-        translator: removeAllAttributes
+        translator: item => {
+            const src = item.getAttribute('src')
+            const width = item.style.width
+            removeAllAttributes(item)
+            item.setAttribute('src', src)
+            item.style.width = width || '30%'
+            return item
+        }
     },
     code: {
         state: BEHAVIOR_STATE_TEXT_AREA,

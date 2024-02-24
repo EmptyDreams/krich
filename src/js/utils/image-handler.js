@@ -9,7 +9,6 @@ import {imageHandler} from '../vars/global-exports-funtions'
  */
 export async function uploadImage(file, element) {
     if (!element) element = createElement('img', {
-        class: 'img',
         style: 'width:30%'
     })
     await imageHandler(element, file)
