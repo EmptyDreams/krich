@@ -197,7 +197,7 @@ export function registryPasteEvent() {
         handlePaste(editorRange, event.clipboardData)
     })
     KRICH_EDITOR.addEventListener('dragstart', event => {
-        if (editorRange.body && isMarkerNode(editorRange.body)) event.preventDefault()
+        if (editorRange?.body && isMarkerNode(editorRange.body)) event.preventDefault()
         else isInside = true
     })
     // noinspection JSUnresolvedReference
