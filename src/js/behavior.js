@@ -285,14 +285,12 @@ initBehaviors({
  * 触发指定按钮的 click 事件
  * @param key {string|ButtonBehavior}
  * @param range {KRange?}
- * @param intact {true?} 是否完整的模拟点击过程，留空直接触发点击后的事件，否则模拟点击按钮
  * @return {boolean|void|undefined}
  */
-export function clickButton(key, range, intact) {
+export function clickButton(key, range) {
     const behavior = typeof key === 'string' ?  behaviors[key] : key
     console.assert(!!behavior, 'key 值不存在：' + key)
-    if (intact) behavior.button.click()
-    else return behavior.onclick(range ?? editorRange, behavior.button)
+    return behavior.onclick(range ?? editorRange, behavior.button)
 }
 
 /**
