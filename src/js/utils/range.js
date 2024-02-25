@@ -12,7 +12,7 @@ import {
     isBrNode,
     isEmptyBodyElement,
     isEmptyLine,
-    isKrichEditor,
+    isKrichEditor, isListLine,
     isMarkerNode,
     isTextNode
 } from './tools'
@@ -540,7 +540,7 @@ export class KRange extends Range {
         if (lcaSpecialization) {
             const checker = it => {
                 const parent = findParentTag(
-                    it.parentNode, it => it === commonAncestorContainer || it.nodeName !== 'LI'
+                    it.parentNode, it => it === commonAncestorContainer || !isListLine(it)
                 )
                 return parent === commonAncestorContainer || (!parent && isKrichEditor(commonAncestorContainer))
             }

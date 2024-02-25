@@ -117,6 +117,15 @@ export function isMarkerNode(node) {
 }
 
 /**
+ * 判断指定节点是否是 `li`
+ * @param node {Node}
+ * @return {boolean}
+ */
+export function isListLine(node) {
+    return node.nodeName === 'LI'
+}
+
+/**
  * 判断两个富文本节点是否相同（不判断节点内容）
  * @param arg0 {HTMLElement}
  * @param arg1 {HTMLElement}

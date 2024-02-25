@@ -48,7 +48,7 @@ import {KRange} from './utils/range'
 import {findParentTag, zipTree} from './utils/dom'
 import {
     createElement,
-    isEmptyBodyElement,
+    isEmptyBodyElement, isListLine,
     readSelectedColor,
     removeAllAttributes,
     setSelectedColor
@@ -413,7 +413,7 @@ function colorOnclick(range, btn, key) {
 function translateList(item) {
     removeAllAttributes(item)
     for (let value of Array.from(item.children)) {
-        if (value.nodeName === 'LI')
+        if (isListLine(value))
             removeAllAttributes(value)
         else
             value.remove()

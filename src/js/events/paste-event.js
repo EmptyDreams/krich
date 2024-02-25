@@ -12,7 +12,7 @@ import {
 import {
     createElement,
     getElementBehavior,
-    isBrNode, isEmptyBodyElement, isEmptyLine, isKrichEditor, isMarkerNode,
+    isBrNode, isEmptyBodyElement, isEmptyLine, isKrichEditor, isListLine, isMarkerNode,
     isTextNode
 } from '../utils/tools'
 import {KRange, setCursorPositionAfter} from '../utils/range'
@@ -35,7 +35,7 @@ export function registryPasteEvent() {
             if (next === 0) break
             if (next) node = next
             next = node.firstChild ?? eachDomTree(node, true, false, () => true, body) ?? 0
-            if (node.nodeName === 'LI' || isMarkerNode(node)) continue
+            if (isListLine(node) || isMarkerNode(node)) continue
             let behavior = getElementBehavior(node)
             if (!behavior) {
                 if (!isTextNode(node)) {
@@ -226,7 +226,7 @@ export function registryPasteEvent() {
             if (isTextNode(lca)) lca = lca.parentNode
             editorRange.surroundContents(tmpBox, lca)
             const firstChild = tmpBox.firstChild
-            if (tmpBox.childNodes.length === 1 && firstChild.nodeName === 'LI') {
+            if (tmpBox.childNodes.length === 1 && isListLine(firstChild)) {
                 firstChild.replaceWith(...firstChild.childNodes)
             }
             // noinspection HtmlRequiredLangAttribute
