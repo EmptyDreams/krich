@@ -684,4 +684,22 @@ export class KRange extends Range {
         return result
     }
 
+    /**
+     * 求两个节点的最近公共祖先
+     * @param arg0 {Node}
+     * @param arg1 {Node}
+     * @return {Node}
+     */
+    static lca(arg0, arg1) {
+        if (arg0 === arg1) return arg0
+        const posCompare = arg0.compareDocumentPosition(arg1)
+        if (posCompare & Node.DOCUMENT_POSITION_PRECEDING) {
+            [arg0, arg1] = [arg1, arg0]
+        }
+        const range = new KRange()
+        range.setStart(arg0, 0)
+        range.setEnd(arg1, 0)
+        return range.commonAncestorContainer
+    }
+
 }

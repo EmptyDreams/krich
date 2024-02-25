@@ -167,16 +167,15 @@ export function registryPasteEvent() {
                 zipTree(topLine)
             }
             if (!offlineData) updateOfflineData()
-            // 处理代码块
-            lines.forEach(it => {
+            for (let it of lines) {
                 if (it.nodeName === 'PRE') {
-                    // noinspection JSIgnoredPromiseFromCall
-                    highlightCode(null, it)
+                    await highlightCode(null, it)
                 } else {
-                    it.querySelectorAll('pre')
-                        .forEach(value => highlightCode(null, value))
+                    for (let value of it.querySelectorAll('pre')) {
+                        await highlightCode(null, value)
+                    }
                 }
-            })
+            }
             KRange.deserialized(offlineData).active()
         } else if (types.includes(KEY_TEXT)) {
             range.insertText(dataTransfer.getData(KEY_TEXT))
@@ -212,7 +211,7 @@ export function registryPasteEvent() {
     if (isIncompatible)
         console.warn('您的浏览器不支持 caretRangeFromPoint 和 caretPositionFromPoint，krich 无法定位您的鼠标位置，拖动功能将不可用！')
     KRICH_EDITOR.addEventListener('dragend', () => isInside = false)
-    KRICH_EDITOR.addEventListener('drop', event => {
+    KRICH_EDITOR.addEventListener('drop', async event => {
         event.preventDefault()
         if (isIncompatible) return
         const {clientX, clientY, dataTransfer} = event
@@ -220,16 +219,22 @@ export function registryPasteEvent() {
         let transfer = dataTransfer, tmpBox, offlineData
         if (isInsideCpy) {
             console.assert(!!editorRange, '此时 editorRange 不可能为空')
-            offlineData = KRange.clientPos(clientX, clientY).serialization()
+            const range = KRange.clientPos(clientX, clientY)
+            offlineData = range.serialization()
             tmpBox = createElement('div', ['tmp'])
-            editorRange.surroundContents(tmpBox, KRICH_EDITOR)
+            let lca = KRange.lca(range.realStartContainer(), editorRange.commonAncestorContainer)
+            if (isTextNode(lca)) lca = lca.parentNode
+            editorRange.surroundContents(tmpBox, lca)
+            const firstChild = tmpBox.firstChild
+            if (tmpBox.childNodes.length === 1 && firstChild.nodeName === 'LI') {
+                firstChild.replaceWith(...firstChild.childNodes)
+            }
             // noinspection HtmlRequiredLangAttribute
             const html = '<html><body>' + tmpBox.innerHTML + '</body></html>'
             transfer = new DataTransfer()
             transfer.setData(KEY_HTML, html)
         }
-        // noinspection JSIgnoredPromiseFromCall
-        handlePaste(offlineData ? KRange.deserialized(offlineData) : KRange.clientPos(clientX, clientY), transfer)
+        await handlePaste(offlineData ? KRange.deserialized(offlineData) : KRange.clientPos(clientX, clientY), transfer)
         if (tmpBox) tmpBox.remove()
         tryFixDom()
     })
