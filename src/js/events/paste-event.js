@@ -112,7 +112,7 @@ export function registryPasteEvent() {
                 .replaceAll('\r', '')
                 .replaceAll('\n', '<br>')
             const targetBody = htmlParser.parseFromString(content, KEY_HTML).querySelector('body')
-            if (!isInside) {
+            if (!isInside) {    // 来自外部的内容要先进行转义
                 translate(targetBody)
             }
             const lines = packLine(targetBody)
@@ -121,12 +121,14 @@ export function registryPasteEvent() {
             }
             let realStart, tmpBox
             if (!range.collapsed) {
+                // 如果 KRange 不是折叠状态，先移除选中的内容
                 tmpBox = createElement('div', ['tmp'])
                 range.surroundContents(tmpBox)
                 realStart = prevLeafNode(tmpBox) ?? tmpBox.parentNode
                 tmpBox.remove()
             }
             if (!realStart) realStart = range.realStartContainer()
+            // 存储光标最终所在的位置
             const lastPos = getLastChildNode(lines[lines.length - 1])
             const updateOfflineData = () => {
                 if (isEmptyBodyElement(lastPos)) {
@@ -150,6 +152,7 @@ export function registryPasteEvent() {
                 const topLine = findParentTag(realStart, TOP_LIST)
                 const first = lines[0]
                 let offset = 0
+                // 将首行折叠到目标位置
                 if (!isEmptyBodyElement(first) && !isMultiEleStruct(first)) {
                     offset = 1
                     const [left, right] = range.splitNode(
@@ -164,6 +167,7 @@ export function registryPasteEvent() {
                 zipTree(topLine)
             }
             if (!offlineData) updateOfflineData()
+            // 处理代码块
             lines.forEach(it => {
                 if (it.nodeName === 'PRE') {
                     // noinspection JSIgnoredPromiseFromCall
