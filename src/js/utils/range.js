@@ -588,7 +588,7 @@ export class KRange extends Range {
             if (!text || !isTextNode(realStartContainer)) return false
             insertedNode = realStartContainer
         } else {
-            const tmpBox = createElement('a')
+            const tmpBox = createElement('div', ['tmp'])
             this.surroundContents(tmpBox)
             index = 0
             if (text) {

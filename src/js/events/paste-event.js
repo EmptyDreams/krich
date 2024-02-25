@@ -220,7 +220,7 @@ export function registryPasteEvent() {
         let transfer = dataTransfer, tmpBox
         if (isInsideCpy) {
             console.assert(!!editorRange, '此时 editorRange 不可能为空')
-            tmpBox = createElement('a')
+            tmpBox = createElement('div', ['tmp'])
             editorRange.surroundContents(tmpBox, KRICH_EDITOR)
             // noinspection HtmlRequiredLangAttribute
             const html = '<html><body>' + tmpBox.innerHTML + '</body></html>'
