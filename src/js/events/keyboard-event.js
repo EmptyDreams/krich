@@ -215,6 +215,7 @@ function enterEvent(event) {
         const lastChild = structure.lastChild
         const lastChildNodes = lastChild.childNodes
         const numCheckResult = lastChildNodes.length < 2 || (lastChildNodes.length < 3 && isMarkerNode(lastChildNodes[0]))
+        let li
         if (numCheckResult && !lastChild.textContent && startContainer.contains(getLastTextNode(structure))) {
             /* 在多元素结构最后一个空行按下回车时自动退出 */
             event.preventDefault()
@@ -224,19 +225,19 @@ function enterEvent(event) {
                 element = lastChild.lastChild
                 lastChild.remove()
             }
-            let newLine = element
-            let insertPos = structure
-            const parentLine = findParentTag(structure.parentNode, TOP_LIST)
-            if (isMultiEleStruct(parentLine)) {
-                const created = getElementBehavior(parentLine).newLine()
-                if (created) {
-                    created.append(element)
-                    newLine = created
-                }
-                insertPos = findParentTag(structure, it => it.parentNode === parentLine)
-            }
-            insertPos.insertAdjacentElement('afterend', newLine)
+            structure.insertAdjacentElement('afterend', element)
             if (!structure.firstChild) structure.remove()
+        } else if (
+            isEmptyLine(startContainer) &&
+            startContainer === (li = findParentTag(startContainer, ['LI']))?.lastChild
+        ) {
+            /* 在多元素某一个子行的最后一个空白行按回车时将当前行替换为列表的子行 */
+            event.preventDefault()
+            element = startContainer
+            const newLine = getElementBehavior(structure).newLine()
+            console.assert(!!newLine, '进入到这里应当必然存在 newLine 的值')
+            newLine.append(element)
+            li.insertAdjacentElement('afterend', newLine)
         }
     }
     if (collapsed && !element) handleMesEnter()
