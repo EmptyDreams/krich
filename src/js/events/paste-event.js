@@ -217,9 +217,10 @@ export function registryPasteEvent() {
         if (isIncompatible) return
         const {clientX, clientY, dataTransfer} = event
         const isInsideCpy = isInside
-        let transfer = dataTransfer, tmpBox
+        let transfer = dataTransfer, tmpBox, offlineData
         if (isInsideCpy) {
             console.assert(!!editorRange, '此时 editorRange 不可能为空')
+            offlineData = KRange.clientPos(clientX, clientY).serialization()
             tmpBox = createElement('div', ['tmp'])
             editorRange.surroundContents(tmpBox, KRICH_EDITOR)
             // noinspection HtmlRequiredLangAttribute
@@ -228,7 +229,7 @@ export function registryPasteEvent() {
             transfer.setData(KEY_HTML, html)
         }
         // noinspection JSIgnoredPromiseFromCall
-        handlePaste(KRange.clientPos(clientX, clientY), transfer)
+        handlePaste(offlineData ? KRange.deserialized(offlineData) : KRange.clientPos(clientX, clientY), transfer)
         if (tmpBox) tmpBox.remove()
         tryFixDom()
     })
