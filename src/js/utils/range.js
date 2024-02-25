@@ -110,7 +110,8 @@ export class KRange extends Range {
             this.collapse(true)
         } else if (!isTextNode(endContainer) && !isEmptyBodyElement(endContainer)) {
             const node = endContainer.childNodes[endOffset]
-            this.setEndBefore(node)
+            if (node) this.setEndBefore(node)
+            else this.setEndAfter(endContainer)
         } else {
             super.setEnd(endContainer, endOffset)
         }
@@ -215,8 +216,11 @@ export class KRange extends Range {
         let result = predicate(this.realStartContainer())
         if (result) return result
         if (this.collapsed) return
-        result = predicate(this.realEndContainer())
-        if (result) return result
+        const end = this.realEndContainer()
+        if (end) {
+            result = predicate(end)
+            if (result) return result
+        }
     }
 
     // /**
@@ -272,13 +276,13 @@ export class KRange extends Range {
             } else {
                 container.append(...list[1].childNodes)
                 list[1].append(container)
-                for (let i = list.length - 1; i >= 0; i--) {
-                    const item = list[i]
-                    if (!item || item === commonAncestorContainer) continue
-                    while (item.lastChild) {
-                        commonAncestorContainer.insertBefore(item.lastChild, commonAncestorContainer.firstChild)
-                    }
-                    item.remove()
+                while (list[0]?.lastChild) {
+                    commonAncestorContainer.insertBefore(list[0].lastChild, commonAncestorContainer.firstChild)
+                }
+                list[0]?.remove?.()
+                if (list[2]?.firstChild) {
+                    commonAncestorContainer.append(...list[2].childNodes)
+                    list[2].remove()
                 }
                 zipTree(commonAncestorContainer)
             }
@@ -460,27 +464,45 @@ export class KRange extends Range {
          * @return {Node|undefined} 生成的树结构的顶层节点
          */
         function splitNodeHelper(node, offset, tree) {
-            if (!tree && !offset && !root.contains(prevLeafNode(node))) return
             /** @type {Node} */
             let newNode
             const initNewNode = () => newNode = node.cloneNode(false)
             if (isTextNode(node)) {
                 const textContent = node.textContent
+                if (!tree && !offset && !root.contains(prevLeafNode(node)))
                 if (offset === textContent.length && !root.contains(nextLeafNode(node)))
                     return root
                 initNewNode()
                 newNode.textContent = textContent.substring(0, offset)
                 node.textContent = textContent.substring(offset)
-            } else if (!tree && offset === node.childNodes.length) {
-                return root
             } else {
-                initNewNode()
-                for (let i = 0; i !== offset; ++i) {
-                    const item = node.firstChild
-                    if (!item || item === offset) break
-                    newNode.appendChild(item)
+                let prev
+                if (typeof offset === 'number') {
+                    const realNode = (!offset && isEmptyBodyElement(node)) ? node : node.childNodes[offset]
+                    if (!realNode) {
+                        console.assert(!tree, 'realNode 为空时 tree 也应当为空')
+                        return root
+                    }
+                    prev = prevLeafNode(realNode)
+                    if (!tree) {
+                        if (!offset && !root.contains(prev)) {
+                            return
+                        } else if (offset === node.childNodes.length && !root.contains(realNode)) {
+                            return root
+                        }
+                    }
                 }
-                if (tree) newNode.appendChild(tree)
+                if (offset) {
+                    initNewNode()
+                    for (let i = 0; i !== offset; ++i) {
+                        const item = node.firstChild
+                        if (!item || item === offset) break
+                        newNode.appendChild(item)
+                    }
+                    if (tree) newNode.appendChild(tree)
+                } else {
+                    return splitNodeHelper(prev, (isTextNode(prev) ? prev.textContent : prev.childNodes).length)
+                }
             }
             if (node === root) {
                 return node.parentNode.insertBefore(newNode, node)
@@ -492,7 +514,7 @@ export class KRange extends Range {
         const left = splitNodeHelper(startContainer, startOffset)
         if (collapsed) return [left, left === root ? null : root]
         const mid = splitNodeHelper(endContainer, endOffset - (startContainer === endContainer ? startOffset : 0))
-        return [left, mid, root === mid ? null : root]
+        return [left === root ? null : left, mid, mid === root ? null : root]
     }
 
     /**
