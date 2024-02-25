@@ -274,15 +274,20 @@ export class KRange extends Range {
                 container.append(list[1])
                 zipTree(list[1].parentElement)
             } else {
-                container.append(...list[1].childNodes)
-                list[1].append(container)
-                while (list[0]?.lastChild) {
-                    commonAncestorContainer.insertBefore(list[0].lastChild, commonAncestorContainer.firstChild)
-                }
-                list[0]?.remove?.()
-                if (list[2]?.firstChild) {
-                    commonAncestorContainer.append(...list[2].childNodes)
-                    list[2].remove()
+                const index = list.findIndex(it => it === commonAncestorContainer)
+                container.append(...commonAncestorContainer.childNodes)
+                commonAncestorContainer.append(container)
+                for (let i = list.length - 1; i >= 0; i--) {
+                    const item = list[i]
+                    if (i === index || !item) continue
+                    if (i > index) {
+                        commonAncestorContainer.append(...item.childNodes)
+                    } else {
+                        while (item.lastChild) {
+                            commonAncestorContainer.insertBefore(item.lastChild, commonAncestorContainer.firstChild)
+                        }
+                    }
+                    item.remove()
                 }
                 zipTree(commonAncestorContainer)
             }
