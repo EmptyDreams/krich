@@ -275,8 +275,8 @@ export class KRange extends Range {
                 zipTree(list[1].parentElement)
             } else {
                 const index = list.findIndex(it => it === commonAncestorContainer)
-                container.append(...commonAncestorContainer.childNodes)
-                commonAncestorContainer.append(container)
+                container.append(...list[1].childNodes)
+                list[1].append(container)
                 for (let i = list.length - 1; i >= 0; i--) {
                     const item = list[i]
                     if (i === index || !item) continue
