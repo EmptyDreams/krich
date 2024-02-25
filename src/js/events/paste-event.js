@@ -216,18 +216,21 @@ export function registryPasteEvent() {
         if (isIncompatible) return
         const {clientX, clientY, dataTransfer} = event
         const isInsideCpy = isInside
-        let transfer = dataTransfer, tmpBox, offlineData
+        let transfer = dataTransfer, tmpBox, offlineData, mergeList
         if (isInsideCpy) {
             console.assert(!!editorRange, '此时 editorRange 不可能为空')
             const range = KRange.clientPos(clientX, clientY)
             offlineData = range.serialization()
             tmpBox = createElement('div', ['tmp'])
-            let lca = KRange.lca(range.realStartContainer(), editorRange.commonAncestorContainer)
+            const ancestor = editorRange.commonAncestorContainer
+            let lca = KRange.lca(range.realStartContainer(), ancestor)
             if (isTextNode(lca)) lca = lca.parentNode
             editorRange.surroundContents(tmpBox, lca)
             const firstChild = tmpBox.firstChild
             if (tmpBox.childNodes.length === 1 && isListLine(firstChild)) {
                 firstChild.replaceWith(...firstChild.childNodes)
+                // 判断挪动之后是否需要合并列表
+                mergeList = true
             }
             // noinspection HtmlRequiredLangAttribute
             const html = '<html><body>' + tmpBox.innerHTML + '</body></html>'
@@ -235,7 +238,18 @@ export function registryPasteEvent() {
             transfer.setData(KEY_HTML, html)
         }
         await handlePaste(offlineData ? KRange.deserialized(offlineData) : KRange.clientPos(clientX, clientY), transfer)
-        if (tmpBox) tmpBox.remove()
+        if (tmpBox) {
+            if (mergeList) {
+                const prev = tmpBox.previousSibling
+                const next = tmpBox.nextSibling
+                if (isListLine(prev) && isListLine(next) && prev.firstChild.nodeName === next.firstChild.nodeName) {
+                    // noinspection JSUnresolvedReference
+                    prev.firstChild.append(...next.firstChild.childNodes)
+                    next.remove()
+                }
+            }
+            tmpBox.remove()
+        }
         tryFixDom()
     })
 }
