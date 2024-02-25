@@ -16,7 +16,7 @@ export function isActive(button) {
     const classList = button.classList
     if (classList.contains('color')) {
         // noinspection JSUnresolvedReference
-        return button.value !== selectValue
+        return button.lastChild.value !== selectValue
     }
     if (selectValue)
         return selectValue !== '0'
@@ -49,28 +49,23 @@ export function compareBtnListStatusWith(node) {
  * @param node {Node} 文本节点
  */
 export function syncButtonsStatus(node) {
-    const syncHelper = (button, element) => {
-        const setter = element ? getElementBehavior(element).setter : null
+    findDiffButton(node, (button, element) => {
+        const setter = getElementBehavior(button).setter
         const buttonClassList = button.classList
         if (setter) {
             setter(button, element)
         } else if (buttonClassList.contains('select')) {
             const value = button.getElementsByClassName('value')[0]
-            if (buttonClassList.contains('color')) {
-                value.style.background = element?.getAttribute?.('style') ?? button.getAttribute(SELECT_VALUE)
-            } else {
-                const selectValue = element?.getAttribute(SELECT_VALUE) ?? '0'
-                button.setAttribute(SELECT_VALUE, selectValue)
-                const item = button.querySelector(`.item[${SELECT_VALUE}="${selectValue}"]`)
-                value.innerHTML = item.innerHTML
-            }
+            const selectValue = element?.getAttribute(SELECT_VALUE) ?? '0'
+            button.setAttribute(SELECT_VALUE, selectValue)
+            const item = button.querySelector(`.item[${SELECT_VALUE}="${selectValue}"]`)
+            value.innerHTML = item.innerHTML
         } else if (element) {
             buttonClassList.add('active')
         } else {
             buttonClassList.remove('active')
         }
-    }
-    findDiffButton(node, syncHelper)
+    })
 }
 
 /**
