@@ -269,7 +269,7 @@ export class KRange extends Range {
         } else {
             const commonAncestorContainer = lca ?? this.commonAncestorContainer
             const list = this.splitNode(commonAncestorContainer)
-            if (commonAncestorContainer.nodeType === Node.TEXT_NODE) {
+            if (isTextNode(commonAncestorContainer)) {
                 list[1].parentNode.insertBefore(container, list[1])
                 container.append(list[1])
                 zipTree(list[1].parentElement)
