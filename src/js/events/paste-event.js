@@ -212,9 +212,8 @@ export function registryPasteEvent() {
         handlePaste(editorRange, event.clipboardData)
     })
     KRICH_EDITOR.addEventListener('dragstart', event => {
-        if (!editorRange) {
-            const target = event.target
-            console.assert(isEmptyBodyElement(target), '能够直接拖动的应该只有 EBE 标签', target.outerHTML)
+        const target = event.target
+        if (isEmptyBodyElement(target)) {
             modifyEditorRange(new KRange(target))
         }
         if ((editorRange.body && isMarkerNode(editorRange.body)) || // 选中代办列表的选择框时禁止拖动
