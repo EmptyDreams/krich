@@ -208,7 +208,11 @@ export function registryPasteEvent() {
     })
     KRICH_EDITOR.addEventListener('dragstart', event => {
         if (!editorRange) updateEditorRange()
-        if (editorRange.body && isMarkerNode(editorRange.body)) event.preventDefault()
+        if ((editorRange.body && isMarkerNode(editorRange.body)) || // 选中代办列表的选择框时禁止拖动
+            (editorRange.only(it => findParentTag(it, isTextArea))) // 当选区跨越文本域和非文本域时禁止拖动
+        ) {
+            event.preventDefault()
+        }
         else isInside = true
     })
     // noinspection JSUnresolvedReference

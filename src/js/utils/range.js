@@ -223,6 +223,19 @@ export class KRange extends Range {
         }
     }
 
+    /**
+     * 判断 `realStartContainer` 和 `realEndContainer` 中是否有且仅有一个满足指定要求
+     * @param predicate {function(Node):any}
+     * @return {boolean|undefined}
+     */
+    only(predicate) {
+        if (this.collapsed) return
+        const start = predicate(this.realStartContainer())
+        const realEnd = this.realEndContainer()
+        const end = realEnd ? predicate(realEnd) : realEnd
+        return (start || end) && (!start || !end)
+    }
+
     // /**
     //  * 判断 `realStartContainer` 和 `realEndContainer` 中是否均满足指定要求
     //  * @param predicate {function(Node): any}
