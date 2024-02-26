@@ -47,7 +47,7 @@ export function registryKeyboardEvent() {
             emptyBodyElementKeyEvent(event, body)
         } else {
             switch (event.code) {
-                case 'Enter':
+                case 'Enter': case 'NumpadEnter':
                     enterEvent(event)
                     break
                 case 'Backspace':
