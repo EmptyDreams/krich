@@ -266,7 +266,7 @@ export function registryPasteEvent() {
             if (mergeList) {
                 const prev = tmpBox.previousSibling
                 const next = tmpBox.nextSibling
-                if (isListLine(prev) && isListLine(next) && prev.firstChild.nodeName === next.firstChild.nodeName) {
+                if (prev && next && isListLine(prev) && isListLine(next) && prev.firstChild.nodeName === next.firstChild.nodeName) {
                     // noinspection JSUnresolvedReference
                     prev.firstChild.append(...next.firstChild.childNodes)
                     next.remove()
