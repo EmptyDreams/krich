@@ -3,7 +3,7 @@
 import {KRICH_EDITOR, TOP_LIST} from '../vars/global-fileds'
 import {
     eachDomTree,
-    findParentTag, getLastChildNode,
+    findParentTag, getFirstChildNode, getLastChildNode,
     insertAfterEnd,
     insertBefore,
     prevLeafNode, tryFixDom,
@@ -110,8 +110,9 @@ export function registryPasteEvent() {
      * 处理粘贴操作
      * @param range {KRange} 操作的区域
      * @param dataTransfer {DataTransfer} 粘贴的内容
+     * @param isInside {boolean?} 数据来源是否是内部元素
      */
-    async function handlePaste(range, dataTransfer) {
+    async function handlePaste(range, dataTransfer, isInside) {
         const {types} = dataTransfer
         if (types.includes(KEY_HTML)) {
             const content = dataTransfer.getData(KEY_HTML)
@@ -136,6 +137,7 @@ export function registryPasteEvent() {
             if (!realStart) realStart = range.realStartContainer()
             // 存储光标最终所在的位置
             const lastPos = getLastChildNode(lines[lines.length - 1])
+            const firstNode = getFirstChildNode(lines[0])
             const updateOfflineData = () => {
                 if (isEmptyBodyElement(lastPos)) {
                     offlineData = new KRange(lastPos)
@@ -187,7 +189,8 @@ export function registryPasteEvent() {
                     }
                 }
             }
-            KRange.deserialized(offlineData).active()
+            if (isInside && editorRange.body) new KRange(firstNode).active()
+            else KRange.deserialized(offlineData).active()
         } else if (types.includes(KEY_TEXT)) {
             range.insertText(dataTransfer.getData(KEY_TEXT))
         } else if (types.includes('Files')) {
@@ -228,7 +231,6 @@ export function registryPasteEvent() {
     const isIncompatible = !document.caretRangeFromPoint && !document.caretPositionFromPoint
     if (isIncompatible)
         console.warn('您的浏览器不支持 caretRangeFromPoint 和 caretPositionFromPoint，krich 无法定位您的鼠标位置，拖动功能将不可用！')
-    KRICH_EDITOR.addEventListener('dragend', () => isDragging = false)
     KRICH_EDITOR.addEventListener('drop', async event => {
         event.preventDefault()
         if (isIncompatible) return
@@ -261,7 +263,7 @@ export function registryPasteEvent() {
             // noinspection HtmlRequiredLangAttribute
             transfer.setData(KEY_HTML, '<html><body>' + html + '</body></html>')
         }
-        await handlePaste(offlineData ? KRange.deserialized(offlineData) : KRange.clientPos(clientX, clientY), transfer)
+        const range = offlineData ? KRange.deserialized(offlineData) : KRange.clientPos(clientX, clientY)
         if (tmpBox) {
             if (mergeList) {
                 const prev = tmpBox.previousSibling
@@ -274,6 +276,8 @@ export function registryPasteEvent() {
             }
             tmpBox.remove()
         }
+        isDragging = false
+        await handlePaste(range, transfer, isInsideCpy)
         tryFixDom()
     })
 }
