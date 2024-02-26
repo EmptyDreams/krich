@@ -17,9 +17,15 @@ import {
 } from '../utils/tools'
 import {KRange, setCursorPositionAfter} from '../utils/range'
 import {highlightCode} from '../utils/highlight'
-import {editorRange, updateEditorRange} from './range-monitor'
+import {editorRange, modifyEditorRange} from './range-monitor'
 import {uploadImage} from '../utils/image-handler'
 import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
+
+/**
+ * 是否正在拖动元素
+ * @param {boolean|undefined}
+ */
+export let isDragging
 
 export function registryPasteEvent() {
     /**
@@ -112,11 +118,11 @@ export function registryPasteEvent() {
                 .replaceAll('\r', '')
                 .replaceAll('\n', '<br>')
             const targetBody = htmlParser.parseFromString(content, KEY_HTML).querySelector('body')
-            if (!isInside) {    // 来自外部的内容要先进行转义
+            if (!isDragging) {    // 来自外部的内容要先进行转义
                 translate(targetBody)
             }
             const lines = packLine(targetBody)
-            if (!isInside) {    // 来自外部的内容先压缩一遍
+            if (!isDragging) {    // 来自外部的内容先压缩一遍
                 lines.forEach(zipTree)
             }
             let realStart, tmpBox
@@ -199,7 +205,6 @@ export function registryPasteEvent() {
         }
     }
 
-    let isInside
     const htmlParser = new DOMParser()
     KRICH_EDITOR.addEventListener('paste', event => {
         event.preventDefault()
@@ -207,25 +212,29 @@ export function registryPasteEvent() {
         handlePaste(editorRange, event.clipboardData)
     })
     KRICH_EDITOR.addEventListener('dragstart', event => {
-        if (!editorRange) updateEditorRange()
+        if (!editorRange) {
+            const target = event.target
+            console.assert(isEmptyBodyElement(target), '能够直接拖动的应该只有 EBE 标签', target.outerHTML)
+            modifyEditorRange(new KRange(target))
+        }
         if ((editorRange.body && isMarkerNode(editorRange.body)) || // 选中代办列表的选择框时禁止拖动
             (editorRange.only(it => findParentTag(it, isTextArea))) // 当选区跨越文本域和非文本域时禁止拖动
         ) {
             event.preventDefault()
         } else {
-            isInside = true
+            isDragging = true
         }
     })
     // noinspection JSUnresolvedReference
     const isIncompatible = !document.caretRangeFromPoint && !document.caretPositionFromPoint
     if (isIncompatible)
         console.warn('您的浏览器不支持 caretRangeFromPoint 和 caretPositionFromPoint，krich 无法定位您的鼠标位置，拖动功能将不可用！')
-    KRICH_EDITOR.addEventListener('dragend', () => isInside = false)
+    KRICH_EDITOR.addEventListener('dragend', () => isDragging = false)
     KRICH_EDITOR.addEventListener('drop', async event => {
         event.preventDefault()
         if (isIncompatible) return
         const {clientX, clientY, dataTransfer} = event
-        const isInsideCpy = isInside
+        const isInsideCpy = isDragging
         let transfer = dataTransfer, tmpBox, offlineData, mergeList
         if (isInsideCpy) {
             console.assert(!!editorRange, '此时 editorRange 不可能为空')
