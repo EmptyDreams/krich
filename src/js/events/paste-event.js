@@ -212,8 +212,9 @@ export function registryPasteEvent() {
             (editorRange.only(it => findParentTag(it, isTextArea))) // 当选区跨越文本域和非文本域时禁止拖动
         ) {
             event.preventDefault()
+        } else {
+            isInside = true
         }
-        else isInside = true
     })
     // noinspection JSUnresolvedReference
     const isIncompatible = !document.caretRangeFromPoint && !document.caretPositionFromPoint
