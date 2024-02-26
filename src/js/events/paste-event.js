@@ -139,7 +139,7 @@ export function registryPasteEvent() {
                 }
                 offlineData = offlineData.serialization()
             }
-            let offlineData
+            let offlineData, pre = findParentTag(realStart, isTextArea)
             if (isKrichEditor(realStart)) {
                 realStart.appendChild(...lines)
             } else if (isEmptyLine(realStart)) {
@@ -167,7 +167,6 @@ export function registryPasteEvent() {
                 zipTree(topLine)
             }
             if (!offlineData) updateOfflineData()
-            const pre = findParentTag(realStart, isTextArea)
             if (pre) {
                 // noinspection SillyAssignmentJS
                 pre.textContent = pre.textContent
@@ -225,23 +224,29 @@ export function registryPasteEvent() {
         let transfer = dataTransfer, tmpBox, offlineData, mergeList
         if (isInsideCpy) {
             console.assert(!!editorRange, '此时 editorRange 不可能为空')
+            transfer = new DataTransfer()
             const range = KRange.clientPos(clientX, clientY)
             offlineData = range.serialization()
             tmpBox = createElement('div', ['tmp'])
             const ancestor = editorRange.commonAncestorContainer
+            const isInTextArea = findParentTag(ancestor, isTextArea)
             let lca = KRange.lca(range.realStartContainer(), ancestor)
             if (isTextNode(lca)) lca = lca.parentNode
             editorRange.surroundContents(tmpBox, lca)
-            const firstChild = tmpBox.firstChild
-            if (tmpBox.childNodes.length === 1 && isListLine(firstChild)) {
-                firstChild.replaceWith(...firstChild.childNodes)
-                // 判断挪动之后是否需要合并列表
-                mergeList = true
+            let html
+            if (isInTextArea) {
+                html = tmpBox.textContent
+            } else {
+                const firstChild = tmpBox.firstChild
+                if (tmpBox.childNodes.length === 1 && isListLine(firstChild)) {
+                    firstChild.replaceWith(...firstChild.childNodes)
+                    // 判断挪动之后是否需要合并列表
+                    mergeList = true
+                }
+                html = tmpBox.innerHTML
             }
             // noinspection HtmlRequiredLangAttribute
-            const html = '<html><body>' + tmpBox.innerHTML + '</body></html>'
-            transfer = new DataTransfer()
-            transfer.setData(KEY_HTML, html)
+            transfer.setData(KEY_HTML, '<html><body>' + html + '</body></html>')
         }
         await handlePaste(offlineData ? KRange.deserialized(offlineData) : KRange.clientPos(clientX, clientY), transfer)
         if (tmpBox) {
