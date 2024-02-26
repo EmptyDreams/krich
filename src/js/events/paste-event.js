@@ -19,7 +19,7 @@ import {KRange, setCursorPositionAfter} from '../utils/range'
 import {highlightCode} from '../utils/highlight'
 import {editorRange, updateEditorRange} from './range-monitor'
 import {uploadImage} from '../utils/image-handler'
-import {isMultiEleStruct} from '../types/button-behavior'
+import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
 
 export function registryPasteEvent() {
     /**
@@ -167,6 +167,12 @@ export function registryPasteEvent() {
                 zipTree(topLine)
             }
             if (!offlineData) updateOfflineData()
+            const pre = findParentTag(realStart, isTextArea)
+            if (pre) {
+                // noinspection SillyAssignmentJS
+                pre.textContent = pre.textContent
+                await highlightCode(null, pre)
+            }
             for (let it of lines) {
                 if (it.nodeName === 'PRE') {
                     await highlightCode(null, it)
