@@ -25,8 +25,11 @@ function helper(range, key) {
      * 构建一个结构
      * @return {HTMLElement}
      */
-    const buildStructure = () =>
-        behavior.builder(KRICH_TOOL_BAR.querySelector(`*[data-id="${key}"]`))
+    const buildStructure = () => {
+        const structure = behavior.builder(KRICH_TOOL_BAR.querySelector(`*[data-id="${key}"]`))
+        structure.setAttribute('data-hash', Date.now().toString(16))
+        return structure
+    }
     const startContainer = range.realStartContainer()
     const endContainer = range.realEndContainer()
     const startTopContainer = findParentTag(startContainer, isMultiEleStruct)

@@ -104,6 +104,29 @@ export function registryPasteEvent() {
         return result
     }
 
+    /**
+     * 合并列表
+     * @param top {Node|Element?} 上层标签
+     * @param bottom {Node|Element?} 下层标签
+     * @return {boolean|undefined} 是否进行了合并操作
+     */
+    function mergeSameList(top, bottom) {
+        if (!top || !bottom || top.nodeName !== bottom.nodeName) return
+        if (isListLine(top)) {
+            const result = mergeSameList(top.lastChild, bottom.firstChild)
+            if (result) bottom.remove()
+            return result
+        }
+        if (isMultiEleStruct(top) &&
+            top.getAttribute('data-hash') === bottom.getAttribute('data-hash')
+        ) {
+            mergeSameList(top.lastChild, bottom.firstChild)
+            top.append(...bottom.childNodes)
+            bottom.remove()
+            return true
+        }
+    }
+
     const KEY_HTML = 'text/html'
     const KEY_TEXT = 'text/plain'
     /**
@@ -119,11 +142,11 @@ export function registryPasteEvent() {
                 .replaceAll('\r', '')
                 .replaceAll('\n', '<br>')
             const targetBody = htmlParser.parseFromString(content, KEY_HTML).querySelector('body')
-            if (!isDragging) {    // 来自外部的内容要先进行转义
+            if (!isInside) {    // 来自外部的内容要先进行转义
                 translate(targetBody)
             }
             const lines = packLine(targetBody)
-            if (!isDragging) {    // 来自外部的内容先压缩一遍
+            if (!isInside) {    // 来自外部的内容先压缩一遍
                 lines.forEach(zipTree)
             }
             let realStart, tmpBox
@@ -266,13 +289,7 @@ export function registryPasteEvent() {
         const range = offlineData ? KRange.deserialized(offlineData) : KRange.clientPos(clientX, clientY)
         if (tmpBox) {
             if (mergeList) {
-                const prev = tmpBox.previousSibling
-                const next = tmpBox.nextSibling
-                if (prev && next && isListLine(prev) && isListLine(next) && prev.firstChild.nodeName === next.firstChild.nodeName) {
-                    // noinspection JSUnresolvedReference
-                    prev.firstChild.append(...next.firstChild.childNodes)
-                    next.remove()
-                }
+                mergeSameList(tmpBox.previousSibling, tmpBox.nextSibling)
             }
             tmpBox.remove()
         }
