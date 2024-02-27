@@ -167,7 +167,12 @@ export function tryFixDom() {
         .forEach(it => {
             const lastChild = it.lastChild
             if (!lastChild || isMarkerNode(lastChild)) {
-                it.append(createNewLine())
+                const parent = it.parentNode
+                if (parent.childElementCount < 2) {
+                    parent.remove()
+                } else {
+                    it.remove()
+                }
             }
         })
     // 自动将没有内容的 code 添加换行符
