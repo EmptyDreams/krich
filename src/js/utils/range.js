@@ -494,7 +494,22 @@ export class KRange extends Range {
         function splitNodeHelper(node, offset, tree, isCreated) {
             let newNode
             const initNewNode = () => newNode = node.cloneNode(false)
-            if (!offset && isBrNode(node)) {
+            if (tree) {
+                if (isCreated || offset.previousSibling) {
+                    initNewNode()
+                    /** @type {Node[]} */
+                    const list = []
+                    let next = offset.nextSibling
+                    while (next) {
+                        list.push(next)
+                        next = next.nextSibling
+                    }
+                    newNode.append(tree)
+                    newNode.append(...list)
+                } else {
+                    newNode = node
+                }
+            } else if (!offset && isBrNode(node)) {
                 newNode = node
             } else if (isTextNode(node)) {
                 if (!offset && !root.contains(prevLeafNode(node, true))) return
@@ -509,21 +524,6 @@ export class KRange extends Range {
                     initNewNode()
                     newNode.textContent = textContent.substring(offset)
                     node.textContent = textContent.substring(0, offset)
-                }
-            } else if (tree) {
-                if (isCreated || offset.previousSibling) {
-                    initNewNode()
-                    /** @type {Node[]} */
-                    const list = []
-                    let next = offset.nextSibling
-                    while (next) {
-                        list.push(next)
-                        next = next.nextSibling
-                    }
-                    newNode.append(tree)
-                    newNode.append(...list)
-                } else {
-                    newNode = node
                 }
             } else {
                 console.assert(typeof offset === 'number', 'offset 必须传入 number', offset)
