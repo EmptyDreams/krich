@@ -212,7 +212,7 @@ initBehaviors({
     },
     ul: {
         state: BEHAVIOR_STATE_MES,
-        exp: 'ul',
+        exp: 'ul:not(.todo)',
         render: () => ulStyle,
         onclick: range => onclickMultiElementStructure(range, 'ul'),
         builder: () => createElement('ul'),
@@ -230,10 +230,10 @@ initBehaviors({
     },
     todo: {
         state: BEHAVIOR_STATE_MES,
-        exp: 'div.todo',
+        exp: 'ul.todo',
         render: () => todoStyle,
         onclick: range => onclickMultiElementStructure(range, 'todo'),
-        builder: () => createElement('div', ['todo']),
+        builder: () => createElement('ul', ['todo']),
         newLine: () => {
             const line = createElement('li')
             line.append(TODO_MARKER.cloneNode(false))
