@@ -2,7 +2,7 @@ import {findParentTag} from '../utils/dom'
 import {behaviors, HASH_NAME, KRICH_TOOL_BAR} from '../vars/global-fileds'
 import {KRange} from '../utils/range'
 import {isMultiEleStruct} from '../types/button-behavior'
-import {createHash} from '../utils/tools'
+import {createHash, isCommonLine} from '../utils/tools'
 
 /**
  * 多元素结构的点击事件
@@ -58,7 +58,7 @@ function helper(range, key) {
             const array = []
             let item = start
             while (item) {
-                array.push(...(item.nodeName === 'P' ? [item] : item.querySelectorAll('&>*:not(.marker)')))
+                array.push(...(isCommonLine(item) ? [item] : item.querySelectorAll('&>*:not(.marker)')))
                 if (item === end) break
                 item = item.nextElementSibling
             }

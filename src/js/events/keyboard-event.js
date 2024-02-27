@@ -10,7 +10,7 @@ import {
 import {setCursorAt, setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
 import {editorRange} from './range-monitor'
 import {
-    createNewLine, getElementBehavior, isEmptyBodyElement,
+    createNewLine, getElementBehavior, isCommonLine, isEmptyBodyElement,
     isEmptyLine, isListLine,
     isMarkerNode
 } from '../utils/tools'
@@ -148,7 +148,7 @@ function deleteEvent(event) {
         if (startContainer === KRICH_EDITOR.firstChild) {
             // 在编辑器开头按下删除键时屏蔽此次按键
             event.preventDefault()
-            if (startContainer.nodeName !== 'P') {
+            if (!isCommonLine(startContainer)) {
                 const line = createNewLine()
                 // noinspection JSCheckFunctionSignatures
                 startContainer.replaceWith(line)

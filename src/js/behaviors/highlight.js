@@ -1,6 +1,6 @@
 import {behaviors} from '../vars/global-fileds'
 import {findParentTag, getFirstChildNode} from '../utils/dom'
-import {isEmptyLine} from '../utils/tools'
+import {isCommonLine, isEmptyLine} from '../utils/tools'
 import {KRange, setCursorPositionBefore} from '../utils/range'
 
 /**
@@ -12,7 +12,7 @@ export function behaviorHighlight(range) {
     const pre = behavior.builder()
     const code = pre.firstChild
     if (range.collapsed) {
-        const line = findParentTag(range.startContainer, ['P'])
+        const line = findParentTag(range.startContainer, isCommonLine)
         if (isEmptyLine(line)) {
             line.replaceWith(pre)
         } else {
