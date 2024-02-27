@@ -12,7 +12,7 @@ import {
 import {
     createElement,
     getElementBehavior,
-    isBrNode, isEmptyBodyElement, isEmptyLine, isKrichEditor, isListLine, isMarkerNode,
+    isBrNode, isCommonLine, isEmptyBodyElement, isEmptyLine, isKrichEditor, isListLine, isMarkerNode,
     isTextNode
 } from '../utils/tools'
 import {KRange, setCursorPositionAfter} from '../utils/range'
@@ -181,8 +181,15 @@ export function registryPasteEvent() {
                 const topLine = findParentTag(realStart, TOP_LIST)
                 const first = lines[0]
                 let offset = 0
-                // 将首行折叠到目标位置
-                if (!isEmptyBodyElement(first) && !isMultiEleStruct(first)) {
+                if (isEmptyLine(topLine)) {
+                    offset = 1
+                    if (isCommonLine(first)) {
+                        topLine.innerHTML = first.innerHTML
+                    } else {
+
+                    }
+                } else if (!isEmptyBodyElement(first) && !isMultiEleStruct(first)) {
+                    // 将首行折叠到目标位置
                     offset = 1
                     const [left, right] = range.splitNode(
                         findParentTag(realStart, it => it.parentNode === topLine)
@@ -288,7 +295,6 @@ export function registryPasteEvent() {
             // noinspection HtmlRequiredLangAttribute
             transfer.setData(KEY_HTML, '<html><body>' + html + '</body></html>')
         }
-        const range = offlineData ? KRange.deserialized(offlineData) : KRange.clientPos(clientX, clientY)
         if (tmpBox) {
             if (mergeList) {
                 mergeSameList(tmpBox.previousSibling, tmpBox.nextSibling)
@@ -296,6 +302,7 @@ export function registryPasteEvent() {
             tmpBox.remove()
         }
         isDragging = false
+        const range = offlineData ? KRange.deserialized(offlineData) : KRange.clientPos(clientX, clientY)
         await handlePaste(range, transfer, isInsideCpy)
         tryFixDom()
     })
