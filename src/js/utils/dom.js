@@ -165,13 +165,9 @@ export function tryFixDom() {
     // 删除没有内容的列表行
     KRICH_EDITOR.querySelectorAll('li')
         .forEach(it => {
-            if (isMarkerNode(it.lastChild)) {
-                const parent = it.parentNode
-                if (parent.childElementCount < 2) {
-                    parent.remove()
-                } else {
-                    it.remove()
-                }
+            const lastChild = it.lastChild
+            if (!lastChild || isMarkerNode(lastChild)) {
+                it.append(createNewLine())
             }
         })
     // 自动将没有内容的 code 添加换行符
