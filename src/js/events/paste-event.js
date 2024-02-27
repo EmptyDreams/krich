@@ -1,6 +1,6 @@
 // noinspection JSDeprecatedSymbols
 
-import {KRICH_EDITOR, TOP_LIST} from '../vars/global-fileds'
+import {EMPTY_BODY_ACTIVE_FLAG, HASH_NAME, KRICH_EDITOR, TOP_LIST} from '../vars/global-fileds'
 import {
     eachDomTree,
     findParentTag, getFirstChildNode, getLastChildNode,
@@ -118,7 +118,7 @@ export function registryPasteEvent() {
             return result
         }
         if (isMultiEleStruct(top) &&
-            top.getAttribute('data-hash') === bottom.getAttribute('data-hash')
+            top.getAttribute(HASH_NAME) === bottom.getAttribute(HASH_NAME)
         ) {
             mergeSameList(top.lastChild, bottom.firstChild)
             top.append(...bottom.childNodes)
@@ -281,6 +281,10 @@ export function registryPasteEvent() {
                     // 判断挪动之后是否需要合并列表
                     mergeList = true
                 }
+                tmpBox.querySelectorAll(`*[${HASH_NAME}]`)
+                    .forEach(it => it.removeAttribute(HASH_NAME))
+                tmpBox.querySelectorAll('*.' + EMPTY_BODY_ACTIVE_FLAG)
+                    .forEach(it => it.classList.remove(EMPTY_BODY_ACTIVE_FLAG))
                 html = tmpBox.innerHTML
             }
             // noinspection HtmlRequiredLangAttribute

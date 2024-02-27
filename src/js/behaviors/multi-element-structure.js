@@ -1,7 +1,8 @@
 import {findParentTag} from '../utils/dom'
-import {behaviors, KRICH_TOOL_BAR} from '../vars/global-fileds'
+import {behaviors, HASH_NAME, KRICH_TOOL_BAR} from '../vars/global-fileds'
 import {KRange} from '../utils/range'
 import {isMultiEleStruct} from '../types/button-behavior'
+import {createHash} from '../utils/tools'
 
 /**
  * 多元素结构的点击事件
@@ -27,7 +28,7 @@ function helper(range, key) {
      */
     const buildStructure = () => {
         const structure = behavior.builder(KRICH_TOOL_BAR.querySelector(`*[data-id="${key}"]`))
-        structure.setAttribute('data-hash', Date.now().toString(16))
+        structure.setAttribute(HASH_NAME, createHash())
         return structure
     }
     const startContainer = range.realStartContainer()

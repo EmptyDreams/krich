@@ -125,6 +125,16 @@ export function isListLine(node) {
     return node.nodeName === 'LI'
 }
 
+let hashRecord = 0
+
+/**
+ * 创建一个 hash
+ * @return {string}
+ */
+export function createHash() {
+    return (++hashRecord).toString(16)
+}
+
 /**
  * 判断两个富文本节点是否相同（不判断节点内容）
  * @param arg0 {HTMLElement}

@@ -35,7 +35,11 @@ export const DATA_ID = 'data-id'
 export const SELECT_VALUE = 'data-value'
 /** 悬浮窗记录名称的 KEY */
 export const HOVER_TIP_NAME = 'data-name'
-
+/**
+ * 标签 hash 的 KEY
+ * @type {string}
+ */
+export const HASH_NAME = 'data-hash'
 /**
  * EmptyBodyElement 激活标记
  * @type {string}
