@@ -6,7 +6,8 @@ import {
     createNewLine,
     equalsKrichNode,
     isBrNode,
-    isKrichEditor, isKrichToolBar,
+    isKrichEditor,
+    isKrichToolBar,
     isMarkerNode,
     isTextNode
 } from './tools'
@@ -20,9 +21,10 @@ import {TODO_MARKER} from '../vars/global-tag'
  * @param first {boolean} 首个元素是否触发 consumer
  * @param consumer {function(Node|Element): any} 返回 true 或其它为 true 的值结束遍历
  * @param limit {Node|Element?} 遍历范围限制，留空表示 KRICH_EDITOR
+ * @param includeMarker {boolean?} 是否遍历 marker
  * @return {any} consumer 的返回值将会从此返回，若 consumer 返回了 true 则返回 consumer 最后一次传入的节点对象
  */
-export function eachDomTree(start, forward, first, consumer, limit) {
+export function eachDomTree(start, forward, first, consumer, limit, includeMarker) {
     function calcResult(node, value) {
         return value === true ? node : value
     }
@@ -32,7 +34,7 @@ export function eachDomTree(start, forward, first, consumer, limit) {
      * @return {any} 为 true 时中断
      */
     function dfs(item) {
-        if (isMarkerNode(item)) return
+        if (!includeMarker && isMarkerNode(item)) return
         let result
         const childNodes = Array.from(item.childNodes ?? [])
         if (forward) {
@@ -62,7 +64,7 @@ export function eachDomTree(start, forward, first, consumer, limit) {
             if (result) return result
         }
     }
-    return isTail ? null : eachDomTree(parentNode, forward, false, consumer, limit)
+    return isTail ? null : eachDomTree(parentNode, forward, false, consumer, limit, includeMarker)
 }
 
 /**
@@ -81,13 +83,11 @@ export function nextLeafNode(node) {
 /**
  * 获取最邻近的上一个叶子节点
  * @param node {Node}
+ * @param includeMarker {boolean?} 是否包含 marker
  * @return {Node|undefined}
  */
-export function prevLeafNode(node) {
-    let prev = eachDomTree(node, false, false, _ => true)
-    if (prev && isMarkerNode(prev))
-        prev = prevLeafNode(prev)
-    return prev
+export function prevLeafNode(node, includeMarker) {
+    return eachDomTree(node, false, false, _ => true, null, includeMarker)
 }
 
 /**
@@ -199,6 +199,19 @@ export function tryFixDom() {
 export function replaceElement(src, novel) {
     novel.innerHTML = src.innerHTML
     src.replaceWith(novel)
+}
+
+/**
+ * 查找指定节点的子节点中第一个满足指定条件的节点
+ * @param parent {Node|Element}
+ * @param predicate {function(Node|Element):boolean|void}
+ * @return {Node|Element|undefined}
+ */
+export function findFirstChild(parent, predicate) {
+    for (let childNode of parent.childNodes) {
+        if (predicate(childNode))
+            return childNode
+    }
 }
 
 /**

@@ -30,32 +30,41 @@ export function setCursorAt(node, index) {
 
 /**
  * 将光标移动到指定元素的结尾
- * @param node {Node}
+ * @param node {Node} 指定元素
+ * @param doIt {boolean} 是否修改指针
+ * @return {KRange}
  */
-export function setCursorPositionAfter(node) {
-    if (checkEmptyBodyElement(node)) return
-    const range = new KRange()
+export function setCursorPositionAfter(node, doIt = true) {
+    let range = checkEmptyBodyElement(node)
+    if (range) return range
+    range = new KRange()
     range.setStartAfter(node)
     range.collapse(true)
-    range.active()
+    if (doIt) range.active()
+    return range
 }
 
 /**
  * 将光标移动到指定元素的开头
- * @param node {Node}
+ * @param node {Node} 指定元素
+ * @param doIt {boolean} 是否修改指针
+ * @return {KRange}
  */
-export function setCursorPositionBefore(node) {
-    if (checkEmptyBodyElement(node)) return
-    const range = new KRange()
+export function setCursorPositionBefore(node, doIt = true) {
+    let range = checkEmptyBodyElement(node)
+    if (range) return range
+    range = new KRange()
     range.setStartBefore(node)
     range.collapse(true)
-    range.active()
+    if (doIt) range.active()
+    return range
 }
 
 function checkEmptyBodyElement(node) {
     if (isEmptyBodyElement(node)) {
-        new KRange(node).active()
-        return true
+        const range = new KRange(node)
+        range.active()
+        return range
     }
 }
 

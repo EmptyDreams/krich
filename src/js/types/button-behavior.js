@@ -108,7 +108,7 @@ export function isTextArea(item) {
 
 /**
  * 判断是否是多元素结构的 behavior
- * @param item {ButtonBehavior|Element|undefined}
+ * @param item {ButtonBehavior|Node|Element|undefined}
  */
 export function isMultiEleStruct(item) {
     if (!item) return

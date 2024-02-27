@@ -125,6 +125,11 @@ export function isListLine(node) {
     return node.nodeName === 'LI'
 }
 
+/** 判断是否是普通行 */
+export function isCommonLine(node) {
+    return node.nodeName === 'P'
+}
+
 let hashRecord = 0
 
 /**

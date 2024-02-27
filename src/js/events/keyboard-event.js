@@ -2,16 +2,16 @@ import {KRICH_CONTAINER, KRICH_EDITOR, KRICH_HOVER_TIP, markStatusCacheInvalid, 
 import {
     findParentTag,
     getFirstTextNode,
-    getLastTextNode,
+    getLastTextNode, insertAfterEnd, insertBefore,
     nextLeafNode, nextSiblingText,
     prevLeafNode, replaceElement,
-    tryFixDom
+    tryFixDom, zipTree
 } from '../utils/dom'
 import {setCursorAt, setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
 import {editorRange} from './range-monitor'
 import {
-    createNewLine, getElementBehavior,
-    isEmptyLine,
+    createNewLine, getElementBehavior, isEmptyBodyElement,
+    isEmptyLine, isListLine,
     isMarkerNode
 } from '../utils/tools'
 import {insertTextToString} from '../utils/string-utils'
@@ -90,35 +90,62 @@ function deleteEvent(event) {
         return
     }
     const realStartContainer = editorRange.realStartContainer()
-    const pre = findParentTag(realStartContainer, ['PRE'])
-    if (pre) {
+    const textArea = findParentTag(realStartContainer, isTextArea)
+    if (textArea) {
         if (startContainer === realStartContainer && startOffset) return
         event.preventDefault()
-        let list = pre.textContent.split('\n')
+        let list = textArea.textContent.split('\n')
         if (list.length > 1 && !list[list.length - 1]) list.pop()
         list = list.map(it => {
             const line = createNewLine()
             if (it) line.textContent = it
             return line
         })
-        list.forEach(it => pre.insertAdjacentElement('beforebegin', it))
-        pre.remove()
+        list.forEach(it => textArea.insertAdjacentElement('beforebegin', it))
+        textArea.remove()
         setCursorPositionBefore(list[0])
         return
     }
     if (startOffset) return
     const topElement = findParentTag(startContainer, isMultiEleStruct)
-    if (topElement && startContainer.contains(getFirstTextNode(topElement))) {
-        // 在引用、列表开头使用删除键时直接取消当前行的样式
-        event.preventDefault()
-        const element = topElement.firstElementChild
-        topElement.insertAdjacentElement('beforebegin', element)
-        element.outerHTML = element.outerHTML.match(/<p>.*<\/p>/)[0]
-        setCursorPositionBefore(topElement.previousSibling)
-        if (!topElement.firstChild) topElement.remove()
+    if (topElement) {
+        if (realStartContainer === getFirstTextNode(topElement)) {
+            // 在引用、列表开头使用删除键时直接取消当前行的样式
+            event.preventDefault()
+            const line = topElement.firstChild
+            if (isMarkerNode(line.firstChild))
+                line.firstChild.remove()
+            insertBefore(topElement, ...line.childNodes)
+            line.remove()
+            setCursorPositionBefore(topElement.previousSibling)
+            if (!topElement.firstChild) topElement.remove()
+        } else {
+            const prev = prevLeafNode(startContainer, true)
+            if (prev && isMarkerNode(prev)) {
+                // 修正在代办列表开头按 backspace 的行为
+                event.preventDefault()
+                const listLine = findParentTag(startContainer, isListLine)
+                const prevLine = listLine.previousSibling
+                const lastSonLine = prevLine.lastChild
+                let pos = lastSonLine.lastChild
+                if (isMarkerNode(listLine.firstChild))
+                    listLine.firstChild.remove()
+                const firstSonLine = listLine.firstChild
+                if (!isEmptyBodyElement(firstSonLine)) {
+                    insertAfterEnd(pos, ...firstSonLine.childNodes)
+                    firstSonLine.remove()
+                }
+                insertAfterEnd(lastSonLine, ...listLine.childNodes)
+                const range = setCursorPositionAfter(pos, false)
+                const offlineData = range.serialization()
+                listLine.remove()
+                // noinspection JSCheckFunctionSignatures
+                zipTree(prevLine)
+                range.deserialized(offlineData).active()
+            }
+        }
     } else if (isEmptyLine(startContainer)) {
-        const firstTopNode = KRICH_EDITOR.firstChild
-        if (firstTopNode === startContainer) {
+        if (startContainer === KRICH_EDITOR.firstChild) {
             // 在编辑器开头按下删除键时屏蔽此次按键
             event.preventDefault()
             if (startContainer.nodeName !== 'P') {
@@ -126,14 +153,6 @@ function deleteEvent(event) {
                 // noinspection JSCheckFunctionSignatures
                 startContainer.replaceWith(line)
                 setCursorPositionBefore(line)
-            }
-        } else {
-            const parent = startContainer.parentNode
-            const parentLine = findParentTag(parent, TOP_LIST)
-            if (parentLine && isMultiEleStruct(parentLine) && parent.childElementCount < 2 && firstTopNode === parentLine) {
-                event.preventDefault()
-                parentLine.replaceWith(startContainer)
-                setCursorPositionBefore(startContainer)
             }
         }
     }
