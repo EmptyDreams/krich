@@ -70,14 +70,11 @@ export function eachDomTree(start, forward, first, consumer, limit, includeMarke
 /**
  * 获取最邻近的下一个叶子节点
  * @param node {Node}
+ * @param includeMarker {boolean?} 是否包含 marker
  * @return {Node|null}
  */
-export function nextLeafNode(node) {
-    let next = eachDomTree(node, true, false, _ => true)
-    next =  next ? getFirstChildNode(next) : null
-    if (next && isMarkerNode(next))
-        next = nextLeafNode(next)
-    return next
+export function nextLeafNode(node, includeMarker) {
+    return eachDomTree(node, true, false, it => !it.firstChild, null, includeMarker)
 }
 
 /**
@@ -87,7 +84,7 @@ export function nextLeafNode(node) {
  * @return {Node|undefined}
  */
 export function prevLeafNode(node, includeMarker) {
-    return eachDomTree(node, false, false, _ => true, null, includeMarker)
+    return eachDomTree(node, false, false, it => !it.firstChild, null, includeMarker)
 }
 
 /**
@@ -199,19 +196,6 @@ export function tryFixDom() {
 export function replaceElement(src, novel) {
     novel.innerHTML = src.innerHTML
     src.replaceWith(novel)
-}
-
-/**
- * 查找指定节点的子节点中第一个满足指定条件的节点
- * @param parent {Node|Element}
- * @param predicate {function(Node|Element):boolean|void}
- * @return {Node|Element|undefined}
- */
-export function findFirstChild(parent, predicate) {
-    for (let childNode of parent.childNodes) {
-        if (predicate(childNode))
-            return childNode
-    }
 }
 
 /**

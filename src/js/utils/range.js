@@ -485,64 +485,79 @@ export class KRange extends Range {
     splitNode(root) {
         /**
          * 通过下标切分文本节点
-         * @param node {Node} 切分起始节点
+         * @param node {Node|Element} 切分起始节点
          * @param offset {number|Node} 偏移量，该点指向的值分配到右侧
          * @param tree {Node?} 已生成的树结构
+         * @param isCreated {boolean?} 标记已生成的 tree 是否是新建的
          * @return {Node|undefined} 生成的树结构的顶层节点
          */
-        function splitNodeHelper(node, offset, tree) {
-            /** @type {Node} */
+        function splitNodeHelper(node, offset, tree, isCreated) {
             let newNode
             const initNewNode = () => newNode = node.cloneNode(false)
-            if (isTextNode(node)) {
+            if (!offset && isBrNode(node)) {
+                newNode = node
+            } else if (isTextNode(node)) {
+                if (!offset && !root.contains(prevLeafNode(node, true))) return
                 const textContent = node.textContent
-                if (!tree && !offset && !root.contains(prevLeafNode(node)))
-                if (offset === textContent.length && !root.contains(nextLeafNode(node)))
-                    return root
-                initNewNode()
-                newNode.textContent = textContent.substring(0, offset)
-                node.textContent = textContent.substring(offset)
-            } else {
-                let prev
-                if (typeof offset === 'number') {
-                    const realNode = (!offset && isEmptyBodyElement(node)) ? node : node.childNodes[offset]
-                    if (!realNode) {
-                        console.assert(!tree, 'realNode 为空时 tree 也应当为空')
-                        const next = nextLeafNode(node)
-                        return next ? splitNodeHelper(next, 0) : null
-                    }
-                    prev = prevLeafNode(realNode)
-                    if (!tree) {
-                        if (!offset && !root.contains(prev)) {
-                            return
-                        } else if (offset === node.childNodes.length && !root.contains(realNode)) {
-                            return root
-                        }
-                    }
+                if (offset === textContent.length) {
+                    const next = nextLeafNode(node, true)
+                    return root.contains(next) ? splitNodeHelper(next, 0) : null
                 }
-                if (offset) {
-                    initNewNode()
-                    for (let i = 0; i !== offset; ++i) {
-                        const item = node.firstChild
-                        if (!item || item === offset) break
-                        newNode.appendChild(item)
-                    }
-                    if (tree) newNode.appendChild(tree)
+                if (!offset) {
+                    newNode = node
                 } else {
-                    return splitNodeHelper(prev, (isTextNode(prev) ? prev.textContent : prev.childNodes).length)
+                    initNewNode()
+                    newNode.textContent = textContent.substring(offset)
+                    node.textContent = textContent.substring(0, offset)
+                }
+            } else if (tree) {
+                if (isCreated || offset.previousSibling) {
+                    initNewNode()
+                    /** @type {Node[]} */
+                    const list = []
+                    let next = offset.nextSibling
+                    while (next) {
+                        list.push(next)
+                        next = next.nextSibling
+                    }
+                    newNode.append(tree)
+                    newNode.append(...list)
+                } else {
+                    newNode = node
+                }
+            } else {
+                console.assert(typeof offset === 'number', 'offset 必须传入 number', offset)
+                const childNodes = node.childNodes
+                const isEbe = !offset && isEmptyBodyElement(node)
+                const realNode = isEbe ? node : childNodes[offset]
+                if (!realNode) {
+                    const next = nextLeafNode(node, true)
+                    return root.contains(next) ? splitNodeHelper(next, 0) : null
+                }
+                if (!offset) {
+                    const prev = prevLeafNode(node, true)
+                    if (!root.contains(prev)) return
+                }
+                if (isEbe) {
+                    newNode = node
+                } else {
+                    initNewNode()
+                    while (offset !== childNodes.length)
+                        newNode.append(childNodes[offset])
                 }
             }
             if (node === root) {
-                return node.parentNode.insertBefore(newNode, node)
+                console.assert(newNode !== root, 'newNode 不应当等于 root')
+                return root.parentNode.insertBefore(newNode, root.nextSibling)
             } else {
-                return splitNodeHelper(node.parentNode, node, newNode)
+                return splitNodeHelper(node.parentNode, node, newNode, node !== newNode)
             }
         }
         const {startContainer, startOffset, endContainer, endOffset, collapsed} = this
-        const left = splitNodeHelper(startContainer, startOffset)
-        if (collapsed) return [left, left === root ? null : root]
-        const mid = splitNodeHelper(endContainer, endOffset - (startContainer === endContainer ? startOffset : 0))
-        return [left === root ? null : left, mid, mid === root ? null : root]
+        const right = splitNodeHelper(endContainer, endOffset)
+        if (collapsed) return [root, right]
+        const mid = splitNodeHelper(startContainer, startOffset)
+        return [mid ? root : null, mid, right]
     }
 
     /**
