@@ -142,9 +142,7 @@ export function registryPasteEvent() {
                 .replaceAll('\r', '')
                 .replaceAll('\n', '<br>')
             const targetBody = htmlParser.parseFromString(content, KEY_HTML).querySelector('body')
-            if (!isInside) {    // 来自外部的内容要先进行转义
-                translate(targetBody)
-            }
+            translate(targetBody)
             const lines = packLine(targetBody)
             if (!isInside) {    // 来自外部的内容先压缩一遍
                 lines.forEach(zipTree)

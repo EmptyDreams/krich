@@ -35,7 +35,7 @@ import imageStyle from '../resources/html/tools/image.html'
 /** @type {string} */
 import hrStyle from '../resources/html/tools/hr.html'
 import {
-    behaviors,
+    behaviors, HASH_NAME,
     initBehaviors,
     KRICH_CONTAINER,
     KRICH_EDITOR,
@@ -47,7 +47,7 @@ import {behaviorHeader} from './behaviors/header'
 import {KRange} from './utils/range'
 import {findParentTag, zipTree} from './utils/dom'
 import {
-    createElement,
+    createElement, createHash,
     isEmptyBodyElement, isListLine,
     readSelectedColor,
     removeAllAttributes,
@@ -412,6 +412,7 @@ function colorOnclick(range, btn, key) {
  */
 function translateList(item) {
     removeAllAttributes(item)
+    item.setAttribute(HASH_NAME, createHash())
     for (let value of Array.from(item.children)) {
         if (isListLine(value))
             removeAllAttributes(value)
