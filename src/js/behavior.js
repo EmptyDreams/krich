@@ -9,7 +9,7 @@ import underlineStyle from '../resources/html/tools/underline.html'
 /** @type {string} */
 import italicStyle from '../resources/html/tools/italic.html'
 /** @type {string} */
-import throughStyle from '../resources/html/tools/through.html'
+import delStyle from '../resources/html/tools/del.html'
 /** @type {string} */
 import inlineCodeStyle from '../resources/html/tools/inlineCode.html'
 /** @type {string} */
@@ -103,7 +103,7 @@ initBehaviors({
     },
     del: {
         exp: 'del',
-        render: () => throughStyle,
+        render: () => delStyle,
         onclick: range => execCommonCommand('del', range, false),
         builder: () => createElement('del'),
         translator: removeAllAttributes
