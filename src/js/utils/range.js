@@ -499,7 +499,8 @@ export class KRange extends Range {
                     const realNode = (!offset && isEmptyBodyElement(node)) ? node : node.childNodes[offset]
                     if (!realNode) {
                         console.assert(!tree, 'realNode 为空时 tree 也应当为空')
-                        return root
+                        const next = nextLeafNode(node)
+                        return next ? splitNodeHelper(next, 0) : null
                     }
                     prev = prevLeafNode(realNode)
                     if (!tree) {
