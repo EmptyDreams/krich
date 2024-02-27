@@ -3,7 +3,7 @@ import {
     eachDomTree,
     findParentTag, getFirstChildNode,
     getLastChildNode,
-    getLastTextNode, nextLeafNode,
+    getLastTextNode, insertAfterEnd, nextLeafNode,
     nextSiblingText, prevLeafNode,
     zipTree
 } from './dom'
@@ -494,9 +494,11 @@ export class KRange extends Range {
         function splitNodeHelper(node, offset, tree, isCreated) {
             let newNode
             const initNewNode = () => newNode = node.cloneNode(false)
-            if (tree) {
+            if (tree) {     // 如果已经存在生成的树结构，那么必然不会进入后续的 if
                 if (isCreated || offset.previousSibling) {
                     initNewNode()
+                    // 将 offset 右侧的节点移动到 newNode 中
+                    // 由于 append(tree) 有可能破坏当前 DOM 结构，所以先拷贝到数组中备份
                     /** @type {Node[]} */
                     const list = []
                     let next = offset.nextSibling
@@ -507,49 +509,67 @@ export class KRange extends Range {
                     newNode.append(tree)
                     newNode.append(...list)
                 } else {
+                    // 如果已有的树结构不是克隆出来的，并且 offset 左侧没有任何节点则直接复用 node
+                    // 代码一定不会永远进入此分支，如果持续到 root 仍然进入此分支说明判断是否需要切割的代码存在问题
                     newNode = node
                 }
-            } else if (!offset && isBrNode(node)) {
+            } else if (!offset && isBrNode(node)) { // 处理 br 节点
+                // 如果 offset = 0 并且当前节点是 br 节点，则直接复用 node
                 newNode = node
-            } else if (isTextNode(node)) {
+            } else if (isTextNode(node)) {  // 处理文本节点
+                // 如果 offset = 0 并且 node 的左侧节点不在 root 中说明该切割点已经分离无需切割
                 if (!offset && !root.contains(prevLeafNode(node, true))) return
                 const textContent = node.textContent
+                // 如果 offset 指向了不存在的字符，那么尝试将切割点转移到下一个节点开头
                 if (offset === textContent.length) {
                     const next = nextLeafNode(node, true)
+                    // 如果下一个节点不在 root 中说明无需切割
                     return root.contains(next) ? splitNodeHelper(next, 0) : null
                 }
                 if (!offset) {
+                    // 如果切割点在最左侧直接复用 node
                     newNode = node
                 } else {
+                    // 切割点在中间则进行拷贝并修改 node 的值
                     initNewNode()
                     newNode.textContent = textContent.substring(offset)
                     node.textContent = textContent.substring(0, offset)
                 }
-            } else {
+            } else {    // 处理非文本节点
                 console.assert(typeof offset === 'number', 'offset 必须传入 number', offset)
                 const childNodes = node.childNodes
+                // 判断是否指向了一个 ebe
                 const isEbe = !offset && isEmptyBodyElement(node)
+                // 获取真实指向的节点
                 const realNode = isEbe ? node : childNodes[offset]
+                // 如果指向了一个不存在的节点，则尝试将切割点移动到 node 后方的节点的开头
                 if (!realNode) {
                     const next = nextLeafNode(node, true)
+                    // 如果下一个节点不在 root 当中说明无需切割
                     return root.contains(next) ? splitNodeHelper(next, 0) : null
                 }
+                // 当 offset = 0 时判断是否需要切割
                 if (!offset) {
                     const prev = prevLeafNode(node, true)
+                    // 上一个节点不在 root 中时表明无需切割
                     if (!root.contains(prev)) return
                 }
                 if (isEbe) {
+                    // 如果指向了 ebe 直接复用
                     newNode = node
                 } else {
+                    // 否则克隆结构
                     initNewNode()
                     while (offset !== childNodes.length)
                         newNode.append(childNodes[offset])
                 }
             }
-            if (node === root) {
+            if (node === root) {    // 切分到 root 时停止递归
                 console.assert(newNode !== root, 'newNode 不应当等于 root')
-                return root.parentNode.insertBefore(newNode, root.nextSibling)
-            } else {
+                // 将新生成的结构插入到 root 右侧
+                insertAfterEnd(root, newNode)
+                return newNode
+            } else {    // 递归克隆父级结构（包括右侧在 root 中的节点）
                 return splitNodeHelper(node.parentNode, node, newNode, node !== newNode)
             }
         }
