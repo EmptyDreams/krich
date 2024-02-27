@@ -3,7 +3,7 @@ import {
     eachDomTree,
     findParentTag, getFirstChildNode,
     getLastChildNode,
-    getLastTextNode, insertAfterEnd, nextLeafNode,
+    getLastTextNode, insertNodesAfter, nextLeafNode,
     nextSiblingText, prevLeafNode,
     zipTree
 } from './dom'
@@ -567,7 +567,7 @@ export class KRange extends Range {
             if (node === root) {    // 切分到 root 时停止递归
                 console.assert(newNode !== root, 'newNode 不应当等于 root')
                 // 将新生成的结构插入到 root 右侧
-                insertAfterEnd(root, newNode)
+                insertNodesAfter(root, newNode)
                 return newNode
             } else {    // 递归克隆父级结构（包括右侧在 root 中的节点）
                 return splitNodeHelper(node.parentNode, node, newNode, node !== newNode)

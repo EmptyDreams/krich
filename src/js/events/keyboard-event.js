@@ -2,7 +2,7 @@ import {KRICH_CONTAINER, KRICH_EDITOR, KRICH_HOVER_TIP, markStatusCacheInvalid, 
 import {
     findParentTag,
     getFirstTextNode,
-    getLastTextNode, insertAfterEnd, insertBefore,
+    getLastTextNode, insertNodesAfter, insertNodesBefore,
     nextLeafNode, nextSiblingText,
     prevLeafNode, replaceElement,
     tryFixDom, zipTree
@@ -115,7 +115,7 @@ function deleteEvent(event) {
             const line = topElement.firstChild
             if (isMarkerNode(line.firstChild))
                 line.firstChild.remove()
-            insertBefore(topElement, ...line.childNodes)
+            insertNodesBefore(topElement, ...line.childNodes)
             line.remove()
             setCursorPositionBefore(topElement.previousSibling)
             if (!topElement.firstChild) topElement.remove()
@@ -132,10 +132,10 @@ function deleteEvent(event) {
                     listLine.firstChild.remove()
                 const firstSonLine = listLine.firstChild
                 if (!isEmptyBodyElement(firstSonLine)) {
-                    insertAfterEnd(pos, ...firstSonLine.childNodes)
+                    insertNodesAfter(pos, ...firstSonLine.childNodes)
                     firstSonLine.remove()
                 }
-                insertAfterEnd(lastSonLine, ...listLine.childNodes)
+                insertNodesAfter(lastSonLine, ...listLine.childNodes)
                 const range = setCursorPositionAfter(pos, false)
                 const offlineData = range.serialization()
                 listLine.remove()

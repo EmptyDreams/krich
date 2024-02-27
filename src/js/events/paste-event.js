@@ -4,8 +4,8 @@ import {EMPTY_BODY_ACTIVE_FLAG, HASH_NAME, KRICH_EDITOR, TOP_LIST} from '../vars
 import {
     eachDomTree,
     findParentTag, getFirstChildNode, getLastChildNode,
-    insertAfterEnd,
-    insertBefore,
+    insertNodesAfter,
+    insertNodesBefore,
     prevLeafNode, tryFixDom,
     zipTree
 } from '../utils/dom'
@@ -174,7 +174,7 @@ export function registryPasteEvent() {
             } else if (isEmptyLine(realStart)) {
                 realStart.replaceWith(...lines)
             } else if (isEmptyBodyElement(realStart)) {
-                insertAfterEnd(realStart, ...lines)
+                insertNodesAfter(realStart, ...lines)
             } else if (isBrNode(realStart)) {
                 realStart.parentElement.replaceWith(...lines)
             } else {
@@ -194,11 +194,11 @@ export function registryPasteEvent() {
                     const [left, right] = range.splitNode(
                         findParentTag(realStart, it => it.parentNode === topLine)
                     )
-                    const fun = left ? insertAfterEnd : insertBefore
+                    const fun = left ? insertNodesAfter : insertNodesBefore
                     fun(left ?? right, ...first.childNodes)
                 }
                 if (lines.length > offset)
-                    insertAfterEnd(topLine, ...lines.splice(offset))
+                    insertNodesAfter(topLine, ...lines.splice(offset))
                 updateOfflineData()
                 zipTree(topLine)
             }

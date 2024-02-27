@@ -246,7 +246,7 @@ export function getRelCoords(target, parent) {
  * @param pos {Node}
  * @param values {Node}
  */
-export function insertAfterEnd(pos, ...values) {
+export function insertNodesAfter(pos, ...values) {
     for (let i = values.length - 1; i >= 0; i--) {
         pos.parentNode.insertBefore(values[i], pos.nextSibling)
     }
@@ -257,7 +257,7 @@ export function insertAfterEnd(pos, ...values) {
  * @param pos {Node}
  * @param values {Node}
  */
-export function insertBefore(pos, ...values) {
+export function insertNodesBefore(pos, ...values) {
     for (let item of values) {
         pos.parentNode.insertBefore(item, pos)
     }
