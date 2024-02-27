@@ -61,7 +61,7 @@ const hotkeysList = {
     }],
     'KeyX': [{      // ctrl + shift + x -> 删除线
         fn: KEY_CTRL | KEY_SHIFT,
-        i: 'through'
+        i: 'del'
     }],
     'Backquote': [{ // ctrl + ` -> 代码块
         fn: KEY_CTRL,

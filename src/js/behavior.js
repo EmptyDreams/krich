@@ -101,11 +101,11 @@ initBehaviors({
         builder: () => createElement('i'),
         translator: removeAllAttributes
     },
-    through: {
-        exp: 'span.through',
+    del: {
+        exp: 'del',
         render: () => throughStyle,
-        onclick: range => execCommonCommand('through', range, false),
-        builder: () => createElement('span', ['through']),
+        onclick: range => execCommonCommand('del', range, false),
+        builder: () => createElement('del'),
         translator: removeAllAttributes
     },
     inlineCode: {
