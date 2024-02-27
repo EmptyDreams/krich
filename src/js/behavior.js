@@ -1,39 +1,40 @@
 /** @type {string} */
-import headerSelectStyle from '../resources/html/tools/headerSelect.html'
+import headerSelectHtml from '../resources/html/tools/headerSelect.html'
 /** @type {string} */
-import blockquoteStyle from '../resources/html/tools/blockquote.html'
+import blockquoteHtml from '../resources/html/tools/blockquote.html'
 /** @type {string} */
-import boldStyle from '../resources/html/tools/bold.html'
+import boldHtml from '../resources/html/tools/bold.html'
 /** @type {string} */
-import underlineStyle from '../resources/html/tools/underline.html'
+import underlineHtml from '../resources/html/tools/underline.html'
 /** @type {string} */
-import italicStyle from '../resources/html/tools/italic.html'
+import italicHtml from '../resources/html/tools/italic.html'
 /** @type {string} */
-import delStyle from '../resources/html/tools/del.html'
+import delHtml from '../resources/html/tools/del.html'
 /** @type {string} */
-import inlineCodeStyle from '../resources/html/tools/inlineCode.html'
+import inlineCodeHtml from '../resources/html/tools/inlineCode.html'
 /** @type {string} */
-import supStyle from '../resources/html/tools/sup.html'
+import supHtml from '../resources/html/tools/sup.html'
 /** @type {string} */
-import subStyle from '../resources/html/tools/sub.html'
+import subHtml from '../resources/html/tools/sub.html'
 /** @type {string} */
-import clearStyle from '../resources/html/tools/clear.html'
+import clearHtml from '../resources/html/tools/clear.html'
 /** @type {string} */
-import colorStyle from '../resources/html/tools/color.html'
+import colorHtml from '../resources/html/tools/color.html'
 /** @type {string} */
-import backgroundStyle from '../resources/html/tools/background.html'
+import backgroundHtml from '../resources/html/tools/background.html'
 /** @type {string} */
-import ulStyle from '../resources/html/tools/ul.html'
+import ulHtml from '../resources/html/tools/ul.html'
 /** @type {string} */
-import olStyle from '../resources/html/tools/ol.html'
+import olHtml from '../resources/html/tools/ol.html'
 /** @type {string} */
-import todoStyle from '../resources/html/tools/todo.html'
+import todoHtml from '../resources/html/tools/todo.html'
 /** @type {string} */
-import codeStyle from '../resources/html/tools/code.html'
+import codeHtml from '../resources/html/tools/code.html'
 /** @type {string} */
-import imageStyle from '../resources/html/tools/image.html'
+import imageHtml from '../resources/html/tools/image.html'
 /** @type {string} */
-import hrStyle from '../resources/html/tools/hr.html'
+import hrHtml from '../resources/html/tools/hr.html'
+
 import {
     behaviors, HASH_NAME,
     initBehaviors,
@@ -66,14 +67,14 @@ initBehaviors({
     headerSelect: {
         state: BEHAVIOR_STATE_NO_STATUS,
         exp: ['P', ...TITLE_LIST].join(','),
-        render: () => headerSelectStyle,
+        render: () => headerSelectHtml,
         onclick: behaviorHeader,
         translator: removeAllAttributes
     },
     blockquote: {
         state: BEHAVIOR_STATE_MES,
         exp: 'blockquote',
-        render: () => blockquoteStyle,
+        render: () => blockquoteHtml,
         onclick: range => onclickMultiElementStructure(range, 'blockquote'),
         verify: () => true,
         builder: () => createElement('blockquote'),
@@ -82,49 +83,49 @@ initBehaviors({
     },
     bold: {
         exp: 'b,strong',
-        render: () => boldStyle,
+        render: () => boldHtml,
         onclick: range => execCommonCommand('bold', range),
         builder: () => createElement('b'),
         translator: removeAllAttributes
     },
     underline: {
         exp: 'u',
-        render: () => underlineStyle,
+        render: () => underlineHtml,
         onclick: range => execCommonCommand('underline', range),
         builder: () => createElement('u'),
         translator: removeAllAttributes
     },
     italic: {
         exp: 'i',
-        render: () => italicStyle,
+        render: () => italicHtml,
         onclick: range => execCommonCommand('italic', range),
         builder: () => createElement('i'),
         translator: removeAllAttributes
     },
     del: {
         exp: 'del',
-        render: () => delStyle,
+        render: () => delHtml,
         onclick: range => execCommonCommand('del', range, false),
         builder: () => createElement('del'),
         translator: removeAllAttributes
     },
     inlineCode: {
         exp: 'code.inline',
-        render: () => inlineCodeStyle,
+        render: () => inlineCodeHtml,
         onclick: range => execCommonCommand('inlineCode', range),
         builder: () => createElement('code', ['inline']),
         translator: removeAllAttributes
     },
     sub: {
         exp: 'sub',
-        render: () => subStyle,
+        render: () => subHtml,
         onclick: range => execCommonCommand('sub', range, false, ['sup']),
         builder: () => createElement('sub'),
         translator: removeAllAttributes
     },
     sup: {
         exp: 'sup',
-        render: () => supStyle,
+        render: () => supHtml,
         onclick: range => execCommonCommand('sup', range, false, ['sub']),
         builder: () => createElement('sup'),
         translator: removeAllAttributes
@@ -137,7 +138,7 @@ initBehaviors({
                 .flatMap(it => names.map(name => name + it))
                 .join()
         })(),
-        render: () => colorStyle,
+        render: () => colorHtml,
         onclick: (range, btn) => colorOnclick(range, btn, 'color'),
         builder: btn => createElement('span', {style: 'color:' + readSelectedColor(btn)}),
         verify: (btn, item) => readSelectedColor(btn) === item.getAttribute('style').substring(6),
@@ -161,7 +162,7 @@ initBehaviors({
                 .flatMap(it => names.map(name => name + it))
                 .join()
         })(),
-        render: () => backgroundStyle,
+        render: () => backgroundHtml,
         onclick: (range, btn) => colorOnclick(range, btn, 'background'),
         builder: btn => createElement('span', {style: 'background:' + readSelectedColor(btn)}),
         verify: (btn, item) => btn.value === item.getAttribute('style').substring(11),
@@ -179,7 +180,7 @@ initBehaviors({
     },
     clear: {
         state: BEHAVIOR_STATE_NO_STATUS,
-        render: () => clearStyle,
+        render: () => clearHtml,
         onclick: range => {
             if (range.collapsed) return true
             const offlineData = range.serialization()
@@ -206,14 +207,14 @@ initBehaviors({
     hr: {
         state: BEHAVIOR_STATE_NO_STATUS,
         exp: 'hr',
-        render: () => hrStyle,
+        render: () => hrHtml,
         onclick: onclickHr,
         translator: removeAllAttributes
     },
     ul: {
         state: BEHAVIOR_STATE_MES,
         exp: 'ul:not(.todo)',
-        render: () => ulStyle,
+        render: () => ulHtml,
         onclick: range => onclickMultiElementStructure(range, 'ul'),
         builder: () => createElement('ul'),
         newLine: () => createElement('li'),
@@ -222,7 +223,7 @@ initBehaviors({
     ol: {
         state: BEHAVIOR_STATE_MES,
         exp: 'ol',
-        render: () => olStyle,
+        render: () => olHtml,
         onclick: range => onclickMultiElementStructure(range, 'ol'),
         builder: () => createElement('ol'),
         newLine: () => createElement('li'),
@@ -231,7 +232,7 @@ initBehaviors({
     todo: {
         state: BEHAVIOR_STATE_MES,
         exp: 'ul.todo',
-        render: () => todoStyle,
+        render: () => todoHtml,
         onclick: range => onclickMultiElementStructure(range, 'todo'),
         builder: () => createElement('ul', ['todo']),
         newLine: () => {
@@ -248,7 +249,7 @@ initBehaviors({
     img: {
         state: BEHAVIOR_STATE_NO_STATUS,
         exp: 'img:not(.inline)',
-        render: () => imageStyle,
+        render: () => imageHtml,
         onclick: range => {
             const line = findParentTag(range.realStartContainer(), TOP_LIST)
             openHoverTip('img', line)
@@ -267,7 +268,7 @@ initBehaviors({
     code: {
         state: BEHAVIOR_STATE_TEXT_AREA,
         exp: 'pre',
-        render: () => codeStyle,
+        render: () => codeHtml,
         onclick: behaviorHighlight,
         builder: () => {
             const pre = createElement('pre', {
