@@ -577,7 +577,7 @@ export class KRange extends Range {
         const right = splitNodeHelper(endContainer, endOffset)
         if (collapsed) return [root, right]
         const mid = splitNodeHelper(startContainer, startOffset)
-        return [mid ? root : null, mid, right]
+        return [mid ? root : null, mid ?? root, right]
     }
 
     /**
