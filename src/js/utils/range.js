@@ -367,7 +367,7 @@ export class KRange extends Range {
                 emptyItem = prevLeafNode(emptyItem)
             }
             let index = 0
-            eachTextNode(leafNode, it => index += it.textContent)
+            eachTextNode(leafNode, it => index += it.textContent.length)
             let type = 0
             if (include) {
                 if (isBrNode(leafNode)) {
@@ -442,7 +442,7 @@ export class KRange extends Range {
         } else {
             this.setStart(startContainer, startOffset)
         }
-        if (data.length < 4) {
+        if (data.length < 5) {
             this.collapse(true)
             return this
         }
