@@ -18,7 +18,7 @@ export const optional = {
         }),
         {
             name: 'ReplaceHeaderAndFooter',
-            renderChunk: function (code, chunk, options, _) {
+            renderChunk(code, chunk, options, _) {
                 if (chunk.type !== 'chunk') return
                 code = code.replaceAll('const ', 'let ')
                 if (options.format === 'iife') {
@@ -75,6 +75,7 @@ export const esmOutput = {
     entryFileNames: 'krich-es.js',
     format: 'es',
     name: 'KRich',
+    assetFileNames: 'krich-demo.css',
     generatedCode: {
         constBindings: true
     }

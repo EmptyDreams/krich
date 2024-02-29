@@ -1,11 +1,8 @@
 import terser from '@rollup/plugin-terser'
 import {esmOutput, iifeOutput, optional} from './rollup.config.common.mjs'
+import styles from 'rollup-plugin-styler'
 
-const customOptional = {
-    ...optional
-}
-
-// noinspection SpellCheckingInspection
+const customOptional = {...optional}
 customOptional.plugins.push(
     terser({
         compress: {
@@ -22,11 +19,18 @@ customOptional.plugins.push(
     })
 )
 
+const stylusOptional = {...customOptional}
+stylusOptional.plugins.push(
+    styles({
+        mode: 'extract'
+    })
+)
+
 // noinspection JSUnusedGlobalSymbols
 export default [{
     output: iifeOutput,
     ...customOptional
 }, {
     output: esmOutput,
-    ...customOptional
+    ...stylusOptional
 }]

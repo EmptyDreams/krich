@@ -3,9 +3,11 @@ import {esmOutput, iifeOutput, optional} from './rollup.config.common.mjs'
 import styles from 'rollup-plugin-styler'
 
 const serverOptional = {...optional}
-const stylusOptional = {...optional}
 
 serverOptional.plugins.push(
+    styles({
+        mode: 'extract'
+    }),
     serve({
         open: false,
         contentBase: 'dist',
@@ -15,19 +17,12 @@ serverOptional.plugins.push(
     })
 )
 
-stylusOptional.plugins.push(
-    styles({
-        mode: 'extract'
-    })
-)
-
 // noinspection JSUnusedGlobalSymbols
 export default [{
     output: {
-        ...iifeOutput,
-        assetFileNames: 'krich-demo.css'
+        ...iifeOutput
     },
-    ...stylusOptional
+    ...optional
 }, {
     output: esmOutput,
     ...serverOptional
