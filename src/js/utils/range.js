@@ -327,9 +327,25 @@ export class KRange extends Range {
      * + 0  - 在下一个节点的开头
      * + -1 - 在当前节点开头
      *
+     * @param refer {Node|Element?} 序列化时的参考元素，序列化时从参考元素后方开始计数，留空从编辑区开头开始计数
      * @return {KRangeData}
      */
-    serialization() {
+    serialization(refer) {
+        // 计数起点（包含）
+        const countStarting = refer ? nextLeafNode(refer) : getFirstChildNode(KRICH_EDITOR)
+
+        /**
+         * 从 `countStarting` 开始遍历文本节点
+         * @param end {Node|Element} 遍历结束的位置
+         * @param consumer {function(Node)}
+         */
+        function eachTextNode(end, consumer) {
+            eachDomTree(countStarting, true, true, node => {
+                if (node === end) return true
+                if (isTextNode(node))
+                    consumer(node)
+            })
+        }
         /**
          * @param container {Node} 所在节点
          * @param offset {number} 偏移量
@@ -351,16 +367,7 @@ export class KRange extends Range {
                 emptyItem = prevLeafNode(emptyItem)
             }
             let index = 0
-            const top = findParentTag(
-                leafNode, item => item.parentElement === KRICH_EDITOR
-            )
-            for (let item of KRICH_EDITOR.children) {
-                if (item === top) break
-                index += item.textContent.length
-            }
-            eachDomTree(leafNode, false, false, it => {
-                if (isTextNode(it)) index += it.textContent.length
-            }, top)
+            eachTextNode(leafNode, it => index += it.textContent)
             let type = 0
             if (include) {
                 if (isBrNode(leafNode)) {
@@ -378,9 +385,9 @@ export class KRange extends Range {
         }
         const {startContainer, startOffset, endContainer, endOffset} = this
         const startLocation = locateRange(startContainer, startOffset, true)
-        if (this.collapsed) return startLocation
+        if (this.collapsed) return [refer, ...startLocation]
         const endLocation = locateRange(endContainer, endOffset, false)
-        return [...startLocation, ...endLocation]
+        return [refer, ...startLocation, ...endLocation]
     }
 
     /**
@@ -390,9 +397,11 @@ export class KRange extends Range {
      */
     deserialized(data) {
         let [
+            refer,
             startIndex, startEmptyCount, startType,
             endIndex, endEmptyCount
         ] = data
+        const starting = refer ? nextLeafNode(refer) : getFirstChildNode(KRICH_EDITOR)
         /**
          * @param index {number}
          * @param emptyCount {number}
@@ -401,7 +410,7 @@ export class KRange extends Range {
          */
         function findNode(index, emptyCount, type) {
             let pos = 0
-            let item = getFirstChildNode(KRICH_EDITOR)
+            let item = starting
             if (isMarkerNode(item))
                 item = nextLeafNode(item)
             do {
