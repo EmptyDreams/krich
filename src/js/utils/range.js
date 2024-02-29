@@ -299,7 +299,7 @@ export class KRange extends Range {
                 const index = list.findIndex(it => it === commonAncestorContainer)
                 container.append(...list[1].childNodes)
                 list[1].append(container)
-                for (let i = list.length - 1; i >= 0; i--) {
+                for (let i = 0; i < list.length; i++) {
                     const item = list[i]
                     if (i === index || !item) continue
                     if (i > index) {
