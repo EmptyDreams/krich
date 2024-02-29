@@ -1,7 +1,5 @@
 import html from 'rollup-plugin-html'
 import resolve from '@rollup/plugin-node-resolve'
-import postcss from 'rollup-plugin-postcss'
-import postcssImport from 'postcss-import'
 import { getLogFilter } from 'rollup/getLogFilter'
 
 const logFilter = getLogFilter(['!code:CIRCULAR_DEPENDENCY'])
@@ -58,11 +56,6 @@ export const optional = {
                 minifyCSS: true,                        // 压缩页面 CSS
                 minifyURLs: true                        // 压缩页面 URL
             }
-        }),
-        postcss({
-            inject: false,
-            minimize: true,
-            plugins: [postcssImport()]
         })
     ]
 }

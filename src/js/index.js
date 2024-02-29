@@ -1,3 +1,4 @@
+import '../resources/css/main.styl'
 import './behavior'
 import {initKrich} from './utils/init'
 
