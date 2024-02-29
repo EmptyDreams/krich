@@ -388,11 +388,7 @@ function removeStylesInRange(range, ...behaviors) {
  * @param node {Node} 要删除的元素
  */
 function removeNodeReserveChild(node) {
-    const parent = node.parentNode
-    while (node.firstChild) {
-        parent.insertBefore(node.firstChild, node)
-    }
-    node.remove()
+    node.replaceWith(...node.childNodes)
 }
 
 /**

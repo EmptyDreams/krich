@@ -2,7 +2,7 @@ import {KRICH_CONTAINER, KRICH_EDITOR, KRICH_HOVER_TIP, markStatusCacheInvalid, 
 import {
     findParentTag,
     getFirstTextNode,
-    getLastTextNode, insertNodesAfter, insertNodesBefore,
+    getLastTextNode,
     nextLeafNode, nextSiblingText,
     prevLeafNode, replaceElement,
     tryFixDom, zipTree
@@ -101,7 +101,7 @@ function deleteEvent(event) {
             if (it) line.textContent = it
             return line
         })
-        list.forEach(it => textArea.insertAdjacentElement('beforebegin', it))
+        list.forEach(it => textArea.before(it))
         textArea.remove()
         setCursorPositionBefore(list[0])
         return
@@ -115,7 +115,7 @@ function deleteEvent(event) {
             const line = topElement.firstChild
             if (isMarkerNode(line.firstChild))
                 line.firstChild.remove()
-            insertNodesBefore(topElement, ...line.childNodes)
+            topElement.before(...line.childNodes)
             line.remove()
             setCursorPositionBefore(topElement.previousSibling)
             if (!topElement.firstChild) topElement.remove()
@@ -132,10 +132,10 @@ function deleteEvent(event) {
                     listLine.firstChild.remove()
                 const firstSonLine = listLine.firstChild
                 if (!isEmptyBodyElement(firstSonLine)) {
-                    insertNodesAfter(pos, ...firstSonLine.childNodes)
+                    pos.after(...firstSonLine.childNodes)
                     firstSonLine.remove()
                 }
-                insertNodesAfter(lastSonLine, ...listLine.childNodes)
+                lastSonLine.after(...listLine.childNodes)
                 const range = setCursorPositionAfter(pos, false)
                 const offlineData = range.serialization()
                 listLine.remove()
@@ -187,9 +187,9 @@ function enterEvent(event) {
         if (shiftKey && !ctrlKey && isTextArea(top)) return
         element = createNewLine()
         if (shiftKey && ctrlKey) {
-            top.insertAdjacentElement('beforebegin', element)
+            top.before(element)
         } else {
-            top.insertAdjacentElement('afterend', element)
+            top.after(element)
         }
     }
     handleCommon()
@@ -244,7 +244,7 @@ function enterEvent(event) {
                 element = lastChild.lastChild
                 lastChild.remove()
             }
-            structure.insertAdjacentElement('afterend', element)
+            structure.after(element)
             if (!structure.firstChild) structure.remove()
         } else if (
             isEmptyLine(startContainer) &&
@@ -256,7 +256,8 @@ function enterEvent(event) {
             const newLine = getElementBehavior(structure).newLine()
             console.assert(!!newLine, '进入到这里应当必然存在 newLine 的值')
             newLine.append(element)
-            li.insertAdjacentElement('afterend', newLine)
+            // noinspection JSCheckFunctionSignatures
+            li.after(newLine)
         }
     }
     if (collapsed && !element) handleMesEnter()
@@ -314,7 +315,11 @@ function emptyBodyElementKeyEvent(event, body) {
             if (!isMarkerNode(body)) {
                 const line = createNewLine()
                 const where = event.ctrlKey && event.altKey ? 'beforebegin' : 'afterend'
-                body.insertAdjacentElement(where, line)
+                if (event.ctrlKey && event.altKey) {
+                    body.before(line)
+                } else {
+                    body.after(line)
+                }
                 setCursorPositionBefore(line)
             }
             break

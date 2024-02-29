@@ -4,8 +4,6 @@ import {EMPTY_BODY_ACTIVE_FLAG, HASH_NAME, KRICH_EDITOR, TOP_LIST} from '../vars
 import {
     eachDomTree,
     findParentTag, getFirstChildNode, getLastChildNode,
-    insertNodesAfter,
-    insertNodesBefore,
     prevLeafNode, tryFixDom,
     zipTree
 } from '../utils/dom'
@@ -67,7 +65,7 @@ export function registryPasteEvent() {
                 behavior = getElementBehavior(node)
             }
             if (root) {
-                node.parentNode.insertBefore(root, node)
+                node.before(root)
                 // noinspection JSUnusedAssignment
                 leaf.append(...node.childNodes)
             }
@@ -77,6 +75,7 @@ export function registryPasteEvent() {
     /**
      * 按行封装
      * @param body {Element}
+     * @return {(Element|Node)[]}
      */
     function packLine(body) {
         const result = []
@@ -147,7 +146,9 @@ export function registryPasteEvent() {
             if (!isInside) {    // 来自外部的内容先压缩一遍
                 lines.forEach(zipTree)
             }
-            let realStart, tmpBox
+            /** @type {Node} */
+            let realStart
+            let tmpBox
             if (!range.collapsed) {
                 // 如果 KRange 不是折叠状态，先移除选中的内容
                 tmpBox = createElement('div', ['tmp'])
@@ -170,11 +171,13 @@ export function registryPasteEvent() {
             }
             let offlineData, pre = findParentTag(realStart, isTextArea)
             if (isKrichEditor(realStart)) {
+                // noinspection JSCheckFunctionSignatures
                 realStart.appendChild(...lines)
             } else if (isEmptyLine(realStart)) {
+                // noinspection JSCheckFunctionSignatures
                 realStart.replaceWith(...lines)
             } else if (isEmptyBodyElement(realStart)) {
-                insertNodesAfter(realStart, ...lines)
+                realStart.after(lines)
             } else if (isBrNode(realStart)) {
                 realStart.parentElement.replaceWith(...lines)
             } else {
@@ -186,7 +189,7 @@ export function registryPasteEvent() {
                     if (isCommonLine(first)) {
                         topLine.innerHTML = first.innerHTML
                     } else {
-
+                        // TODO
                     }
                 } else if (!isEmptyBodyElement(first) && !isMultiEleStruct(first)) {
                     // 将首行折叠到目标位置
@@ -194,11 +197,15 @@ export function registryPasteEvent() {
                     const [left, right] = range.splitNode(
                         findParentTag(realStart, it => it.parentNode === topLine)
                     )
-                    const fun = left ? insertNodesAfter : insertNodesBefore
-                    fun(left ?? right, ...first.childNodes)
+                    const inserted = first.childNodes
+                    if (left) {
+                        left.after(...inserted)
+                    } else {
+                        right.before(...inserted)
+                    }
                 }
                 if (lines.length > offset)
-                    insertNodesAfter(topLine, ...lines.splice(offset))
+                    topLine.after(...lines.splice(offset))
                 updateOfflineData()
                 zipTree(topLine)
             }
@@ -229,7 +236,7 @@ export function registryPasteEvent() {
                 if (isEmptyLine(pos))
                     pos.replaceWith(image)
                 else
-                    pos.insertAdjacentElement('afterend', image)
+                    pos.after(image)
                 pos = image
             }
             new KRange(pos).active()

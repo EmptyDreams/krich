@@ -46,7 +46,7 @@ export function initKrich(optional) {
 function initContainer(optional) {
     const container = typeof optional === 'string' ? document.querySelector(optional) : optional
     console.assert(/^\s*$/g.test(container.textContent) && container.childElementCount === 0, "指定的容器内容不为空：", container)
-    container.insertAdjacentHTML('beforebegin', `<style>${krichStyle}</style>`)
+    container.before(`<style>${krichStyle}</style>`)
     container.innerHTML = `<div class="${KRICH_TOOL_BAR_CLASS} disable">${
         Object.getOwnPropertyNames(behaviors)
             .map(it => behaviors[it].render())

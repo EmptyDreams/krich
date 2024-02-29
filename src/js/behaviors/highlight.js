@@ -16,13 +16,13 @@ export function behaviorHighlight(range) {
         if (isEmptyLine(line)) {
             line.replaceWith(pre)
         } else {
-            line.insertAdjacentElement('afterend', pre)
+            line.after(pre)
         }
         setCursorPositionBefore(getFirstChildNode(pre))
     } else {
         const offlineData = range.serialization()
         const allLines = range.getAllTopElements()
-        allLines[0].insertAdjacentElement('afterend', pre)
+        allLines[0].after(pre)
         let codeContent = ''
         for (let line of allLines) {
             codeContent += line.textContent + '\n'

@@ -58,7 +58,7 @@ export const HOVER_TIP_LIST = {
                     if (oldIsImage || isEmptyLine(target)) {
                         target.replaceWith(imageElement)
                     } else {
-                        target.insertAdjacentElement('afterend', imageElement)
+                        target.after(imageElement)
                     }
                     new KRange(imageElement).active()
                     target = imageElement

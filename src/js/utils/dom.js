@@ -183,7 +183,7 @@ export function tryFixDom() {
     // 自动为没有多选框的代办列表的 li 添加多选框
     Array.from(KRICH_EDITOR.querySelectorAll(`${behaviors.todo.exp}>li`))
         .filter(it => !it.firstElementChild?.classList?.contains?.('marker'))
-        .forEach(it => it.insertAdjacentElement('afterbegin', TODO_MARKER.cloneNode(false)))
+        .forEach(it => it.prepend(TODO_MARKER.cloneNode(false)))
     // 将不在不是唯一子节点的 <br> 替换为空行
     KRICH_EDITOR.querySelectorAll('br:not(:first-child),br:not(:last-child)')
         .forEach(it => it.replaceWith(createNewLine()))
@@ -238,28 +238,6 @@ export function getRelCoords(target, parent) {
         l: targetBox.x - parentBox.x,
         r: targetBox.right - parentBox.x,
         b: targetBox.bottom - parentBox.y
-    }
-}
-
-/**
- * 在指定节点后方插入指定的节点
- * @param pos {Node}
- * @param values {Node}
- */
-export function insertNodesAfter(pos, ...values) {
-    for (let i = values.length - 1; i >= 0; i--) {
-        pos.parentNode.insertBefore(values[i], pos.nextSibling)
-    }
-}
-
-/**
- * 在指定节点前方插入指定的节点
- * @param pos {Node}
- * @param values {Node}
- */
-export function insertNodesBefore(pos, ...values) {
-    for (let item of values) {
-        pos.parentNode.insertBefore(item, pos)
     }
 }
 

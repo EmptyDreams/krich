@@ -48,7 +48,7 @@ export function registryBeforeInputEventListener() {
             const todoList = findParentTag(startContainer, item => item.classList?.contains?.('todo'))
             if (todoList) {
                 const item = todoList.querySelector('&>li>p:first-child')
-                if (item) item.insertAdjacentElement('beforebegin', TODO_MARKER.cloneNode(true))
+                if (item) item.before(TODO_MARKER.cloneNode(true))
             }
         }
     }, 0)

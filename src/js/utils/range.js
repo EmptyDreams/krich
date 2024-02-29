@@ -3,7 +3,7 @@ import {
     eachDomTree,
     findParentTag, getFirstChildNode,
     getLastChildNode,
-    getLastTextNode, insertNodesAfter, nextLeafNode,
+    getLastTextNode, nextLeafNode,
     nextSiblingText, prevLeafNode,
     zipTree
 } from './dom'
@@ -286,13 +286,13 @@ export class KRange extends Range {
         const isOnTheRight = endOffset ===
             (isTextNode(endContainer) ? endContainer.textContent.length : endContainer.childNodes.length)
         if (!lca && startContainer === endContainer && startOffset === 0 && isOnTheRight) {
-            startContainer.parentNode.insertBefore(container, startContainer)
+            startContainer.before(container)
             container.append(startContainer)
         } else {
             const commonAncestorContainer = lca ?? this.commonAncestorContainer
             const list = this.splitNode(commonAncestorContainer)
             if (isTextNode(commonAncestorContainer)) {
-                list[1].parentNode.insertBefore(container, list[1])
+                list[1].before(container)
                 container.append(list[1])
                 zipTree(list[1].parentElement)
             } else {
@@ -305,9 +305,7 @@ export class KRange extends Range {
                     if (i > index) {
                         commonAncestorContainer.append(...item.childNodes)
                     } else {
-                        while (item.lastChild) {
-                            commonAncestorContainer.insertBefore(item.lastChild, commonAncestorContainer.firstChild)
-                        }
+                        commonAncestorContainer.prepend(...item.childNodes)
                     }
                     item.remove()
                 }
@@ -576,7 +574,7 @@ export class KRange extends Range {
             if (node === root) {    // 切分到 root 时停止递归
                 console.assert(newNode !== root, 'newNode 不应当等于 root')
                 // 将新生成的结构插入到 root 右侧
-                insertNodesAfter(root, newNode)
+                root.after(newNode)
                 return newNode
             } else {    // 递归克隆父级结构（包括右侧在 root 中的节点）
                 return splitNodeHelper(node.parentNode, node, newNode, node !== newNode)

@@ -13,7 +13,7 @@ export function onclickHr(range) {
     if (isEmptyLine(posLine)) {
         posLine.replaceWith(hr)
     } else {
-        posLine.insertAdjacentElement('afterend', hr)
+        posLine.after(hr)
     }
     new KRange(hr).active()
 }
