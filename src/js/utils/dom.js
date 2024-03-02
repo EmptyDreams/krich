@@ -288,6 +288,7 @@ export function zipTree(container) {
                     while (sibling.firstChild)
                         item.appendChild(sibling.firstChild)
                 }
+                sibling.remove()
             } else {
                 item = sibling
             }
