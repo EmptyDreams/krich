@@ -148,22 +148,15 @@ export function createHash() {
 export function equalsKrichNode(arg0, arg1) {
     console.assert(!!arg0 && arg1, '参数不能为 null/undefined', arg0, arg1)
     if (arg0.nodeName !== arg1.nodeName) return false
-    const nameList = ['classList', 'attributes']
-    for (let name of nameList) {
-        let value0 = arg0[name]
-        let value1 = arg1[name]
-        if (value0 && value1) {
-            if (value0.length !== value1.length) return false
-            value0 = Array.from(value0)
-            value1 = Array.from(value1)
-            for (let item of value0) {
-                if (!value1.includes(item)) return false
-            }
-        } else if (value0 !== value1) {
-            return false
-        }
-    }
-    return true
+    const {classList: classList0, attributes: attributes0} = arg0
+    const {classList: classList1, attributes: attributes1} = arg1
+    if (!classList0) return true
+    return classList0.length === classList1.length &&
+        attributes0.length === attributes1.length &&
+        Array.from(classList0).every(it => classList1.contains(it)) &&
+        Array.from(attributes0)
+            .filter(it => it.name !== 'class')
+            .every(it => it.value === arg1.getAttribute(it.name))
 }
 
 /**
