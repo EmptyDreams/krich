@@ -142,16 +142,28 @@ export function createHash() {
 
 /**
  * 判断两个富文本节点是否相同（不判断节点内容）
- * @param arg0 {HTMLElement}
- * @param arg1 {HTMLElement}
+ * @param arg0 {Node|Element}
+ * @param arg1 {Node|Element}
  */
 export function equalsKrichNode(arg0, arg1) {
     console.assert(!!arg0 && arg1, '参数不能为 null/undefined', arg0, arg1)
-    return arg0.nodeName === arg1.nodeName &&
-        arg0.classList.length === arg1.classList.length &&
-        arg0.attributes.length !== arg1.attributes.length &&
-        Array.from(arg0.classList).every(it => arg1.classList.contains(it)) &&
-        Array.from(arg0.attributes).every(it => it.value === arg1.getAttribute(it.name))
+    if (arg0.nodeName !== arg1.nodeName) return false
+    const nameList = ['classList', 'attributes']
+    for (let name of nameList) {
+        let value0 = arg0[name]
+        let value1 = arg1[name]
+        if (value0 && value1) {
+            if (value0.length !== value1.length) return false
+            value0 = Array.from(value0)
+            value1 = Array.from(value1)
+            for (let item of value0) {
+                if (!value1.includes(item)) return false
+            }
+        } else if (value0 !== value1) {
+            return false
+        }
+    }
+    return true
 }
 
 /**

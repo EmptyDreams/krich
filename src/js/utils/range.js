@@ -278,40 +278,36 @@ export class KRange extends Range {
      * 使用指定的容器包裹范围内选中的节点
      * @param container {Element} 容器
      * @param lca {Element?} 切割范围限制，留空自动决定
-     * @return {void}
+     * @return {number} 切分类型：-1-切分内容在左侧、0-三段式切割、1-切分内容在右侧、2 没有进行切割
      */
     surroundContents(container, lca) {
-        const {startContainer, endContainer, startOffset, endOffset} = this
-        // 判断选区是否选择了 endContainer 的结尾
-        const isOnTheRight = endOffset ===
-            (isTextNode(endContainer) ? endContainer.textContent.length : endContainer.childNodes.length)
-        if (!lca && startContainer === endContainer && startOffset === 0 && isOnTheRight) {
-            startContainer.before(container)
-            container.append(startContainer)
+        console.assert(!this.collapsed, `collapsed 的 KRange 不应当调用 surroundContents`, this)
+        const commonAncestorContainer = lca ?? this.commonAncestorContainer
+        const list = this.splitNode(commonAncestorContainer)
+        if (isTextNode(commonAncestorContainer)) {
+            list[1].before(container)
+            container.append(list[1])
+            zipTree(list[1].parentElement)
         } else {
-            const commonAncestorContainer = lca ?? this.commonAncestorContainer
-            const list = this.splitNode(commonAncestorContainer)
-            if (isTextNode(commonAncestorContainer)) {
-                list[1].before(container)
-                container.append(list[1])
-                zipTree(list[1].parentElement)
-            } else {
-                const index = list.findIndex(it => it === commonAncestorContainer)
-                container.append(...list[1].childNodes)
-                list[1].append(container)
-                for (let i = 0; i < list.length; i++) {
-                    const item = list[i]
-                    if (i === index || !item) continue
-                    if (i > index) {
-                        commonAncestorContainer.append(...item.childNodes)
-                    } else {
-                        commonAncestorContainer.prepend(...item.childNodes)
-                    }
-                    item.remove()
+            const index = list.findIndex(it => it === commonAncestorContainer)
+            container.append(...list[1].childNodes)
+            list[1].append(container)
+            for (let i = 0; i < list.length; i++) {
+                const item = list[i]
+                if (i === index || !item) continue
+                if (i > index) {
+                    commonAncestorContainer.append(...item.childNodes)
+                } else {
+                    commonAncestorContainer.prepend(...item.childNodes)
                 }
-                zipTree(commonAncestorContainer)
+                item.remove()
             }
+            zipTree(commonAncestorContainer)
         }
+        if (list.every(it => it)) return 0
+        if (list[0]) return 1
+        if (list[2]) return -1
+        return 2
     }
 
     /**

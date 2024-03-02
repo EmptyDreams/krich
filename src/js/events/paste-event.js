@@ -8,7 +8,7 @@ import {
     zipTree
 } from '../utils/dom'
 import {
-    createElement,
+    createElement, equalsKrichNode,
     getElementBehavior,
     isBrNode, isEmptyBodyElement, isEmptyLine, isKrichEditor, isListLine, isMarkerNode,
     isTextNode
@@ -110,20 +110,29 @@ export function registryPasteEvent() {
      * @return {boolean|undefined} 是否进行了合并操作
      */
     function mergeSameList(top, bottom) {
-        if (!top || !bottom || top.nodeName !== bottom.nodeName) return
+        if (!top || !bottom || !equalsKrichNode(top, bottom)) return
+        const topLastChild = top.lastChild
+        const bottomFirstChild = bottom.firstChild
         if (isListLine(top)) {
-            const result = mergeSameList(top.lastChild, bottom.firstChild)
+            const result = mergeSameList(topLastChild, bottomFirstChild)
             if (result) bottom.remove()
             return result
         }
         if (isMultiEleStruct(top) &&
             top.getAttribute(HASH_NAME) === bottom.getAttribute(HASH_NAME)
         ) {
-            mergeSameList(top.lastChild, bottom.firstChild)
+            mergeSameList(topLastChild, bottomFirstChild)
             top.append(...bottom.childNodes)
             bottom.remove()
             return true
         }
+        if (topLastChild) {
+            mergeSameList(topLastChild, bottomFirstChild)
+            top.append(...bottom.childNodes)
+        } else if (isTextNode(top)) {
+            top.textContent += bottom.textContent
+        }
+        bottom.remove()
     }
 
     const KEY_HTML = 'text/html'
@@ -279,7 +288,7 @@ export function registryPasteEvent() {
         if (isIncompatible) return
         const {clientX, clientY, dataTransfer} = event
         const isInsideCpy = isDragging
-        let transfer = dataTransfer, tmpBox, offlineData, mergeList
+        let transfer = dataTransfer, tmpBox, offlineData
         if (isInsideCpy) {
             console.assert(!!editorRange, '此时 editorRange 不可能为空')
             transfer = new DataTransfer()
@@ -290,16 +299,18 @@ export function registryPasteEvent() {
             const isInTextArea = findParentTag(ancestor, isTextArea)
             let lca = KRange.lca(range.realStartContainer(), ancestor)
             if (isTextNode(lca)) lca = lca.parentNode
-            editorRange.surroundContents(tmpBox, lca)
+            const splitType = editorRange.surroundContents(tmpBox, lca)
             let html
             if (isInTextArea) {
                 html = tmpBox.textContent
             } else {
-                const firstChild = tmpBox.firstChild
-                if (tmpBox.childNodes.length === 1 && isListLine(firstChild)) {
-                    firstChild.replaceWith(...firstChild.childNodes)
-                    // 判断挪动之后是否需要合并列表
-                    mergeList = true
+                if (!splitType && tmpBox.childNodes.length === 1) {
+                    const {firstChild, previousSibling, nextSibling} = tmpBox
+                    if (isListLine(firstChild)) {
+                        // noinspection JSCheckFunctionSignatures
+                        firstChild.replaceWith(...firstChild.childNodes)
+                    }
+                    mergeSameList(previousSibling, nextSibling)
                 }
                 tmpBox.querySelectorAll(`*[${HASH_NAME}]`)
                     .forEach(it => it.removeAttribute(HASH_NAME))
@@ -310,8 +321,6 @@ export function registryPasteEvent() {
             // noinspection HtmlRequiredLangAttribute
             transfer.setData(KEY_HTML, '<html><body>' + html + '</body></html>')
         }
-        if (mergeList)
-            mergeSameList(tmpBox.previousSibling, tmpBox.nextSibling)
         isDragging = false
         const range = offlineData ? KRange.deserialized(offlineData) : KRange.clientPos(clientX, clientY)
         await handlePaste(range, transfer, isInsideCpy)
