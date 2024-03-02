@@ -304,9 +304,9 @@ export function registryPasteEvent() {
             // 临时 hash 标记，用于区分两个标签是否需要进行合并
             const TMP_HASH_NAME = 'data-tmp-hash'
             const tmpHash = createHash()
-            if (isTextNode(lca)) lca = lca.parentNode
+            if (isTextNode(lca)) lca = lca.parentNode;
             // 给切分位置的标签添加临时的 hash 标记
-            findParentTag(ancestor, it => it.parentNode === lca)
+            (ancestor === lca ? lca : findParentTag(ancestor, it => it.parentNode === lca))
                 .setAttribute(TMP_HASH_NAME, tmpHash)
             editorRange.surroundContents(tmpBox, lca)
             if (isInTextArea) { // 如果内容是从 TextArea 中拖动出来的，则当作纯文本处理
