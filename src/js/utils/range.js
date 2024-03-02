@@ -317,7 +317,7 @@ export class KRange extends Range {
     /**
      * 将 Range 信息序列化
      *
-     * 每个维度包含三个数据，依次表示：偏移量、EmptyBodyElement 技术、光标位置
+     * 每个维度包含三个数据，依次表示：偏移量、EmptyBodyElement 计数、光标位置
      *
      * 光标位置的值意义如下：
      *
@@ -454,7 +454,7 @@ export class KRange extends Range {
     }
 
     /**
-     * 通过行切分 Range
+     * 通过行切分 KRange，不会影响当前 KRange 对象
      * @return {KRange[]}
      */
     splitRangeByLine() {
@@ -486,7 +486,7 @@ export class KRange extends Range {
     /**
      * 通过 KRange 选区切分 DOM 结构
      *
-     * @param root {Node} 切分的根，切分时不会影响 [root] 的父级节点
+     * @param root {Node} 切分的根，切分时不会影响 `root` 的父级节点
      * @return {[Node|Element?, Node|Element?, Node|Element?]} 中间为选区选中的范围
      */
     splitNode(root) {
