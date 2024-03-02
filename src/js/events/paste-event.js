@@ -10,7 +10,7 @@ import {
 import {
     createElement,
     getElementBehavior,
-    isBrNode, isCommonLine, isEmptyBodyElement, isEmptyLine, isKrichEditor, isListLine, isMarkerNode,
+    isBrNode, isEmptyBodyElement, isEmptyLine, isKrichEditor, isListLine, isMarkerNode,
     isTextNode
 } from '../utils/tools'
 import {KRange, setCursorPositionAfter} from '../utils/range'
@@ -164,7 +164,7 @@ export function registryPasteEvent() {
             const updateOfflineData = () => {
                 offlineData = setCursorPositionAfter(lastPos, false).serialization()
             }
-            let offlineData, textArea = findParentTag(realStart, isTextArea)
+            let offlineData
             if (isKrichEditor(realStart)) { // 如果拖动到了没有标签的地方，说明拖动到了尾部
                 // noinspection JSCheckFunctionSignatures
                 realStart.appendChild(...lines)
@@ -183,46 +183,40 @@ export function registryPasteEvent() {
                  * @return {boolean}
                  */
                 const isMergeInLine = item => !isEmptyBodyElement(item) && !isMultiEleStruct(item)
-                if (lines.length > 1) {
-                    const first = lines[0]
+                const first = lines[0]
+                // 当插入内容有多行或插入的内容不可嵌入到行中时执行通用插入方式
+                if (lines.length > 1 || !isMergeInLine(first)) {
                     const last = lines[lines.length - 1]
                     const [left, right] = range.splitNode(topLine)
-                    if (left && right) {
-                        if (isMergeInLine(last)) {
-                            lines.pop()
-                            right.prepend(...last.childNodes)
-                        }
-                        if (isMergeInLine(first)) {
-                            lines.shift()
-                            left.append(...first.childNodes)
-                        }
-                        left.after(...lines)
+                    if (right && isMergeInLine(last)) { // 尝试向右侧行前嵌入内容
+                        lines.pop()
+                        right.prepend(...last.childNodes)
                     }
+                    if (left && isMergeInLine(first)) { // 尝试向左侧行结尾嵌入内容
+                        lines.shift()
+                        left.append(...first.childNodes)
+                    }
+                    // 将剩余的行插入到 left 和 right 之间
                     if (left) left.after(...lines)
-                } else {
-
-                }
-
-                let offset = 0
-                if (!isEmptyBodyElement(first) && !isMultiEleStruct(first)) {
-                    // 将首行折叠到目标位置
-                    offset = 1
+                    else right.before(...lines)
+                    updateOfflineData()
+                    if (left) zipTree(left)
+                    if (right) zipTree(right)
+                } else {    // 当插入内容只有一行且可嵌入时将内容嵌入到当前行
                     const [left, right] = range.splitNode(
-                        findParentTag(realStart, it => it.parentNode === topLine)
+                        findParentTag(range.realStartContainer(), it => it.parentNode === topLine)
                     )
-                    const inserted = first.childNodes
-                    if (left) {
-                        left.after(...inserted)
+                    if (left) { // 如果左侧存在则优先将内容插入到左侧
+                        left.after(...first.childNodes)
                     } else {
-                        right.before(...inserted)
+                        right.before(...first.childNodes)
                     }
+                    updateOfflineData()
+                    zipTree(topLine)
                 }
-                if (lines.length > offset)
-                    topLine.after(...lines.splice(offset))
-                updateOfflineData()
-                zipTree(topLine)
             }
             if (!offlineData) updateOfflineData()
+            const textArea = findParentTag(realStart, isTextArea)
             if (textArea) {
                 // noinspection SillyAssignmentJS
                 textArea.textContent = textArea.textContent
