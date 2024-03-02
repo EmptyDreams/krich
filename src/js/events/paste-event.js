@@ -309,15 +309,12 @@ export function registryPasteEvent() {
             // noinspection HtmlRequiredLangAttribute
             transfer.setData(KEY_HTML, '<html><body>' + html + '</body></html>')
         }
-        if (tmpBox) {
-            if (mergeList) {
-                mergeSameList(tmpBox.previousSibling, tmpBox.nextSibling)
-            }
-            tmpBox.remove()
-        }
+        if (mergeList)
+            mergeSameList(tmpBox.previousSibling, tmpBox.nextSibling)
         isDragging = false
         const range = offlineData ? KRange.deserialized(offlineData) : KRange.clientPos(clientX, clientY)
         await handlePaste(range, transfer, isInsideCpy)
+        if (tmpBox) tmpBox.remove()
         tryFixDom()
     })
 }
