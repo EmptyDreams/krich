@@ -8,7 +8,7 @@ import {
     zipTree
 } from '../utils/dom'
 import {
-    createElement, equalsKrichNode,
+    createElement, createHash, equalsKrichNode,
     getElementBehavior,
     isBrNode, isEmptyBodyElement, isEmptyLine, isKrichEditor, isListLine, isMarkerNode,
     isTextNode
@@ -144,6 +144,7 @@ export function registryPasteEvent() {
      * @param isInside {boolean?} 数据来源是否是内部元素
      */
     async function handlePaste(range, dataTransfer, isInside) {
+        isDragging = false  // 取消拖动标记，使得函数能够修改 editorRange
         const {types} = dataTransfer
         if (types.includes(KEY_HTML)) {
             const content = dataTransfer.getData(KEY_HTML)
@@ -287,41 +288,55 @@ export function registryPasteEvent() {
         event.preventDefault()
         if (isIncompatible) return
         const {clientX, clientY, dataTransfer} = event
-        const isInsideCpy = isDragging
         let transfer = dataTransfer, tmpBox, offlineData
-        if (isInsideCpy) {
+        if (isDragging) {  // 如果内容是从编辑区复制过来的，则手动提取内容
             console.assert(!!editorRange, '此时 editorRange 不可能为空')
             transfer = new DataTransfer()
+            // 定位鼠标拖动到的位置
             const range = KRange.clientPos(clientX, clientY)
             offlineData = range.serialization()
             tmpBox = createElement('div', ['tmp'])
+            // 被拖动的内容的最近公共祖先
             const ancestor = editorRange.commonAncestorContainer
             const isInTextArea = findParentTag(ancestor, isTextArea)
+            // 被拖动内容和目标位置的最近公共祖先
             let lca = KRange.lca(range.realStartContainer(), ancestor)
+            // 临时 hash 标记，用于区分两个标签是否需要进行合并
+            const TMP_HASH_NAME = 'data-tmp-hash'
+            const tmpHash = createHash()
             if (isTextNode(lca)) lca = lca.parentNode
-            const splitType = editorRange.surroundContents(tmpBox, lca)
-            let html
-            if (isInTextArea) {
-                html = tmpBox.textContent
+            // 给切分位置的标签添加临时的 hash 标记
+            findParentTag(ancestor, it => it.parentNode === lca)
+                .setAttribute(TMP_HASH_NAME, tmpHash)
+            editorRange.surroundContents(tmpBox, lca)
+            if (isInTextArea) { // 如果内容是从 TextArea 中拖动出来的，则当作纯文本处理
+                transfer.setData(KEY_TEXT, tmpBox.textContent)
             } else {
-                if (!splitType && tmpBox.childNodes.length === 1) {
-                    const {firstChild, previousSibling, nextSibling} = tmpBox
-                    if (isListLine(firstChild)) {
-                        // noinspection JSCheckFunctionSignatures
-                        firstChild.replaceWith(...firstChild.childNodes)
-                    }
+                const {firstChild, previousSibling, nextSibling} = tmpBox
+                if (tmpBox.childNodes.length === 1 && isListLine(firstChild)) {
+                    // 对于从列表中拖动出来的内容，移除最外部的 li 标签
+                    // noinspection JSCheckFunctionSignatures
+                    firstChild.replaceWith(...firstChild.childNodes)
+                }
+                // 如果前后的内容需要合并则进行合并
+                if (previousSibling && nextSibling &&
+                    previousSibling.getAttribute(TMP_HASH_NAME) === tmpHash &&
+                    equalsKrichNode(previousSibling, nextSibling)
+                ) {
                     mergeSameList(previousSibling, nextSibling)
                 }
-                tmpBox.querySelectorAll(`*[${HASH_NAME}]`)
-                    .forEach(it => it.removeAttribute(HASH_NAME))
-                tmpBox.querySelectorAll('*.' + EMPTY_BODY_ACTIVE_FLAG)
-                    .forEach(it => it.classList.remove(EMPTY_BODY_ACTIVE_FLAG))
-                html = tmpBox.innerHTML
+                // 移除临时标记
+                [previousSibling, nextSibling, ...tmpBox.childNodes]
+                    .forEach(it => it?.removeAttribute?.(TMP_HASH_NAME))
+                // 移除其它的不必要转义的属性
+                for (let item of tmpBox.getElementsByClassName(EMPTY_BODY_ACTIVE_FLAG)) {
+                    item.classList.remove(EMPTY_BODY_ACTIVE_FLAG)
+                }
+                // noinspection HtmlRequiredLangAttribute
+                transfer.setData(KEY_HTML, '<html><body>' + tmpBox.innerHTML + '</body></html>')
             }
-            // noinspection HtmlRequiredLangAttribute
-            transfer.setData(KEY_HTML, '<html><body>' + html + '</body></html>')
         }
-        isDragging = false
+        const isInsideCpy = isDragging
         const range = offlineData ? KRange.deserialized(offlineData) : KRange.clientPos(clientX, clientY)
         await handlePaste(range, transfer, isInsideCpy)
         if (tmpBox) tmpBox.remove()
