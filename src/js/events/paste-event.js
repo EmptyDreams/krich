@@ -146,7 +146,7 @@ export function registryPasteEvent() {
             if (!isInside) {    // 来自外部的内容先压缩一遍
                 lines.forEach(zipTree)
             }
-            /** @type {Node} */
+            /** @type {Node|Element} */
             let realStart
             let tmpBox
             if (!range.collapsed) {
@@ -160,38 +160,51 @@ export function registryPasteEvent() {
             // 存储光标最终所在的位置
             const lastPos = getLastChildNode(lines[lines.length - 1])
             const firstNode = getFirstChildNode(lines[0])
+            /** 更新 `offlineData` 数据 */
             const updateOfflineData = () => {
-                if (isEmptyBodyElement(lastPos)) {
-                    offlineData = new KRange(lastPos)
-                } else {
-                    setCursorPositionAfter(lastPos)
-                    offlineData = KRange.activated()
-                }
-                offlineData = offlineData.serialization()
+                offlineData = setCursorPositionAfter(lastPos, false).serialization()
             }
-            let offlineData, pre = findParentTag(realStart, isTextArea)
-            if (isKrichEditor(realStart)) {
+            let offlineData, textArea = findParentTag(realStart, isTextArea)
+            if (isKrichEditor(realStart)) { // 如果拖动到了没有标签的地方，说明拖动到了尾部
                 // noinspection JSCheckFunctionSignatures
                 realStart.appendChild(...lines)
-            } else if (isEmptyLine(realStart)) {
+            } else if (isEmptyLine(realStart)) {    // 如果拖动到了空白行则直接替换
                 // noinspection JSCheckFunctionSignatures
                 realStart.replaceWith(...lines)
-            } else if (isEmptyBodyElement(realStart)) {
-                realStart.after(lines)
-            } else if (isBrNode(realStart)) {
+            } else if (isEmptyBodyElement(realStart)) { // 如果拖动到了 EBE 则在其后方插入
+                realStart.after(...lines)
+            } else if (isBrNode(realStart)) {   // 如果拖动到了 br 上则替换其父元素
                 realStart.parentElement.replaceWith(...lines)
-            } else {
+            } else {    // 否则在当前位置插入
                 const topLine = findParentTag(realStart, TOP_LIST)
-                const first = lines[0]
-                let offset = 0
-                if (isEmptyLine(topLine)) {
-                    offset = 1
-                    if (isCommonLine(first)) {
-                        topLine.innerHTML = first.innerHTML
-                    } else {
-                        // TODO
+                /**
+                 * 判断一个节点是否应该嵌入到行中
+                 * @param item {Node}
+                 * @return {boolean}
+                 */
+                const isMergeInLine = item => !isEmptyBodyElement(item) && !isMultiEleStruct(item)
+                if (lines.length > 1) {
+                    const first = lines[0]
+                    const last = lines[lines.length - 1]
+                    const [left, right] = range.splitNode(topLine)
+                    if (left && right) {
+                        if (isMergeInLine(last)) {
+                            lines.pop()
+                            right.prepend(...last.childNodes)
+                        }
+                        if (isMergeInLine(first)) {
+                            lines.shift()
+                            left.append(...first.childNodes)
+                        }
+                        left.after(...lines)
                     }
-                } else if (!isEmptyBodyElement(first) && !isMultiEleStruct(first)) {
+                    if (left) left.after(...lines)
+                } else {
+
+                }
+
+                let offset = 0
+                if (!isEmptyBodyElement(first) && !isMultiEleStruct(first)) {
                     // 将首行折叠到目标位置
                     offset = 1
                     const [left, right] = range.splitNode(
@@ -210,10 +223,10 @@ export function registryPasteEvent() {
                 zipTree(topLine)
             }
             if (!offlineData) updateOfflineData()
-            if (pre) {
+            if (textArea) {
                 // noinspection SillyAssignmentJS
-                pre.textContent = pre.textContent
-                await highlightCode(null, pre)
+                textArea.textContent = textArea.textContent
+                await highlightCode(null, textArea)
             }
             for (let it of lines) {
                 if (it.nodeName === 'PRE') {

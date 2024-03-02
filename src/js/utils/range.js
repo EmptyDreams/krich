@@ -487,7 +487,7 @@ export class KRange extends Range {
      * 通过 KRange 选区切分 DOM 结构
      *
      * @param root {Node} 切分的根，切分时不会影响 [root] 的父级节点
-     * @return {[Node|Element|null, Node|Element, Node|Element|null]} 中间为选区选中的范围
+     * @return {[Node|Element?, Node|Element?, Node|Element?]} 中间为选区选中的范围
      */
     splitNode(root) {
         /**
