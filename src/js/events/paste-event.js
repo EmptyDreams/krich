@@ -165,6 +165,8 @@ export function registryPasteEvent() {
                 offlineData = setCursorPositionAfter(lastPos, false).serialization()
             }
             let offlineData
+            // 提前查询 realStart 是否在 text area 中，后续操作可能修改 DOM 结构
+            const textArea = findParentTag(realStart, isTextArea)
             if (isKrichEditor(realStart)) { // 如果拖动到了没有标签的地方，说明拖动到了尾部
                 // noinspection JSCheckFunctionSignatures
                 realStart.appendChild(...lines)
@@ -204,7 +206,7 @@ export function registryPasteEvent() {
                     if (right) zipTree(right)
                 } else {    // 当插入内容只有一行且可嵌入时将内容嵌入到当前行
                     const [left, right] = range.splitNode(
-                        findParentTag(range.realStartContainer(), it => it.parentNode === topLine)
+                        findParentTag(realStart, it => it.parentNode === topLine)
                     )
                     if (left) { // 如果左侧存在则优先将内容插入到左侧
                         left.after(...first.childNodes)
@@ -216,7 +218,6 @@ export function registryPasteEvent() {
                 }
             }
             if (!offlineData) updateOfflineData()
-            const textArea = findParentTag(realStart, isTextArea)
             if (textArea) {
                 // noinspection SillyAssignmentJS
                 textArea.textContent = textArea.textContent
