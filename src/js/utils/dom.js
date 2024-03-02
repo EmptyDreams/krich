@@ -5,9 +5,9 @@
 import {
     createNewLine,
     equalsKrichNode,
-    isBrNode,
+    isBrNode, isCommonLine, isEmptyBodyElement,
     isKrichEditor,
-    isKrichToolBar,
+    isKrichToolBar, isListLine,
     isMarkerNode,
     isTextNode
 } from './tools'
@@ -280,22 +280,14 @@ export function zipTree(container) {
         let sibling = item?.nextSibling
         while (sibling) {
             const nextSibling = sibling.nextSibling
-            if (item.nodeName === sibling.nodeName) {   // 判断两个节点是同一种节点
-                if (item.nodeType === Node.TEXT_NODE) { // 判断是否是文本节点
+            // 不合并 p、li 标签、ebe 和不相同的节点
+            if (!isCommonLine(item) && !isListLine(item) && !isEmptyBodyElement(item) && equalsKrichNode(item, sibling)) {
+                if (isTextNode(item)) {
                     item.textContent += sibling.textContent
                 } else {
-                    // 能够到这里说明这两个节点都是 HTMLElement
-                    // noinspection JSCheckFunctionSignatures
-                    if (equalsKrichNode(item, sibling)) {
-                        while (sibling.firstChild)
-                            item.appendChild(sibling.firstChild)
-                    } else {
-                        item = sibling
-                        sibling = nextSibling
-                        continue
-                    }
+                    while (sibling.firstChild)
+                        item.appendChild(sibling.firstChild)
                 }
-                sibling.remove()
             } else {
                 item = sibling
             }
