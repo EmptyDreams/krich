@@ -197,7 +197,7 @@ export function registryPasteEvent() {
             // 给切分位置的标签添加临时的 hash 标记
             [editorRange.realStartContainer(), editorRange.endInclude()]
                 .map(it => findParentTag(it, node => node.parentNode === nearlyTopLine))
-                .forEach(it => it.setAttribute(TMP_HASH_NAME, createHash()))
+                .forEach(it => it.setAttribute?.(TMP_HASH_NAME, createHash()))
             editorRange.surroundContents(tmpBox, nearlyTopLine)
             const {firstChild, previousSibling, nextSibling} = tmpBox
             if (tmpBox.childNodes.length === 1 && isListLine(firstChild)) {
