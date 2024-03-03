@@ -45,27 +45,34 @@ export function compareBtnListStatusWith(node) {
 }
 
 /**
+ * 设置指定按钮的样式与指定标签相同
+ * @param button {Element} 按钮
+ * @param element {Element?} 指定标签，留空表示恢复为默认值
+ */
+export function setButtonStatus(button, element) {
+    const setter = getElementBehavior(button).setter
+    const buttonClassList = button.classList
+    if (setter) {
+        setter(button, element)
+    } else if (buttonClassList.contains('select')) {
+        const value = button.getElementsByClassName('value')[0]
+        const selectValue = element?.getAttribute(SELECT_VALUE) ?? '0'
+        button.setAttribute(SELECT_VALUE, selectValue)
+        const item = button.querySelector(`.item[${SELECT_VALUE}="${selectValue}"]`)
+        value.innerHTML = item.innerHTML
+    } else if (element) {
+        buttonClassList.add('active')
+    } else {
+        buttonClassList.remove('active')
+    }
+}
+
+/**
  * 同步按钮和指定节点的状态
  * @param node {Node} 文本节点
  */
 export function syncButtonsStatus(node) {
-    findDiffButton(node, (button, element) => {
-        const setter = getElementBehavior(button).setter
-        const buttonClassList = button.classList
-        if (setter) {
-            setter(button, element)
-        } else if (buttonClassList.contains('select')) {
-            const value = button.getElementsByClassName('value')[0]
-            const selectValue = element?.getAttribute(SELECT_VALUE) ?? '0'
-            button.setAttribute(SELECT_VALUE, selectValue)
-            const item = button.querySelector(`.item[${SELECT_VALUE}="${selectValue}"]`)
-            value.innerHTML = item.innerHTML
-        } else if (element) {
-            buttonClassList.add('active')
-        } else {
-            buttonClassList.remove('active')
-        }
-    })
+    findDiffButton(node, setButtonStatus)
 }
 
 /**

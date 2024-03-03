@@ -2,6 +2,7 @@
 
 import {editorRange, updateEditorRange} from './range-monitor'
 import {
+    behaviors,
     KRICH_EDITOR,
     markStatusCacheEffect, markStatusCacheInvalid,
     statusCheckCache
@@ -9,11 +10,11 @@ import {
 import {findParentTag} from '../utils/dom'
 import {highlightCode} from '../utils/highlight'
 import {KRange} from '../utils/range'
-import {compareBtnListStatusWith} from '../utils/btn'
+import {compareBtnListStatusWith, isActive, setButtonStatus} from '../utils/btn'
 import {getElementBehavior, waitTime} from '../utils/tools'
 import {TODO_MARKER} from '../vars/global-tag'
 import {clickButton} from '../behavior'
-import {isTextArea} from '../types/button-behavior'
+import {isNoStatus, isTextArea} from '../types/button-behavior'
 
 let codeHighlight
 export let isInputting
@@ -51,6 +52,13 @@ async function handleInput(event) {
     /* 在代办列表中换行时自动在 li 中插入 <input> */
     if (inputType === 'insertParagraph') {
         markStatusCacheInvalid()
+        for (let key in behaviors) {
+            const behavior = behaviors[key]
+            const button = behavior.button
+            if (!isNoStatus(behavior) && isActive(button)) {
+                setButtonStatus(button)
+            }
+        }
         const todoList = findParentTag(startContainer, item => item.classList?.contains?.('todo'))
         if (todoList) {
             const item = todoList.querySelector('&>li>p:first-child')
