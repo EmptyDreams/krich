@@ -170,7 +170,7 @@ initBehaviors({
         render: () => backgroundHtml,
         onclick: (range, btn) => colorOnclick(range, btn, 'background'),
         builder: btn => createElement('span', {style: 'background:' + readSelectedColor(btn)}),
-        verify: (btn, item) => btn.value === item.getAttribute('style').substring(11),
+        verify: (btn, item) => readSelectedColor(btn) === item.getAttribute('style').substring(11),
         setter: (btn, item) => {
             setSelectedColor(btn, item ? item.getAttribute('style').substring(11) : btn.getAttribute(SELECT_VALUE))
         },
