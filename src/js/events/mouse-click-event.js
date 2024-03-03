@@ -4,7 +4,7 @@ import {
     markStatusCacheInvalid,
     SELECT_VALUE
 } from '../vars/global-fileds'
-import {getElementBehavior, isEmptyBodyElement, isKrichEditor, isKrichToolBar} from '../utils/tools'
+import {getElementBehavior, isEmptyBodyElement, isKrichEditor, isKrichToolBar, waitTime} from '../utils/tools'
 import {editorRange, isFirstRange} from './range-monitor'
 import {findParentTag} from '../utils/dom'
 import {KRange} from '../utils/range'
@@ -64,7 +64,7 @@ export function registryMouseClickEvent() {
             } else {
                 classList.toggle('active')
                 if (isNoStatus(behavior)) {
-                    setTimeout(() => classList.remove('active'), 333)
+                    waitTime(333).then(() => classList.remove('active'))
                 }
             }
             if (!skip) {

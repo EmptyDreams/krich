@@ -12,7 +12,7 @@ import {editorRange} from './range-monitor'
 import {
     createNewLine, getElementBehavior, isCommonLine, isEmptyBodyElement,
     isEmptyLine, isListLine,
-    isMarkerNode
+    isMarkerNode, waitTime
 } from '../utils/tools'
 import {insertTextToString} from '../utils/string-utils'
 import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
@@ -20,28 +20,17 @@ import {closeHoverTip, updateHoverTipPosition} from '../utils/hover-tip'
 import {handleHotkeys} from '../hotkeys'
 
 export function registryKeyboardEvent() {
-    const switchTask = key => {
-        switch (key) {
+    KRICH_EDITOR.addEventListener('keyup', async event => {
+        await waitTime(0)
+        switch (event.code) {
             case 'Enter':   // 将顶层的 div 替换为 p
                 return () => KRICH_EDITOR.querySelectorAll('div:not([class])')
                     .forEach(it => replaceElement(it, document.createElement('p')))
             case 'Backspace': case 'Delete':
                 return markStatusCacheInvalid
         }
-    }
-    KRICH_EDITOR.addEventListener('keyup', event => {
-        const task = switchTask(event.code)
-        if (task) setTimeout(task, 0)
     })
-    KRICH_EDITOR.addEventListener('keydown', event => {
-        setTimeout(() => {
-            // noinspection JSUnresolvedReference
-            if (KRICH_HOVER_TIP.tip && !editorRange.some(it => findParentTag(it, isTextArea))) {
-                closeHoverTip()
-            } else {
-                updateHoverTipPosition()
-            }
-        }, 0)
+    KRICH_EDITOR.addEventListener('keydown', async event => {
         const body = editorRange?.body
         if (body) {
             emptyBodyElementKeyEvent(event, body)
@@ -60,6 +49,13 @@ export function registryKeyboardEvent() {
                     handleHotkeys(event)
                     break
             }
+        }
+        await waitTime(0)
+        // noinspection JSUnresolvedReference
+        if (KRICH_HOVER_TIP.tip && !editorRange.some(it => findParentTag(it, isTextArea))) {
+            closeHoverTip()
+        } else {
+            updateHoverTipPosition()
         }
     })
     KRICH_CONTAINER.addEventListener('keydown', event => {
