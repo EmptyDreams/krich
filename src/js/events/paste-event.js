@@ -25,86 +25,9 @@ import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
  */
 export let isDragging
 
-const TMP_HASH_NAME = 'data-tmp-hash'
-
+/** 注册粘贴和拖动事件 */
 export function registryPasteEvent() {
-    /**
-     * 将 body 中所有内容通过 translator 转义为标准格式
-     * @param body {Element}
-     */
-    function translate(body) {
-        /** @type {Node|Element} */
-        let node = body.firstChild
-        /** @type {Node|Element|0} */
-        let next = node
-        while (true) {
-            if (next === 0) break
-            if (next) node = next
-            next = node.firstChild ?? eachDomTree(node, true, false, () => true, body) ?? 0
-            if (isListLine(node) || isMarkerNode(node)) continue
-            let behavior = getElementBehavior(node)
-            if (!behavior) {
-                if (!isTextNode(node)) {
-                    if (node.hasChildNodes())
-                        node.replaceWith(...node.childNodes)
-                    else node.remove()
-                }
-                continue
-            }
-            let root, leaf
-            while (behavior) {
-                const newNode = behavior.translator(node)
-                if (newNode === node) break
-                if (newNode.firstChild) {
-                    next = eachDomTree(node, true, false, _ => true, body) ?? 0
-                    node.replaceWith(newNode)
-                    root = null
-                    break
-                }
-                if (leaf) leaf.append(newNode)
-                else root = newNode
-                leaf = newNode
-                behavior = getElementBehavior(node)
-            }
-            if (root) {
-                node.before(root)
-                // noinspection JSUnusedAssignment
-                leaf.append(...node.childNodes)
-            }
-        }
-    }
-
-    /**
-     * 按行封装
-     * @param body {Element}
-     * @return {(Element|Node)[]}
-     */
-    function packLine(body) {
-        const result = []
-        let line
-        const submitLine = () => {
-            if (line) {
-                result.push(line)
-                line = null
-            }
-        }
-        for (let child of body.childNodes) {
-            if (TOP_LIST.includes(child.nodeName)) {
-                submitLine()
-                result.push(child)
-            } else {
-                if (isBrNode(child)) {
-                    submitLine()
-                } else {
-                    if (!line) line = createElement('p')
-                    line.append(child)
-                }
-            }
-        }
-        if (line) result.push(line)
-        return result
-    }
-
+    const TMP_HASH_NAME = 'data-tmp-hash'
     const KEY_HTML = 'text/html'
     const KEY_TEXT = 'text/plain'
     /**
@@ -121,7 +44,9 @@ export function registryPasteEvent() {
                 .replaceAll('\r', '')
                 .replaceAll('\n', '<br>')
             const targetBody = htmlParser.parseFromString(content, KEY_HTML).querySelector('body')
-            translate(targetBody)
+            if (!isInside) {    // 来自外部的内容先进行转义
+                translate(targetBody)
+            }
             const lines = packLine(targetBody)
             if (!isInside) {    // 来自外部的内容先压缩一遍
                 lines.forEach(zipTree)
@@ -308,6 +233,83 @@ export function registryPasteEvent() {
         if (tmpBox) tmpBox.remove()
         tryFixDom()
     })
+}
+
+/**
+ * 将 body 中所有内容通过 translator 转义为标准格式
+ * @param body {Element}
+ */
+function translate(body) {
+    /** @type {Node|Element} */
+    let node = body.firstChild
+    /** @type {Node|Element|0} */
+    let next = node
+    while (true) {
+        if (next === 0) break
+        if (next) node = next
+        next = node.firstChild ?? eachDomTree(node, true, false, () => true, body) ?? 0
+        if (isListLine(node) || isMarkerNode(node)) continue
+        let behavior = getElementBehavior(node)
+        if (!behavior) {
+            if (!isTextNode(node)) {
+                if (node.hasChildNodes())
+                    node.replaceWith(...node.childNodes)
+                else node.remove()
+            }
+            continue
+        }
+        let root, leaf
+        while (behavior) {
+            const newNode = behavior.translator(node)
+            if (newNode === node) break
+            if (newNode.firstChild) {
+                next = eachDomTree(node, true, false, _ => true, body) ?? 0
+                node.replaceWith(newNode)
+                root = null
+                break
+            }
+            if (leaf) leaf.append(newNode)
+            else root = newNode
+            leaf = newNode
+            behavior = getElementBehavior(node)
+        }
+        if (root) {
+            node.before(root)
+            // noinspection JSUnusedAssignment
+            leaf.append(...node.childNodes)
+        }
+    }
+}
+
+/**
+ * 按行封装
+ * @param body {Element}
+ * @return {(Element|Node)[]}
+ */
+function packLine(body) {
+    const result = []
+    let line
+    const submitLine = () => {
+        if (line) {
+            result.push(line)
+            line = null
+        }
+    }
+    for (let child of body.childNodes) {
+        if (TOP_LIST.includes(child.nodeName)) {
+            submitLine()
+            result.push(child)
+        } else {
+            if (isBrNode(child)) {
+                submitLine()
+            } else {
+                if (!line) line = createElement('p')
+                line.append(child)
+            }
+        }
+    }
+    if (line) result.push(line)
+    return result
 }
 
 /**
