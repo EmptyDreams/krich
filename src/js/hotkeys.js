@@ -1,6 +1,7 @@
 import {setPostHeader} from './behaviors/header'
 import {editorRange} from './events/range-monitor'
 import {clickButton} from './behavior'
+import {KRICH_TOOL_BAR} from './vars/global-fileds'
 
 const KEY_CTRL  =   0b1
 const KEY_ALT   =   0b10
@@ -98,7 +99,9 @@ export function handleHotkeys(event) {
     event.preventDefault()
     if (!event.repeat) {
         if (typeof item === 'string') {
-            clickButton(item)
+            if (!KRICH_TOOL_BAR.classList.contains('disable')) {
+                clickButton(item)
+            }
         } else {
             item()
         }
