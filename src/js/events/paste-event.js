@@ -25,6 +25,8 @@ import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
  */
 export let isDragging
 
+const TMP_HASH_NAME = 'data-tmp-hash'
+
 export function registryPasteEvent() {
     /**
      * 将 body 中所有内容通过 translator 转义为标准格式
@@ -101,38 +103,6 @@ export function registryPasteEvent() {
         }
         if (line) result.push(line)
         return result
-    }
-
-    /**
-     * 合并列表
-     * @param top {Node|Element?} 上层标签
-     * @param bottom {Node|Element?} 下层标签
-     * @return {boolean|undefined} 是否进行了合并操作
-     */
-    function mergeSameList(top, bottom) {
-        if (!top || !bottom || !equalsKrichNode(top, bottom)) return
-        const topLastChild = top.lastChild
-        const bottomFirstChild = bottom.firstChild
-        if (isListLine(top)) {
-            const result = mergeSameList(topLastChild, bottomFirstChild)
-            if (result) bottom.remove()
-            return result
-        }
-        if (isMultiEleStruct(top) &&
-            top.getAttribute(HASH_NAME) === bottom.getAttribute(HASH_NAME)
-        ) {
-            mergeSameList(topLastChild, bottomFirstChild)
-            top.append(...bottom.childNodes)
-            bottom.remove()
-            return true
-        }
-        if (topLastChild) {
-            mergeSameList(topLastChild, bottomFirstChild)
-            top.append(...bottom.childNodes)
-        } else if (isTextNode(top)) {
-            top.textContent += bottom.textContent
-        }
-        bottom.remove()
     }
 
     const KEY_HTML = 'text/html'
@@ -293,41 +263,36 @@ export function registryPasteEvent() {
             console.assert(!!editorRange, '此时 editorRange 不可能为空')
             transfer = new DataTransfer()
             // 定位鼠标拖动到的位置
-            const range = KRange.clientPos(clientX, clientY)
-            offlineData = range.serialization()
+            offlineData = KRange.clientPos(clientX, clientY).serialization()
             tmpBox = createElement('div', ['tmp'])
             // 被拖动的内容的最近公共祖先
             const ancestor = editorRange.commonAncestorContainer
-            const isInTextArea = findParentTag(ancestor, isTextArea)
-            // 被拖动内容和目标位置的最近公共祖先
-            let lca = KRange.lca(range.realStartContainer(), ancestor)
-            // 临时 hash 标记，用于区分两个标签是否需要进行合并
-            const TMP_HASH_NAME = 'data-tmp-hash'
-            const tmpHash = createHash()
-            if (isTextNode(lca)) lca = lca.parentNode;
+            let nearlyTopLine = findParentTag(ancestor, TOP_LIST) ?? KRICH_EDITOR;
             // 给切分位置的标签添加临时的 hash 标记
-            (ancestor === lca ? lca : findParentTag(ancestor, it => it.parentNode === lca))
-                .setAttribute(TMP_HASH_NAME, tmpHash)
-            editorRange.surroundContents(tmpBox, lca)
-            if (isInTextArea) { // 如果内容是从 TextArea 中拖动出来的，则当作纯文本处理
+            [editorRange.realStartContainer(), editorRange.endInclude()]
+                .map(it => findParentTag(it, node => node.parentNode === nearlyTopLine))
+                .forEach(it => it.setAttribute(TMP_HASH_NAME, createHash()))
+            editorRange.surroundContents(tmpBox, nearlyTopLine)
+            const {firstChild, previousSibling, nextSibling} = tmpBox
+            if (tmpBox.childNodes.length === 1 && isListLine(firstChild)) {
+                // 对于从列表中拖动出来的内容，移除最外部的 li 标签
+                // noinspection JSCheckFunctionSignatures
+                firstChild.replaceWith(...firstChild.childNodes)
+            }
+            // 如果前后的内容需要合并则进行合并
+            if (previousSibling && nextSibling && previousSibling.hasAttribute(TMP_HASH_NAME)) {
+                mergeSameElement(previousSibling, nextSibling)
+            }
+            // 移除临时标记
+            [previousSibling, nextSibling, ...tmpBox.childNodes]
+                .forEach(it => it?.removeAttribute?.(TMP_HASH_NAME))
+            console.assert(
+                !KRICH_EDITOR.querySelector(`*[${TMP_HASH_NAME}]`),
+                `此时编辑区中不应当存在包含 ${TMP_HASH_NAME} 的标签`
+            )
+            if (isTextArea(nearlyTopLine)) {    // 如果内容是从 TextArea 中拖动出来的，则当作纯文本处理
                 transfer.setData(KEY_TEXT, tmpBox.textContent)
             } else {
-                const {firstChild, previousSibling, nextSibling} = tmpBox
-                if (tmpBox.childNodes.length === 1 && isListLine(firstChild)) {
-                    // 对于从列表中拖动出来的内容，移除最外部的 li 标签
-                    // noinspection JSCheckFunctionSignatures
-                    firstChild.replaceWith(...firstChild.childNodes)
-                }
-                // 如果前后的内容需要合并则进行合并
-                if (previousSibling && nextSibling &&
-                    previousSibling.getAttribute(TMP_HASH_NAME) === tmpHash &&
-                    equalsKrichNode(previousSibling, nextSibling)
-                ) {
-                    mergeSameList(previousSibling, nextSibling)
-                }
-                // 移除临时标记
-                [previousSibling, nextSibling, ...tmpBox.childNodes]
-                    .forEach(it => it?.removeAttribute?.(TMP_HASH_NAME))
                 // 移除其它的不必要转义的属性
                 for (let item of tmpBox.getElementsByClassName(EMPTY_BODY_ACTIVE_FLAG)) {
                     item.classList.remove(EMPTY_BODY_ACTIVE_FLAG)
@@ -342,4 +307,36 @@ export function registryPasteEvent() {
         if (tmpBox) tmpBox.remove()
         tryFixDom()
     })
+}
+
+/**
+ * 合并列表
+ * @param top {Node|Element?} 上层标签
+ * @param bottom {Node|Element?} 下层标签
+ * @return {boolean|undefined} 是否进行了合并操作
+ */
+function mergeSameElement(top, bottom) {
+    if (!top || !bottom || !equalsKrichNode(top, bottom)) return
+    const topLastChild = top.lastChild
+    const bottomFirstChild = bottom.firstChild
+    if (isListLine(top)) {
+        const result = mergeSameElement(topLastChild, bottomFirstChild)
+        if (result) bottom.remove()
+        return result
+    }
+    if (isMultiEleStruct(top) &&
+        top.getAttribute(HASH_NAME) === bottom.getAttribute(HASH_NAME)
+    ) {
+        mergeSameElement(topLastChild, bottomFirstChild)
+        top.append(...bottom.childNodes)
+        bottom.remove()
+        return true
+    }
+    if (topLastChild) {
+        mergeSameElement(topLastChild, bottomFirstChild)
+        top.append(...bottom.childNodes)
+    } else if (isTextNode(top)) {
+        top.textContent += bottom.textContent
+    }
+    bottom.remove()
 }
