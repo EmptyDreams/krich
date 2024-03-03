@@ -250,6 +250,7 @@ export function registryPasteEvent() {
             isDragging = true
         }
     })
+    KRICH_EDITOR.addEventListener('dragend', () => isDragging = false)
     // noinspection JSUnresolvedReference
     const isIncompatible = !document.caretRangeFromPoint && !document.caretPositionFromPoint
     if (isIncompatible)
