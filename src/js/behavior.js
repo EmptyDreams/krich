@@ -39,7 +39,7 @@ import {
     behaviors, HASH_NAME,
     initBehaviors,
     KRICH_CONTAINER,
-    KRICH_EDITOR,
+    KRICH_EDITOR, markStatusCacheInvalid,
     SELECT_VALUE,
     TITLE_LIST,
     TOP_LIST
@@ -59,7 +59,12 @@ import {onclickHr} from './behaviors/hr'
 import {TODO_MARKER} from './vars/global-tag'
 import {editorRange} from './events/range-monitor'
 import {behaviorHighlight} from './behaviors/highlight'
-import {BEHAVIOR_STATE_MES, BEHAVIOR_STATE_NO_STATUS, BEHAVIOR_STATE_TEXT_AREA} from './types/button-behavior'
+import {
+    BEHAVIOR_STATE_MES,
+    BEHAVIOR_STATE_NO_STATUS,
+    BEHAVIOR_STATE_TEXT_AREA,
+    isNoStatus
+} from './types/button-behavior'
 import {openHoverTip} from './utils/hover-tip'
 import {rgbToHex} from './utils/string-utils'
 
@@ -292,13 +297,23 @@ initBehaviors({
 /**
  * 触发指定按钮的 click 事件
  * @param key {string|ButtonBehavior}
- * @param range {KRange?}
+ * @param range {KRange?} 选区，留空使用 editorRange
+ * @param force {boolean?} 是否强制直接访问 onclick 而不模拟点击
  * @return {boolean|void|undefined}
  */
-export function clickButton(key, range) {
+export function clickButton(key, range, force) {
     const behavior = typeof key === 'string' ?  behaviors[key] : key
     console.assert(!!behavior, 'key 值不存在：' + key)
-    return behavior.onclick(range ?? editorRange, behavior.button)
+    const noStatus = isNoStatus(behavior)
+    if (!force && noStatus) {
+        behavior.button.click()
+    } else {
+        if (!noStatus) {
+            behavior.button.classList.toggle('active')
+            markStatusCacheInvalid()
+        }
+        return behavior.onclick(range ?? editorRange, behavior.button)
+    }
 }
 
 /**

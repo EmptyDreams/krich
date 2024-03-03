@@ -47,7 +47,7 @@ export function registryKeyboardEvent() {
                     break
                 default:
                     handleHotkeys(event)
-                    break
+                    return
             }
         }
         await waitTime(0)
@@ -310,7 +310,6 @@ function emptyBodyElementKeyEvent(event, body) {
         case 'Enter':
             if (!isMarkerNode(body)) {
                 const line = createNewLine()
-                const where = event.ctrlKey && event.altKey ? 'beforebegin' : 'afterend'
                 if (event.ctrlKey && event.altKey) {
                     body.before(line)
                 } else {

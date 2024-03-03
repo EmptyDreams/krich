@@ -1,7 +1,6 @@
 import {
     DATA_ID, HOVER_TIP_NAME, KRICH_CONTAINER, KRICH_EDITOR, KRICH_HOVER_TIP,
     KRICH_TOOL_BAR,
-    markStatusCacheInvalid,
     SELECT_VALUE
 } from '../vars/global-fileds'
 import {getElementBehavior, isEmptyBodyElement, isKrichEditor, isKrichToolBar, waitTime} from '../utils/tools'
@@ -68,8 +67,7 @@ export function registryMouseClickEvent() {
                 }
             }
             if (!skip) {
-                correct = clickButton(behavior, range)
-                markStatusCacheInvalid()
+                correct = clickButton(behavior, range, true)
             }
         }
         if (skip || correct) range.active()
