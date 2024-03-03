@@ -3,8 +3,6 @@
 import {editorRange, updateEditorRange} from './range-monitor'
 import {
     KRICH_EDITOR,
-    markComposingStart,
-    markComposingStop,
     markStatusCacheEffect, markStatusCacheInvalid,
     statusCheckCache
 } from '../vars/global-fileds'
@@ -18,21 +16,23 @@ import {clickButton} from '../behavior'
 import {isTextArea} from '../types/button-behavior'
 
 let codeHighlight
+export let isInputting
 
 /**
  * 注册 before input 事件
  */
 export function registryBeforeInputEventListener() {
     KRICH_EDITOR.addEventListener('beforeinput', async event => {
-        if (event.isComposing) {
-            markComposingStart()
-        } else if (!highlightCodeHelper() && event.inputType.startsWith('insert')) {
+        isInputting = true
+        if (!event.isComposing && !highlightCodeHelper() && event.inputType.startsWith('insert')) {
             await handleInput(event)
+            isInputting = false
+            updateEditorRange()
         }
     })
     KRICH_EDITOR.addEventListener('compositionend', async event => {
         await handleInput(event)
-        markComposingStop()
+        isInputting = false
         updateEditorRange()
     })
 }

@@ -1,6 +1,6 @@
 // noinspection JSAssignmentUsedAsCondition
 
-import {EMPTY_BODY_ACTIVE_FLAG, isComposing, KRICH_CONTAINER, KRICH_EDITOR, KRICH_TOOL_BAR} from '../vars/global-fileds'
+import {EMPTY_BODY_ACTIVE_FLAG, KRICH_CONTAINER, KRICH_EDITOR, KRICH_TOOL_BAR} from '../vars/global-fileds'
 import {KRange} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
 import {getElementBehavior, isEmptyBodyElement} from '../utils/tools'
@@ -9,6 +9,7 @@ import {isTextArea} from '../types/button-behavior'
 import {closeHoverTip} from '../utils/hover-tip'
 import {isNewClickCycle, markClickCycleStart} from './mouse-click-event'
 import {isDragging} from './paste-event'
+import {isInputting} from './before-input-event'
 
 /**
  * 编辑区最新的已激活的 KRange 对象
@@ -40,7 +41,7 @@ export function modifyEditorRange(range) {
 
 /** 自动更新 editor range */
 export function updateEditorRange() {
-    if (isComposing || isDragging) return
+    if (isInputting || isDragging) return
     const disableToolBar = () => KRICH_TOOL_BAR.classList.add('disable')
     if (!KRICH_CONTAINER.contains(document.activeElement)) {
         editorRange = null

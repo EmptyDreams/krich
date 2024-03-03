@@ -71,7 +71,6 @@ export let statusCheckCache = true
  * 标记是否正在输入
  * @type {boolean|undefined}
  */
-export let isComposing
 
 /**
  * 初始化 behaviors
@@ -87,16 +86,6 @@ export function initContainerQuery(container) {
     [KRICH_EC, KRICH_EDITOR, KRICH_TOOL_BAR, KRICH_HOVER_TIP] = [
         KRICH_EC_CLASS, KRICH_EDITOR_CLASS, KRICH_TOOL_BAR_CLASS, KRICH_HOVER_TIP_CLASS
     ].map(it => container.getElementsByClassName(it)[0])
-}
-
-/** 标记输入结束 */
-export function markComposingStop() {
-    isComposing = false
-}
-
-/** 标记输入开始 */
-export function markComposingStart() {
-    isComposing = true
 }
 
 /** 标记状态检查缓存过时 */
