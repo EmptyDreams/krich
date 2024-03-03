@@ -163,6 +163,7 @@ export function registryPasteEvent() {
         handlePaste(editorRange, event.clipboardData)
     })
     KRICH_EDITOR.addEventListener('dragstart', event => {
+        console.log('a')
         const target = event.target
         if (isEmptyBodyElement(target)) {
             modifyEditorRange(new KRange(target))

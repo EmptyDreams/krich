@@ -23,8 +23,8 @@ export let isInputting
  */
 export function registryBeforeInputEventListener() {
     KRICH_EDITOR.addEventListener('beforeinput', async event => {
-        isInputting = true
         if (!event.isComposing && !highlightCodeHelper() && event.inputType.startsWith('insert')) {
+            isInputting = true
             await handleInput(event)
             isInputting = false
             updateEditorRange()

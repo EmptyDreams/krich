@@ -217,7 +217,7 @@ export class KRange extends Range {
     }
 
     /**
-     * 判断 `realStartContainer` 和 `realEndContainer` 中是否存在满足指定要求的变量
+     * 判断 `realStartContainer` 和 `endInclude` 中是否存在满足指定要求的变量
      * @param predicate {function(Node): any}
      * @return {any}
      */
@@ -225,7 +225,7 @@ export class KRange extends Range {
         let result = predicate(this.realStartContainer())
         if (result) return result
         if (this.collapsed) return
-        const end = this.realEndContainer()
+        const end = this.endInclude()
         if (end) {
             result = predicate(end)
             if (result) return result
@@ -233,14 +233,14 @@ export class KRange extends Range {
     }
 
     /**
-     * 判断 `realStartContainer` 和 `realEndContainer` 中是否有且仅有一个满足指定要求
+     * 判断 `realStartContainer` 和 `endInclude` 中是否有且仅有一个满足指定要求
      * @param predicate {function(Node):any}
      * @return {boolean|undefined}
      */
     only(predicate) {
         if (this.collapsed) return
         const start = predicate(this.realStartContainer())
-        const realEnd = this.realEndContainer()
+        const realEnd = this.endInclude()
         const end = realEnd ? predicate(realEnd) : realEnd
         return (start || end) && (!start || !end)
     }
