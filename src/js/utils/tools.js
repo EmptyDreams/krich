@@ -188,3 +188,12 @@ export function removeAllAttributes(item) {
     }
     return item
 }
+
+/**
+ * 延迟指定时间后执行
+ * @param timeout {number}
+ * @return {Promise<void>}
+ */
+export function waitTime(timeout) {
+    return new Promise(resolve => setTimeout(resolve, timeout))
+}
