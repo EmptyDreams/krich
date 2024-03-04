@@ -3,14 +3,24 @@
 import {EMPTY_BODY_ACTIVE_FLAG, HASH_NAME, KRICH_EDITOR, TOP_LIST} from '../vars/global-fileds'
 import {
     eachDomTree,
-    findParentTag, getFirstChildNode, getLastChildNode,
-    prevLeafNode, tryFixDom,
+    findParentTag,
+    getFirstChildNode,
+    getLastChildNode,
+    prevLeafNode,
+    tryFixDom,
     zipTree
 } from '../utils/dom'
 import {
-    createElement, createHash, equalsKrichNode,
+    createElement,
+    createHash,
+    equalsKrichNode,
     getElementBehavior,
-    isBrNode, isEmptyBodyElement, isEmptyLine, isKrichEditor, isListLine, isMarkerNode,
+    isBrNode,
+    isEmptyBodyElement,
+    isEmptyLine,
+    isKrichEditor,
+    isListLine,
+    isMarkerNode,
     isTextNode
 } from '../utils/tools'
 import {KRange, setCursorPositionAfter} from '../utils/range'
@@ -44,6 +54,12 @@ export function registryPasteEvent() {
                 .replaceAll('\r', '')
                 .replaceAll('\n', '<br>')
             const targetBody = htmlParser.parseFromString(content, KEY_HTML).querySelector('body')
+            let realStart = range.realStartContainer()
+            const textArea = findParentTag(realStart, isTextArea)
+            if (textArea) {
+                await insertTextToTextArea(range, textArea, targetBody)
+                return
+            }
             if (!isInside) {    // 来自外部的内容先进行转义
                 translate(targetBody)
             }
@@ -51,8 +67,6 @@ export function registryPasteEvent() {
             if (!isInside) {    // 来自外部的内容先压缩一遍
                 lines.forEach(zipTree)
             }
-            /** @type {Node|Element} */
-            let realStart
             let tmpBox
             if (!range.collapsed) {
                 // 如果 KRange 不是折叠状态，先移除选中的内容
@@ -61,17 +75,14 @@ export function registryPasteEvent() {
                 realStart = prevLeafNode(tmpBox) ?? tmpBox.parentNode
                 tmpBox.remove()
             }
-            if (!realStart) realStart = range.realStartContainer()
             // 存储光标最终所在的位置
             const lastPos = getLastChildNode(lines[lines.length - 1])
             const firstNode = getFirstChildNode(lines[0])
+            let offlineData
             /** 更新 `offlineData` 数据 */
             const updateOfflineData = () => {
                 offlineData = setCursorPositionAfter(lastPos, false).serialization()
             }
-            let offlineData
-            // 提前查询 realStart 是否在 text area 中，后续操作可能修改 DOM 结构
-            const textArea = findParentTag(realStart, isTextArea)
             if (isKrichEditor(realStart)) { // 如果拖动到了没有标签的地方，说明拖动到了尾部
                 // noinspection JSCheckFunctionSignatures
                 realStart.appendChild(...lines)
@@ -123,11 +134,6 @@ export function registryPasteEvent() {
                 }
             }
             if (!offlineData) updateOfflineData()
-            if (textArea) {
-                // noinspection SillyAssignmentJS
-                textArea.textContent = textArea.textContent
-                await highlightCode(null, textArea)
-            }
             for (let it of lines) {
                 if (it.nodeName === 'PRE') {
                     await highlightCode(null, it)
@@ -233,6 +239,17 @@ export function registryPasteEvent() {
         if (tmpBox) tmpBox.remove()
         tryFixDom()
     })
+}
+
+/**
+ * 将指定节点转化为文本插入到 textArea 中
+ * @param range {KRange}
+ * @param textArea {Element}
+ * @param node {Node}
+ */
+async function insertTextToTextArea(range, textArea, node) {
+    range.insertText(node.textContent)
+    await highlightCode(KRange.activated(), textArea)
 }
 
 /**
