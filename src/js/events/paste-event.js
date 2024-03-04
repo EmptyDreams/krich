@@ -206,7 +206,7 @@ export function registryPasteEvent() {
                 firstChild.replaceWith(...firstChild.childNodes)
             }
             // 如果前后的内容需要合并则进行合并
-            if (previousSibling && nextSibling && previousSibling.hasAttribute(TMP_HASH_NAME)) {
+            if (previousSibling?.hasAttribute?.(TMP_HASH_NAME)) {
                 mergeSameElement(previousSibling, nextSibling)
             }
             // 移除临时标记
