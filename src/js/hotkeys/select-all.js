@@ -12,7 +12,7 @@ export function selectAll(range) {
     const {commonAncestorContainer} = range
     const resultRange = new KRange()
     const scope = findParentTag(
-        commonAncestorContainer,
+        commonAncestorContainer.parentNode,
             it => isTextArea(it) || isMultiEleStruct(it)
     )
     resultRange.selectNodeContents(scope ?? KRICH_EDITOR)
