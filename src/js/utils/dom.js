@@ -13,6 +13,7 @@ import {
 } from './tools'
 import {behaviors, KRICH_EDITOR} from '../vars/global-fileds'
 import {TODO_MARKER} from '../vars/global-tag'
+import {isTextArea} from '../types/button-behavior'
 
 /**
  * 从起点开始遍历 DOM 树
@@ -176,18 +177,24 @@ export function tryFixDom() {
             }
         })
     // 自动将没有内容的 code 添加换行符
-    KRICH_EDITOR.querySelectorAll('pre>code>br:only-child')
-        .forEach(it => it.outerHTML = '\n')
-    KRICH_EDITOR.querySelectorAll('pre>code:empty')
-        .forEach(it => it.textContent = '\n')
-    KRICH_EDITOR.querySelectorAll('pre:empty')
-        .forEach(it => it.innerHTML = '<code>\n</code>')
+    for (let pre of KRICH_EDITOR.getElementsByTagName('pre')) {
+        const code = pre.firstChild
+        console.assert(code === pre.lastChild, 'pre 应当有且仅有一个子节点')
+        if (code) {
+            const firstChild = code.firstChild
+            if (!firstChild || (firstChild === code.lastChild && isBrNode(firstChild)))
+                code.textContent = '\n'
+        } else {
+            pre.innerHTML = '<code>\n</code>'
+        }
+    }
     // 自动为没有多选框的代办列表的 li 添加多选框
     Array.from(KRICH_EDITOR.querySelectorAll(`${behaviors.todo.exp}>li`))
         .filter(it => !it.firstElementChild?.classList?.contains?.('marker'))
         .forEach(it => it.prepend(TODO_MARKER.cloneNode(false)))
     // 将不在不是唯一子节点的 <br> 替换为空行
-    KRICH_EDITOR.querySelectorAll('br:not(:first-child),br:not(:last-child)')
+    Array.from(KRICH_EDITOR.getElementsByTagName('br'))
+        .filter(it => !findParentTag(it, isTextArea) && (it.previousSibling || it.nextSibling))
         .forEach(it => it.replaceWith(createNewLine()))
 }
 
