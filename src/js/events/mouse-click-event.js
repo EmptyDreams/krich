@@ -84,7 +84,7 @@ async function handleSelectList(select, target) {
     const optional = findParentTag(
         target, it => it.hasAttribute?.(SELECT_VALUE)
     )
-    if (!optional) return true
+    if (!optional || optional === select) return true
     const value = select.getElementsByClassName('value')[0]
     value.innerHTML = optional.innerHTML
     const selectValue = optional.getAttribute(SELECT_VALUE)
