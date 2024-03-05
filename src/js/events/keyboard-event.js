@@ -18,7 +18,7 @@ import {
 import {insertTextToString} from '../utils/string-utils'
 import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
 import {closeHoverTip, updateHoverTipPosition} from '../utils/hover-tip'
-import {handleHotkeys} from '../hotkeys'
+import {handleHotkeys} from '../hotkeys/main'
 
 export function registryKeyboardEvent() {
     KRICH_EDITOR.addEventListener('keyup', async event => {

@@ -17,7 +17,7 @@ import {
 import {getElementBehavior, readSelectedColor} from './tools'
 import {registryEditorScrollEvent} from '../events/scroll-event'
 import {registryIntersectionObserverEvent} from '../events/intersection-observer-event'
-import {initKeyList} from '../hotkeys'
+import {initKeyList} from '../hotkeys/main'
 import {clickButton} from '../behavior'
 import {registryPasteEvent} from '../events/paste-event'
 

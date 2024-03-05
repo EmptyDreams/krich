@@ -1,7 +1,7 @@
-import {setPostHeader} from './behaviors/header'
-import {editorRange} from './events/range-monitor'
-import {clickButton} from './behavior'
-import {KRICH_TOOL_BAR} from './vars/global-fileds'
+import {setPostHeader} from '../behaviors/header'
+import {editorRange} from '../events/range-monitor'
+import {clickButton} from '../behavior'
+import {KRICH_TOOL_BAR} from '../vars/global-fileds'
 
 const KEY_CTRL  =   0b1
 const KEY_ALT   =   0b10
