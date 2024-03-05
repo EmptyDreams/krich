@@ -2,6 +2,7 @@ import {setPostHeader} from '../behaviors/header'
 import {editorRange} from '../events/range-monitor'
 import {clickButton} from '../behavior'
 import {KRICH_TOOL_BAR} from '../vars/global-fileds'
+import {selectAll} from './select-all'
 
 const KEY_CTRL  =   0b1
 const KEY_ALT   =   0b10
@@ -11,6 +12,10 @@ const KEY_SHIFT =   0b100
  * @type {{[code: string]: HotkeyValue[]|string}}
  */
 const hotkeysList = {
+    'KeyA': [{
+        fn: KEY_CTRL,
+        i: () => selectAll(editorRange).active()
+    }],
     'KeyB': [{      // ctrl + b -> 粗体
         fn: KEY_CTRL,
         i: 'bold'
