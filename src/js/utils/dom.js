@@ -229,6 +229,26 @@ export function prevSiblingText(node, limit) {
 }
 
 /**
+ * 计算一个 {@link DOMRect} 相对于另一个 {@link DOMRect} 的偏移量
+ * @param target {DOMRect} 当前 rect
+ * @param ref {DOMRect} 参考系
+ * @return {{
+ *     t: number,
+ *     l: number,
+ *     r: number,
+ *     b: number
+ * }}
+ */
+export function calcDomRectDif(target, ref) {
+    return {
+        t: target.y - ref.y,
+        l: target.x - ref.x,
+        r: target.right - ref.x,
+        b: target.bottom - ref.y
+    }
+}
+
+/**
  * 获取某个节点相对于其某个父节点的坐标
  * @param target {Element}
  * @param parent {Element|Node}
@@ -242,12 +262,7 @@ export function prevSiblingText(node, limit) {
 export function getRelCoords(target, parent) {
     const targetBox = target.getBoundingClientRect()
     const parentBox = parent.getBoundingClientRect()
-    return {
-        t: targetBox.y - parentBox.y,
-        l: targetBox.x - parentBox.x,
-        r: targetBox.right - parentBox.x,
-        b: targetBox.bottom - parentBox.y
-    }
+    return calcDomRectDif(targetBox, parentBox)
 }
 
 /**

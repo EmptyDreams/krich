@@ -1,5 +1,6 @@
 import {KRICH_EDITOR, TOP_LIST} from '../vars/global-fileds'
 import {
+    calcDomRectDif,
     eachDomTree,
     findParentTag, getFirstChildNode,
     getLastChildNode,
@@ -688,6 +689,30 @@ export class KRange extends Range {
             setCursorAt(insertedNode, pos)
         }
         return true
+    }
+
+    /**
+     * 将指定元素滚动到 KRange 可见
+     * @param ref {Element}
+     * @param behavior {ScrollBehavior}
+     */
+    scroll(ref, behavior) {
+        const rect = this.getBoundingClientRect()
+        const {b: bottom, t: top} = calcDomRectDif(rect, KRICH_EDITOR.getBoundingClientRect())
+        if (top < 10) {
+            ref.scroll({
+                behavior,
+                top: ref.scrollTop - Math.abs(top) - 10
+            })
+        } else {
+            const difBottom = ref.clientHeight - bottom
+            if (difBottom < 40) {
+                ref.scroll({
+                    behavior,
+                    top: ref.scrollTop + Math.abs(difBottom) + 40
+                })
+            }
+        }
     }
 
     /**

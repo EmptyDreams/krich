@@ -1,13 +1,14 @@
 import {KRICH_CONTAINER, KRICH_EDITOR, KRICH_HOVER_TIP, markStatusCacheInvalid, TOP_LIST} from '../vars/global-fileds'
 import {
+    calcDomRectDif,
     findParentTag,
     getFirstTextNode,
-    getLastTextNode,
+    getLastTextNode, getRelCoords,
     nextLeafNode, nextSiblingText,
     prevLeafNode, replaceElement,
     tryFixDom, zipTree
 } from '../utils/dom'
-import {setCursorAt, setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
+import {KRange, setCursorAt, setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
 import {editorRange} from './range-monitor'
 import {
     createNewLine, getElementBehavior, isCommonLine, isEmptyBodyElement,
@@ -218,6 +219,7 @@ function enterEvent(event) {
         } else {
             editorRange.insertText('\n')
         }
+        KRange.activated().scroll(KRICH_EDITOR, 'instant')
         return true
     }
     if (!element) {
