@@ -52,16 +52,16 @@ const hotkeysList = {
         fn: KEY_CTRL | KEY_SHIFT,
         i: 'ol'
     }],
+    'KeyS': [{
+        fn: KEY_CTRL,
+        i: 'del'
+    }],
     'KeyU': [{      // ctrl + u -> 下划线
         fn: KEY_CTRL,
         i: 'underline'
     }, {            // ctrl + shift + u -> 无序列表
         fn: KEY_CTRL | KEY_SHIFT,
         i: 'ul'
-    }],
-    'KeyX': [{      // ctrl + shift + x -> 删除线
-        fn: KEY_CTRL | KEY_SHIFT,
-        i: 'del'
     }],
     'Backquote': [{ // ctrl + ` -> 代码块
         fn: KEY_CTRL,
