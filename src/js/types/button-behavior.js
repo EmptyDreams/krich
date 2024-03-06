@@ -61,9 +61,6 @@ class ButtonBehavior {
     setter
     /**
      * 当该元素作为 `KRange` 的 {@link KRange#body} 或光标移动到标签内部时触发
-     *
-     * 注意：当元素是 EmptyBodyElement 或 TextArea 时该函数才有效
-     *
      * @type {undefined|function(item: Element)}
      */
     hover
@@ -87,7 +84,7 @@ export const BEHAVIOR_STATE_TEXT_AREA = 0b10
 export const BEHAVIOR_STATE_MES = 0b100
 
 /**
- * 判断是否是 NoStatus 的 behavior
+ * 判断是否是 NoStatus
  * @param item {ButtonBehavior|Element|undefined}
  */
 export function isNoStatus(item) {
@@ -97,7 +94,7 @@ export function isNoStatus(item) {
 }
 
 /**
- * 判断是否是 TextArea 的 behavior
+ * 判断是否是 TextArea
  * @param item {ButtonBehavior|Element|undefined}
  */
 export function isTextArea(item) {
@@ -107,11 +104,20 @@ export function isTextArea(item) {
 }
 
 /**
- * 判断是否是多元素结构的 behavior
+ * 判断是否是多元素结构
  * @param item {ButtonBehavior|Node|Element|undefined}
  */
 export function isMultiEleStruct(item) {
     if (!item) return
     const state = item.state ?? getElementBehavior(item)?.state ?? 0
     return state & BEHAVIOR_STATE_MES
+}
+
+/**
+ * 判断是否是独立样式
+ * @param item {ButtonBehavior|Node|Element|undefined}
+ */
+export function isIndependent(item) {
+    if (!item) return
+    return item.hover || getElementBehavior(item)?.hover
 }

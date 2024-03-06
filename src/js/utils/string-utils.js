@@ -34,3 +34,11 @@ export function rgbToHex(rgb) {
     }
     return result
 }
+
+/**
+ * 判断一个字符串是否是合法的 http 或 https 链接
+ * @param url {string}
+ */
+export function isHttpUrl(url) {
+    return /^https?:\/\/\S+\.\S+(\S*)$/.test(url)
+}

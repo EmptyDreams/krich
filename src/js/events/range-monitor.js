@@ -5,7 +5,7 @@ import {KRange} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
 import {getElementBehavior, isEmptyBodyElement} from '../utils/tools'
 import {findParentTag} from '../utils/dom'
-import {isTextArea} from '../types/button-behavior'
+import {isIndependent} from '../types/button-behavior'
 import {closeHoverTip} from '../utils/hover-tip'
 import {isNewClickCycle, markClickCycleStart} from './mouse-click-event'
 import {isDragging} from './paste-event'
@@ -51,22 +51,22 @@ export function updateEditorRange() {
         return
     }
     if (KRICH_EDITOR !== document.activeElement) return
-    let textArea
+    let independent
     const prev = editorRange
     const range = KRange.activated()
+    const rangeBody = range.body
     modifyEditorRange(range)
     KRICH_EDITOR.querySelectorAll(`.${EMPTY_BODY_ACTIVE_FLAG}`)
         .forEach(it => it.classList.remove(EMPTY_BODY_ACTIVE_FLAG))
-    const rangeBody = range.body
     if (rangeBody ||
-        (textArea = range.some(it => findParentTag(it, isTextArea)))
+        (independent = range.some(it => findParentTag(it, isIndependent)))
     ) {
         disableToolBar()
         if (rangeBody) {
             rangeBody.classList.add(EMPTY_BODY_ACTIVE_FLAG)
             range.active()
         }
-        const target = rangeBody ?? textArea
+        const target = rangeBody ?? independent
         getElementBehavior(target)?.hover?.(target)
     } else {
         if (range.startContainer !== prev?.startContainer || range.startOffset !== prev.startOffset)

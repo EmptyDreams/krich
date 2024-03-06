@@ -1,19 +1,22 @@
 /** @type {string} */
 import imageHoverHtml from '../../resources/html/hoverTips/imageHover.html'
 /** @type {string} */
+import linkHoverHtml from '../../resources/html/hoverTips/linkHover.html'
 import {
     HOVER_TIP_NAME,
     KRICH_EDITOR,
     KRICH_HOVER_TIP,
-    SELECT_VALUE
+    SELECT_VALUE, TOP_LIST
 } from '../vars/global-fileds'
-import {getRelCoords} from './dom'
+import {findParentTag, getRelCoords} from './dom'
 import {highlightCode} from './highlight'
 import {editorRange} from '../events/range-monitor'
 import {highlightLanguagesGetter, imageHandler, imageStatusChecker} from '../vars/global-exports-funtions'
-import {createElement, isEmptyLine} from './tools'
-import {KRange} from './range'
+import {createElement, isEmptyLine, waitTime} from './tools'
+import {KRange, setCursorPositionAfter} from './range'
 import {uploadImage} from './image-handler'
+import {isHttpUrl} from './string-utils'
+import {syncButtonsStatus} from './btn'
 
 /**
  * @type {{
@@ -34,6 +37,50 @@ export const HOVER_TIP_LIST = {
             const list = highlightLanguagesGetter()
             pre.className = 'language-' + list[parseInt(select.getAttribute(SELECT_VALUE))][1]
             await highlightCode(editorRange, pre)
+        }
+    },
+    link: {
+        init: target => {
+            const topLine = findParentTag(target, TOP_LIST)
+            KRICH_HOVER_TIP.innerHTML = linkHoverHtml
+            const [
+                descInput, urlInput, submitButton, errorSpan
+            ] = ['desc-input', 'url-input', 'submit', 'error']
+                .map(it => KRICH_HOVER_TIP.getElementsByClassName(it)[0])
+            waitTime(0).then(() => descInput.select())
+            if (target.nodeName !== 'A')
+                target = null
+            if (target) {
+                descInput.value = target.textContent
+                urlInput.value = target.getAttribute('href')
+            }
+            submitButton.onclick = () => {
+                const desc = descInput.value
+                const url = urlInput.value
+                if (!desc || !isHttpUrl(url)) {
+                    errorSpan.classList.add('active')
+                    return
+                }
+                if (!target) {
+                    target = createElement('a')
+                    if (isEmptyLine(topLine)) {
+                        topLine.firstChild.replaceWith(target)
+                    } else {
+                        const pos = findParentTag(
+                            editorRange.realStartContainer(),
+                            it => it.parentNode === topLine
+                        )
+                        const [left, right] = editorRange.splitNode(pos)
+                        if (left) left.after(target)
+                        else right.before(target)
+                    }
+                }
+                target.setAttribute('href', url)
+                target.setAttribute('target', location.hostname === new URL(url).hostname ? '_self' : '_blank')
+                target.textContent = desc
+                closeHoverTip()
+                setCursorPositionAfter(target)
+            }
         }
     },
     img: {
@@ -100,7 +147,7 @@ export const HOVER_TIP_LIST = {
                 const url = linkInput.value.trim()
                 uploaderInput.disabled = !!url
                 if (!url) return
-                if (!/^https?:\/\/\S+\.\S+(.*)$/.test(url)) {
+                if (!isHttpUrl(url)) {
                     errorSpan.classList.add('active')
                     return
                 }
@@ -156,6 +203,7 @@ export function openHoverTip(name, target, ...otherArgs) {
 export function closeHoverTip() {
     KRICH_HOVER_TIP.classList.remove('active')
     KRICH_HOVER_TIP.tip = null
+    syncButtonsStatus(editorRange.commonAncestorContainer)
 }
 
 /** 更新悬浮窗坐标 */

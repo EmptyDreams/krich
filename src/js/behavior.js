@@ -33,6 +33,8 @@ import codeHtml from '../resources/html/tools/code.html'
 /** @type {string} */
 import imageHtml from '../resources/html/tools/image.html'
 /** @type {string} */
+import linkHtml from '../resources/html/tools/link.html'
+/** @type {string} */
 import hrHtml from '../resources/html/tools/hr.html'
 
 import {
@@ -49,7 +51,7 @@ import {KRange} from './utils/range'
 import {findParentTag, zipTree} from './utils/dom'
 import {
     createElement, createHash,
-    isEmptyBodyElement, isListLine,
+    isEmptyBodyElement, isListLine, isTextNode,
     readSelectedColor,
     removeAllAttributes,
     setSelectedColor
@@ -63,7 +65,7 @@ import {
     BEHAVIOR_STATE_MES,
     BEHAVIOR_STATE_NO_STATUS,
     BEHAVIOR_STATE_TEXT_AREA,
-    isNoStatus
+    isNoStatus, isTextArea
 } from './types/button-behavior'
 import {openHoverTip} from './utils/hover-tip'
 import {rgbToHex} from './utils/string-utils'
@@ -110,9 +112,25 @@ initBehaviors({
     del: {
         exp: 'del',
         render: () => delHtml,
-        onclick: range => execCommonCommand('del', range, false),
+        onclick: range => execCommonCommand('del', range),
         builder: () => createElement('del'),
         translator: removeAllAttributes
+    },
+    link: {
+        exp: 'a',
+        render: () => linkHtml,
+        onclick: range => openHoverTip(
+            'link', findParentTag(range.startContainer, it => !isTextNode(it))
+        ),
+        translator: node => {
+            const href = node.getAttribute('href')
+            const target = node.getAttribute('target')
+            removeAllAttributes(node)
+            node.setAttribute('href', href)
+            node.setAttribute('target', target)
+            return node
+        },
+        hover: link => openHoverTip('link', link)
     },
     inlineCode: {
         exp: 'code.inline',
@@ -256,7 +274,7 @@ initBehaviors({
         exp: 'img:not(.inline)',
         render: () => imageHtml,
         onclick: range => {
-            const line = findParentTag(range.realStartContainer(), TOP_LIST)
+            const line = findParentTag(range.realStartContainer(), ['IMG'])
             openHoverTip('img', line)
             return true
         },

@@ -49,6 +49,10 @@ const hotkeysList = {
         fn: KEY_CTRL,
         i: 'italic'
     }],
+    'KeyL': [{      // ctrl + L -> 超链接
+        fn: KEY_CTRL,
+        i: 'link'
+    }],
     'KeyM': [{      // ctrl + shift + M -> 图片
         fn: KEY_CTRL | KEY_SHIFT,
         i: 'img'

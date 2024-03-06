@@ -31,6 +31,8 @@ export function registryMouseClickEvent() {
         }
     })
     KRICH_HOVER_TIP.addEventListener('click', event => {
+        // noinspection JSUnresolvedReference
+        if (!KRICH_HOVER_TIP.tip) return
         const {target} = event
         const top = findParentTag(target, it => it.classList?.contains('select'))
         if (top) {
@@ -61,7 +63,6 @@ export function registryMouseClickEvent() {
             if (classList.contains('select')) {
                 skip = await handleSelectList(target, original)
             } else {
-                classList.toggle('active')
                 if (isNoStatus(behavior)) {
                     waitTime(333).then(() => classList.remove('active'))
                 }

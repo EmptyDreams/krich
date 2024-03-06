@@ -1,5 +1,5 @@
 /**
- * @typedef {'code'|'img'} HoverTipNames
+ * @typedef {'code'|'img'|'link'} HoverTipNames
  */
 
 class HoverTipValue {
