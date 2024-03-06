@@ -231,11 +231,8 @@ export class KRange extends Range {
         let result = predicate(this.realStartContainer())
         if (result) return result
         if (this.collapsed) return
-        const end = this.endInclude()
-        if (end) {
-            result = predicate(end)
-            if (result) return result
-        }
+        result = predicate(this.endInclude())
+        if (result) return result
     }
 
     /**
@@ -246,19 +243,18 @@ export class KRange extends Range {
     only(predicate) {
         if (this.collapsed) return
         const start = predicate(this.realStartContainer())
-        const realEnd = this.endInclude()
-        const end = realEnd ? predicate(realEnd) : realEnd
+        const end = predicate(this.endInclude())
         return (start || end) && (!start || !end)
     }
 
-    // /**
-    //  * 判断 `realStartContainer` 和 `realEndContainer` 中是否均满足指定要求
-    //  * @param predicate {function(Node): any}
-    //  * @return {boolean}
-    //  */
-    // every(predicate) {
-    //     return !this.some(it => !predicate(it))
-    // }
+    /**
+     * 判断 `realStartContainer` 和 `realEndContainer` 中是否均满足指定要求
+     * @param predicate {function(Node): any}
+     * @return {boolean}
+     */
+    every(predicate) {
+        return !this.some(it => !predicate(it))
+    }
 
     /**
      * @return {{next: (function(): {value: Node, done: boolean})}}
