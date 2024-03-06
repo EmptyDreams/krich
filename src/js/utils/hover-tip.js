@@ -13,7 +13,7 @@ import {highlightCode} from './highlight'
 import {editorRange} from '../events/range-monitor'
 import {highlightLanguagesGetter, imageHandler, imageStatusChecker} from '../vars/global-exports-funtions'
 import {createElement, isEmptyLine, isTextNode, waitTime} from './tools'
-import {KRange, setCursorPositionAfter} from './range'
+import {KRange, setCursorAt, setCursorPositionAfter, setCursorPositionBefore} from './range'
 import {uploadImage} from './image-handler'
 import {isHttpUrl} from './string-utils'
 import {syncButtonsStatus} from './btn'
@@ -89,7 +89,7 @@ export const HOVER_TIP_LIST = {
                     const content = next.textContent
                     if (!content.startsWith(' '))
                         next.textContent = ' ' + content
-                    setCursorPositionAfter(target)
+                    setCursorAt(next, 1)
                 } else {
                     target.after(' ')
                     setCursorPositionAfter(target.nextSibling)
