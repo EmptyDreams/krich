@@ -1,6 +1,6 @@
 // noinspection JSAssignmentUsedAsCondition
 
-import {EMPTY_BODY_ACTIVE_FLAG, KRICH_CONTAINER, KRICH_EDITOR, KRICH_TOOL_BAR} from '../vars/global-fileds'
+import {behaviors, EMPTY_BODY_ACTIVE_FLAG, KRICH_CONTAINER, KRICH_EDITOR, KRICH_TOOL_BAR} from '../vars/global-fileds'
 import {KRange} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
 import {getElementBehavior, isEmptyBodyElement} from '../utils/tools'
@@ -58,6 +58,7 @@ export function updateEditorRange() {
     modifyEditorRange(range)
     KRICH_EDITOR.querySelectorAll(`.${EMPTY_BODY_ACTIVE_FLAG}`)
         .forEach(it => it.classList.remove(EMPTY_BODY_ACTIVE_FLAG))
+    updateLinkButtonStatus(range)
     if (rangeBody || (independent = range.some(findIndependent))) {
         disableToolBar()
         if (rangeBody) {
@@ -89,4 +90,14 @@ export function updateEditorRange() {
 
 function findIndependent(it) {
     return findParentTag(it, isIndependent)
+}
+
+/**
+ * 更新超链接按钮的状态
+ * @param range {KRange}
+ */
+function updateLinkButtonStatus(range) {
+    const classList = behaviors.link.button.classList
+    if (range.collapsed) classList.remove('disable')
+    else classList.add('disable')
 }

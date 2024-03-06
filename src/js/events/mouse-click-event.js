@@ -45,7 +45,6 @@ export function registryMouseClickEvent() {
         closeHoverTip()
         const range = editorRange
         if (KRICH_TOOL_BAR.classList.contains('disable')) {
-            event.preventDefault()
             range?.active?.()
             return
         }
@@ -56,6 +55,10 @@ export function registryMouseClickEvent() {
         const target = findParentTag(
             original, it => it.hasAttribute?.(DATA_ID)
         )
+        if (target.classList.contains('disable')) {
+            range.active()
+            return
+        }
         const behavior = getElementBehavior(target)
         const classList = target.classList
         let skip = classList.contains('color'), correct
