@@ -58,16 +58,16 @@ export function updateEditorRange() {
     modifyEditorRange(range)
     KRICH_EDITOR.querySelectorAll(`.${EMPTY_BODY_ACTIVE_FLAG}`)
         .forEach(it => it.classList.remove(EMPTY_BODY_ACTIVE_FLAG))
-    if (rangeBody ||
-        (independent = range.some(it => findParentTag(it, isIndependent)))
-    ) {
+    if (rangeBody || (independent = range.some(findIndependent))) {
         disableToolBar()
         if (rangeBody) {
             rangeBody.classList.add(EMPTY_BODY_ACTIVE_FLAG)
             range.active()
         }
-        const target = rangeBody ?? independent
-        getElementBehavior(target)?.hover?.(target)
+        if (range.every(findIndependent)) {
+            const target = rangeBody ?? independent
+            getElementBehavior(target)?.hover?.(target)
+        }
     } else {
         if (range.startContainer !== prev?.startContainer || range.startOffset !== prev.startOffset)
             closeHoverTip()
@@ -85,4 +85,8 @@ export function updateEditorRange() {
             syncButtonsStatus(range.startContainer)
         }
     }
+}
+
+function findIndependent(it) {
+    return findParentTag(it, isIndependent)
 }
