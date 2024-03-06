@@ -72,20 +72,22 @@ export function eachDomTree(start, forward, first, consumer, limit, includeMarke
  * 获取最邻近的下一个叶子节点
  * @param node {Node}
  * @param includeMarker {boolean?} 是否包含 marker
+ * @param limit {Node|Element?} 遍历范围限制
  * @return {Node|null}
  */
-export function nextLeafNode(node, includeMarker) {
-    return eachDomTree(node, true, false, it => !it.firstChild, null, includeMarker)
+export function nextLeafNode(node, includeMarker, limit) {
+    return eachDomTree(node, true, false, it => !it.firstChild, limit, includeMarker)
 }
 
 /**
  * 获取最邻近的上一个叶子节点
  * @param node {Node}
  * @param includeMarker {boolean?} 是否包含 marker
+ * @param limit {Node|Element?} 遍历范围限制
  * @return {Node|undefined}
  */
-export function prevLeafNode(node, includeMarker) {
-    return eachDomTree(node, false, false, it => !it.firstChild, null, includeMarker)
+export function prevLeafNode(node, includeMarker, limit) {
+    return eachDomTree(node, false, false, it => !it.firstChild, limit, includeMarker)
 }
 
 /**

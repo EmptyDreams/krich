@@ -8,11 +8,11 @@ import {
     KRICH_HOVER_TIP,
     SELECT_VALUE, TOP_LIST
 } from '../vars/global-fileds'
-import {findParentTag, getRelCoords} from './dom'
+import {findParentTag, getRelCoords, nextLeafNode, prevLeafNode} from './dom'
 import {highlightCode} from './highlight'
 import {editorRange} from '../events/range-monitor'
 import {highlightLanguagesGetter, imageHandler, imageStatusChecker} from '../vars/global-exports-funtions'
-import {createElement, isEmptyLine, waitTime} from './tools'
+import {createElement, isEmptyLine, isTextNode, waitTime} from './tools'
 import {KRange, setCursorPositionAfter} from './range'
 import {uploadImage} from './image-handler'
 import {isHttpUrl} from './string-utils'
@@ -79,7 +79,21 @@ export const HOVER_TIP_LIST = {
                 target.setAttribute('target', location.hostname === new URL(url).hostname ? '_self' : '_blank')
                 target.textContent = desc
                 closeHoverTip()
-                setCursorPositionAfter(target)
+                const prev = prevLeafNode(target, true, topLine)
+                const next = nextLeafNode(target, true, topLine)
+                if (prev && isTextNode(prev) && !prev.textContent.endsWith(' ')) {
+                    prev.textContent += ' '
+                }
+                if (next) {
+                    console.assert(isTextNode(next), '当后方有节点时一定是文本节点')
+                    const content = next.textContent
+                    if (!content.startsWith(' '))
+                        next.textContent = ' ' + content
+                    setCursorPositionAfter(target)
+                } else {
+                    target.after(' ')
+                    setCursorPositionAfter(target.nextSibling)
+                }
             }
         }
     },
