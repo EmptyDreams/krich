@@ -26,8 +26,8 @@ export function replaceStringByIndex(src, startInclude, endExclude, value) {
  * @param rgb {string}
  */
 export function rgbToHex(rgb) {
-    const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/)
-    console.assert(!!match, '指定字符串不满足 rbg(x, x, x) 的格式！', rgb)
+    const match = rgb.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(.*?)?\)$/i)
+    console.assert(!!match, '指定字符串不满足 rbg(x, x, x[, x]) 的格式！', rgb)
     let result = '#'
     for (let i = 1; i < 4; ++i) {
         result += parseInt(match[i]).toString(16).padStart(2, '0')
