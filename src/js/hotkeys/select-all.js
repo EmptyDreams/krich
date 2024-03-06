@@ -1,7 +1,9 @@
 import {KRange} from '../utils/range'
-import {findParentTag} from '../utils/dom'
+import {findParentTag, getFirstChildNode, getLastChildNode} from '../utils/dom'
 import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
 import {KRICH_EDITOR} from '../vars/global-fileds'
+
+const checker = it => isTextArea(it) || isMultiEleStruct(it)
 
 /**
  * 进行全选操作
@@ -9,12 +11,16 @@ import {KRICH_EDITOR} from '../vars/global-fileds'
  * @return {KRange}
  */
 export function selectAll(range) {
-    const {commonAncestorContainer} = range
+    const {commonAncestorContainer, startOffset, endOffset, startContainer, endContainer} = range
     const resultRange = new KRange()
-    const scope = findParentTag(
-        commonAncestorContainer.parentNode,
-            it => isTextArea(it) || isMultiEleStruct(it)
-    )
-    resultRange.selectNodeContents(scope ?? KRICH_EDITOR)
+    let scope = findParentTag(commonAncestorContainer, checker)
+    if (scope && (
+        !startOffset && startContainer === getFirstChildNode(commonAncestorContainer) &&
+        endOffset === (endContainer.firstChild ? endContainer.childNodes : endContainer.textContent).length &&
+        endContainer === getLastChildNode(commonAncestorContainer)
+    )) {
+        scope = findParentTag(scope.parentNode, checker)
+    }
+    resultRange.selectNode(scope ?? KRICH_EDITOR)
     return resultRange
 }

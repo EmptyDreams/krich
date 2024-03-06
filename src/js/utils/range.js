@@ -205,6 +205,11 @@ export class KRange extends Range {
         }
     }
 
+    selectNode(node) {
+        this.setStartBefore(node)
+        this.setEndAfter(node)
+    }
+
     /**
      * 将当前区间设定为激活区间
      * @param force {boolean} 是否强制激活
@@ -469,7 +474,8 @@ export class KRange extends Range {
             .filter(it => !isEmptyBodyElement(it[0]) && !isEmptyLine(it[0]))
         return worked.map(data => {
             const [item, index] = data
-            const newRange = KRange.selectNodeContents(item)
+            const newRange = new KRange()
+            newRange.selectNode(item)
             if (index === 0) {
                 newRange.setStart(startContainer, startOffset)
             }
@@ -730,18 +736,6 @@ export class KRange extends Range {
         range.setStart(node, node.textContent.length)
         range.collapse(true)
         return range
-    }
-
-    /**
-     * 创建一个选中指定元素的 KRange
-     * @param node {Node}
-     * @return {KRange}
-     */
-    static selectNodeContents(node) {
-        const result = new KRange()
-        result.setStartBefore(node)
-        result.setEndAfter(node)
-        return result
     }
 
     /**

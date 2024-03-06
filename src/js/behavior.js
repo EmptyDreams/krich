@@ -365,7 +365,7 @@ function setStyleInRange(key, ranges, behavior) {
     for (let i = 0; i < rangeArray.length; i++) {
         const element = behavior.builder(KRICH_CONTAINER.querySelector(`*[data-id="${key}"]`))
         rangeArray[i].surroundContents(element)
-        rangeArray[i] = KRange.selectNodeContents(element)
+        rangeArray[i].selectNode(element)
     }
     return rangeArray
 }
