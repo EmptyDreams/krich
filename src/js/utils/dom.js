@@ -13,7 +13,7 @@ import {
 } from './tools'
 import {behaviors, EMPTY_BODY_ACTIVE_FLAG, HASH_NAME, KRICH_EDITOR} from '../vars/global-fileds'
 import {TODO_MARKER} from '../vars/global-tag'
-import {isTextArea} from '../types/button-behavior'
+import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
 
 /**
  * 从起点开始遍历 DOM 树
@@ -295,6 +295,38 @@ export function getRelCoords(target, parent) {
     const targetBox = target.getBoundingClientRect()
     const parentBox = parent.getBoundingClientRect()
     return calcDomRectDif(targetBox, parentBox)
+}
+
+/**
+ * 合并列表
+ * @param top {Node|Element?} 上层标签
+ * @param bottom {Node|Element?} 下层标签
+ * @return {boolean|undefined} 是否进行了合并操作
+ */
+export function mergeSameElement(top, bottom) {
+    if (!top || !bottom || !equalsKrichNode(top, bottom)) return
+    const topLastChild = top.lastChild
+    const bottomFirstChild = bottom.firstChild
+    if (isListLine(top)) {
+        const result = mergeSameElement(topLastChild, bottomFirstChild)
+        if (result) bottom.remove()
+        return result
+    }
+    if (isMultiEleStruct(top) &&
+        top.getAttribute(HASH_NAME) === bottom.getAttribute(HASH_NAME)
+    ) {
+        mergeSameElement(topLastChild, bottomFirstChild)
+        top.append(...bottom.childNodes)
+        bottom.remove()
+        return true
+    }
+    if (topLastChild) {
+        mergeSameElement(topLastChild, bottomFirstChild)
+        top.append(...bottom.childNodes)
+    } else if (isTextNode(top)) {
+        top.textContent += bottom.textContent
+    }
+    bottom.remove()
 }
 
 /**

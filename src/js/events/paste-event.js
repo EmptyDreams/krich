@@ -1,19 +1,17 @@
 // noinspection JSDeprecatedSymbols
 
-import {EMPTY_BODY_ACTIVE_FLAG, HASH_NAME, KRICH_EDITOR, TOP_LIST} from '../vars/global-fileds'
+import {KRICH_EDITOR, TOP_LIST} from '../vars/global-fileds'
 import {
     eachDomTree,
     findParentTag,
     getFirstChildNode,
-    getLastChildNode,
+    getLastChildNode, nextLeafNode,
     prevLeafNode, removeRuntimeFlag,
     tryFixDom,
     zipTree
 } from '../utils/dom'
 import {
-    createElement,
-    createHash,
-    equalsKrichNode,
+    createElement, createNewLine,
     getElementBehavior,
     isBrNode,
     isEmptyBodyElement,
@@ -23,7 +21,7 @@ import {
     isMarkerNode,
     isTextNode
 } from '../utils/tools'
-import {KRange, setCursorPositionAfter} from '../utils/range'
+import {KRange, setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
 import {highlightCode} from '../utils/highlight'
 import {editorRange, modifyEditorRange} from './range-monitor'
 import {uploadImage} from '../utils/image-handler'
@@ -37,7 +35,6 @@ export let isDragging
 
 /** 注册粘贴和拖动事件 */
 export function registryPasteEvent() {
-    const TMP_HASH_NAME = 'data-tmp-hash'
     const KEY_HTML = 'text/html'
     const KEY_TEXT = 'text/plain'
     /**
@@ -206,51 +203,68 @@ export function registryPasteEvent() {
         if (isIncompatible) return
         const {dataTransfer} = event
         const clientPos = readRangeFromEvent(event)
-        let transfer = dataTransfer, tmpBox, offlineData
+        let transfer = dataTransfer, offlineData
+        async function handle() {
+            const isInsideCpy = isDragging
+            const range = offlineData ? KRange.deserialized(offlineData) : clientPos
+            await handlePaste(range, transfer, isInsideCpy)
+        }
         if (isDragging) {  // 如果内容是从编辑区复制过来的，则手动提取内容
             console.assert(!!editorRange, '此时 editorRange 不可能为空')
             transfer = new DataTransfer()
             // 定位鼠标拖动到的位置
             offlineData = clientPos.serialization()
-            tmpBox = createElement('div', ['tmp'])
             // 被拖动的内容的最近公共祖先
             const ancestor = editorRange.commonAncestorContainer
-            let nearlyTopLine = findParentTag(ancestor, TOP_LIST) ?? KRICH_EDITOR;
-            // 给切分位置的标签添加临时的 hash 标记
-            [editorRange.realStartContainer(), editorRange.endInclude()]
-                .map(it => findParentTag(it, node => node.parentNode === nearlyTopLine))
-                .forEach(it => it.setAttribute?.(TMP_HASH_NAME, createHash()))
-            editorRange.surroundContents(tmpBox, nearlyTopLine)
-            const {firstChild, previousSibling, nextSibling} = tmpBox
-            if (tmpBox.childNodes.length === 1 && isListLine(firstChild)) {
-                // 对于从列表中拖动出来的内容，移除最外部的 li 标签
-                // noinspection JSCheckFunctionSignatures
-                firstChild.replaceWith(...firstChild.childNodes)
-            }
-            // 如果前后的内容需要合并则进行合并
-            if (previousSibling?.hasAttribute?.(TMP_HASH_NAME)) {
-                mergeSameElement(previousSibling, nextSibling)
-            }
-            // 移除临时标记
-            [previousSibling, nextSibling, ...tmpBox.childNodes]
-                .forEach(it => it?.removeAttribute?.(TMP_HASH_NAME))
-            console.assert(
-                !KRICH_EDITOR.querySelector(`*[${TMP_HASH_NAME}]`),
-                `此时编辑区中不应当存在包含 ${TMP_HASH_NAME} 的标签`
-            )
-            if (isTextArea(nearlyTopLine)) {    // 如果内容是从 TextArea 中拖动出来的，则当作纯文本处理
-                transfer.setData(KEY_TEXT, tmpBox.textContent)
-            } else {
-                removeRuntimeFlag(tmpBox)
-                // noinspection HtmlRequiredLangAttribute
-                transfer.setData(KEY_HTML, '<html><body>' + tmpBox.innerHTML + '</body></html>')
-            }
+            let nearlyTopLine = findParentTag(ancestor, TOP_LIST) ?? KRICH_EDITOR
+            await editorRange.extractContents(nearlyTopLine, true, tmpBox => {
+                if (isTextArea(nearlyTopLine)) {    // 如果内容是从 TextArea 中拖动出来的，则当作纯文本处理
+                    transfer.setData(KEY_TEXT, tmpBox.textContent)
+                } else {
+                    removeRuntimeFlag(tmpBox)
+                    // noinspection HtmlRequiredLangAttribute
+                    transfer.setData(KEY_HTML, '<html><body>' + tmpBox.innerHTML + '</body></html>')
+                }
+                return handle()
+            })
+        } else {
+            await handle()
         }
-        const isInsideCpy = isDragging
-        const range = offlineData ? KRange.deserialized(offlineData) : clientPos
-        await handlePaste(range, transfer, isInsideCpy)
-        if (tmpBox) tmpBox.remove()
         tryFixDom()
+    })
+    KRICH_EDITOR.addEventListener('copy', async event => {
+        event.preventDefault()
+        if (editorRange.collapsed) return
+        const data = event.clipboardData
+        data.types.forEach(it => data.clearData(it))
+        const offline = editorRange.serialization()
+        const content = await editorRange.cloneContents(KRICH_EDITOR)
+        removeRuntimeFlag(content)
+        data.setData(KEY_HTML, content.innerHTML)
+        data.setData(KEY_TEXT, content.textContent)
+        KRange.deserialized(offline).active()
+    })
+    KRICH_EDITOR.addEventListener('cut', async event => {
+        event.preventDefault()
+        if (editorRange.collapsed) return
+        const data = event.clipboardData
+        data.types.forEach(it => data.clearData(it))
+        await editorRange.extractContents(KRICH_EDITOR, true, tmpBox => {
+            removeRuntimeFlag(tmpBox)
+            data.setData(KEY_HTML, tmpBox.innerHTML)
+            data.setData(KEY_TEXT, tmpBox.textContent)
+            const prev = prevLeafNode(tmpBox)
+            if (prev) setCursorPositionAfter(prev)
+            else {
+                const next = nextLeafNode(tmpBox)
+                if (next) {
+                    setCursorPositionBefore(next)
+                }
+                const newLine = createNewLine()
+                KRICH_EDITOR.prepend(newLine)
+                setCursorPositionBefore(newLine)
+            }
+        })
     })
 }
 
@@ -357,36 +371,4 @@ function packLine(body) {
     }
     if (line) result.push(line)
     return result
-}
-
-/**
- * 合并列表
- * @param top {Node|Element?} 上层标签
- * @param bottom {Node|Element?} 下层标签
- * @return {boolean|undefined} 是否进行了合并操作
- */
-function mergeSameElement(top, bottom) {
-    if (!top || !bottom || !equalsKrichNode(top, bottom)) return
-    const topLastChild = top.lastChild
-    const bottomFirstChild = bottom.firstChild
-    if (isListLine(top)) {
-        const result = mergeSameElement(topLastChild, bottomFirstChild)
-        if (result) bottom.remove()
-        return result
-    }
-    if (isMultiEleStruct(top) &&
-        top.getAttribute(HASH_NAME) === bottom.getAttribute(HASH_NAME)
-    ) {
-        mergeSameElement(topLastChild, bottomFirstChild)
-        top.append(...bottom.childNodes)
-        bottom.remove()
-        return true
-    }
-    if (topLastChild) {
-        mergeSameElement(topLastChild, bottomFirstChild)
-        top.append(...bottom.childNodes)
-    } else if (isTextNode(top)) {
-        top.textContent += bottom.textContent
-    }
-    bottom.remove()
 }

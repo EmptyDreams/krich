@@ -1,15 +1,15 @@
-import {KRICH_EDITOR, TOP_LIST} from '../vars/global-fileds'
+import {KRICH_EDITOR, TMP_HASH_NAME, TOP_LIST} from '../vars/global-fileds'
 import {
     calcDomRectDif,
     eachDomTree,
     findParentTag, getFirstChildNode,
     getLastChildNode,
-    getLastTextNode, nextLeafNode,
+    getLastTextNode, mergeSameElement, nextLeafNode,
     nextSiblingText, prevLeafNode,
     zipTree
 } from './dom'
 import {
-    createElement,
+    createElement, createHash,
     isBrNode,
     isEmptyBodyElement,
     isEmptyLine,
@@ -310,6 +310,73 @@ export class KRange extends Range {
         if (list[0]) return 1
         if (list[2]) return -1
         return 2
+    }
+
+    /**
+     * 将所选的内容提取出来
+     * @param lca {Element} 切割范围，同 {@link #surroundContents} 中的 `lca`
+     * @param doIt {boolean} 是否修改 DOM
+     * @param cb {function(Element): (any|Promise<any>)?} 对 tmpBox 进行预处理
+     * @return {Promise<void>}
+     */
+    async extractContents(lca, doIt, cb) {
+        const tmpBox = createElement('div', ['tmp']);
+        // 给切分位置的标签添加临时的 hash 标记
+        [this.realStartContainer(), this.endInclude()]
+            .map(it => findParentTag(it, node => node.parentNode === lca))
+            .forEach(it => it.setAttribute?.(TMP_HASH_NAME, createHash()))
+        this.surroundContents(tmpBox, lca)
+        const {firstChild, lastChild, previousSibling, nextSibling} = tmpBox
+        /**
+         * 移除临时标记
+         * @param nodes {Node|Element}
+         */
+        function removeTmpFlag(...nodes) {
+            nodes.forEach(it => it?.removeAttribute?.(TMP_HASH_NAME))
+        }
+        /**
+         * 判断指定标签是否包含临时标记
+         * @param node {Node|Element|undefined}
+         * @return {boolean | undefined}
+         */
+        function needMerge(node) {
+            // noinspection JSUnresolvedReference
+            return node?.hasAttribute?.(TMP_HASH_NAME)
+        }
+        if (doIt) {
+            if (tmpBox.childNodes.length === 1 && isListLine(firstChild)) {
+                // 对于从列表中拖动出来的内容，移除最外部的 li 标签
+                // noinspection JSCheckFunctionSignatures
+                firstChild.replaceWith(...firstChild.childNodes)
+            }
+            if (needMerge(previousSibling))
+                mergeSameElement(previousSibling, nextSibling)
+            removeTmpFlag(previousSibling, nextSibling, ...tmpBox.childNodes)
+            if (cb) await cb(tmpBox)
+            tmpBox.remove()
+        } else {
+            if (cb) {
+                const clone = tmpBox.cloneNode(true)
+                removeTmpFlag(...clone.childNodes)
+                await cb(clone)
+            }
+            tmpBox.replaceWith(...tmpBox.childNodes)
+            if (needMerge(nextSibling))
+                mergeSameElement(lastChild, nextSibling)
+            if (needMerge(previousSibling))
+                mergeSameElement(previousSibling, firstChild)
+            removeTmpFlag(...lca.children)
+            zipTree(lca)
+        }
+    }
+
+    /**
+     * 复制范围中的内容
+     * @param lca {Element} 切割范围，同 {@link #surroundContents} 中的 `lca`
+     * @return {Promise<Element>} 返回一个临时节点，其子节点是提取出来的内容
+     */
+    cloneContents(lca) {
+        return new Promise(resolve => this.extractContents(lca, false, resolve))
     }
 
     /**

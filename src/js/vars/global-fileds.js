@@ -40,6 +40,8 @@ export const HOVER_TIP_NAME = 'data-name'
  * @type {string}
  */
 export const HASH_NAME = 'data-hash'
+/** 临时 hash 的 KEY */
+export const TMP_HASH_NAME = 'data-tmp-hash'
 /**
  * EmptyBodyElement 激活标记
  * @type {string}
