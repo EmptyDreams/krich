@@ -165,8 +165,10 @@ export function registryPasteEvent() {
     const htmlParser = new DOMParser()
     KRICH_EDITOR.addEventListener('paste', event => {
         event.preventDefault()
-        // noinspection JSIgnoredPromiseFromCall
-        handlePaste(editorRange, event.clipboardData)
+        if (!isForbidPaste(editorRange)) {
+            // noinspection JSIgnoredPromiseFromCall
+            handlePaste(editorRange, event.clipboardData)
+        }
     })
     KRICH_EDITOR.addEventListener('dragstart', event => {
         const target = event.target
@@ -190,12 +192,14 @@ export function registryPasteEvent() {
         event.preventDefault()
         if (isIncompatible) return
         const {clientX, clientY, dataTransfer} = event
+        const clientPos = KRange.clientPos(clientX, clientY)
+        if (isForbidPaste(clientPos)) return
         let transfer = dataTransfer, tmpBox, offlineData
         if (isDragging) {  // 如果内容是从编辑区复制过来的，则手动提取内容
             console.assert(!!editorRange, '此时 editorRange 不可能为空')
             transfer = new DataTransfer()
             // 定位鼠标拖动到的位置
-            offlineData = KRange.clientPos(clientX, clientY).serialization()
+            offlineData = clientPos.serialization()
             tmpBox = createElement('div', ['tmp'])
             // 被拖动的内容的最近公共祖先
             const ancestor = editorRange.commonAncestorContainer
@@ -234,11 +238,19 @@ export function registryPasteEvent() {
             }
         }
         const isInsideCpy = isDragging
-        const range = offlineData ? KRange.deserialized(offlineData) : KRange.clientPos(clientX, clientY)
+        const range = offlineData ? KRange.deserialized(offlineData) : clientPos
         await handlePaste(range, transfer, isInsideCpy)
         if (tmpBox) tmpBox.remove()
         tryFixDom()
     })
+}
+
+/**
+ * 判断指定位置是否禁止粘贴内容
+ * @param range {KRange}
+ */
+function isForbidPaste(range) {
+    return findParentTag(range.startContainer, ['A'])
 }
 
 /**
