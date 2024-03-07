@@ -184,6 +184,18 @@ export function registryPasteEvent() {
         }
     })
     KRICH_EDITOR.addEventListener('dragend', () => isDragging = false)
+    KRICH_EDITOR.addEventListener('dragover', event => {
+        const element = isForbidPaste(readRangeFromEvent(event))
+        if (element) {
+            element.setAttribute('contenteditable', 'false')
+        }
+    })
+    KRICH_EDITOR.addEventListener('dragleave', event => {
+        const target = event.target
+        if (!isKrichEditor(target)) {
+            target.removeAttribute?.('contenteditable')
+        }
+    })
     // noinspection JSUnresolvedReference
     const isIncompatible = !document.caretRangeFromPoint && !document.caretPositionFromPoint
     if (isIncompatible)
@@ -191,9 +203,8 @@ export function registryPasteEvent() {
     KRICH_EDITOR.addEventListener('drop', async event => {
         event.preventDefault()
         if (isIncompatible) return
-        const {clientX, clientY, dataTransfer} = event
-        const clientPos = KRange.clientPos(clientX, clientY)
-        if (isForbidPaste(clientPos)) return
+        const {dataTransfer} = event
+        const clientPos = readRangeFromEvent(event)
         let transfer = dataTransfer, tmpBox, offlineData
         if (isDragging) {  // 如果内容是从编辑区复制过来的，则手动提取内容
             console.assert(!!editorRange, '此时 editorRange 不可能为空')
@@ -243,6 +254,15 @@ export function registryPasteEvent() {
         if (tmpBox) tmpBox.remove()
         tryFixDom()
     })
+}
+
+/**
+ * 从 Event 中读取 client 坐标对应的 KRange
+ * @param event {DragEvent}
+ */
+function readRangeFromEvent(event) {
+    const {clientX, clientY} = event
+    return KRange.clientPos(clientX, clientY)
 }
 
 /**
