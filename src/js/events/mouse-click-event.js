@@ -5,13 +5,18 @@ import {
 } from '../vars/global-fileds'
 import {getElementBehavior, isEmptyBodyElement, isKrichEditor, isKrichToolBar, waitTime} from '../utils/tools'
 import {editorRange, isFirstRange} from './range-monitor'
-import {findParentTag} from '../utils/dom'
+import {findParentTag, modifyContenteditableStatus} from '../utils/dom'
 import {KRange} from '../utils/range'
 import {isNoStatus} from '../types/button-behavior'
 import {closeHoverTip, HOVER_TIP_LIST} from '../utils/hover-tip'
 import {clickButton} from '../behavior'
 
 export let isNewClickCycle = true
+/**
+ * 记录当前鼠标指向的超链接
+ * @type {Element|undefined}
+ */
+export let currentLink
 
 /** 标记一个鼠标的周期开始 */
 export function markClickCycleStart() {
@@ -20,6 +25,13 @@ export function markClickCycleStart() {
 
 export function registryMouseClickEvent() {
     KRICH_CONTAINER.addEventListener('click', () => isNewClickCycle = true)
+    KRICH_EDITOR.addEventListener('mouseover', event => {
+        const {target, ctrlKey} = event
+        if (target.nodeName === 'A') {
+            currentLink = target
+            modifyContenteditableStatus(target, !ctrlKey)
+        } else currentLink = null
+    })
     KRICH_EDITOR.addEventListener('click', event => {
         const {target, ctrlKey} = event
         if (!isFirstRange && isKrichEditor(target)) {
@@ -28,8 +40,6 @@ export function registryMouseClickEvent() {
         if (isEmptyBodyElement(target)) {
             closeHoverTip()
             new KRange(target).active()
-        } else if (ctrlKey && target.nodeName === 'A') {
-            open(target.getAttribute('href'), '_blank')
         }
     })
     KRICH_HOVER_TIP.addEventListener('click', event => {

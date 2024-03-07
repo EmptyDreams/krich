@@ -187,7 +187,8 @@ export function registryPasteEvent() {
     KRICH_EDITOR.addEventListener('dragover', event => {
         const element = isForbidPaste(readRangeFromEvent(event))
         if (element) {
-            element.setAttribute('contenteditable', 'false')
+            // noinspection JSCheckFunctionSignatures
+            element.setAttribute('contenteditable', false)
         }
     })
     KRICH_EDITOR.addEventListener('dragleave', event => {

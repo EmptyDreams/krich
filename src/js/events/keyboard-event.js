@@ -1,9 +1,8 @@
 import {KRICH_CONTAINER, KRICH_EDITOR, KRICH_HOVER_TIP, markStatusCacheInvalid, TOP_LIST} from '../vars/global-fileds'
 import {
-    calcDomRectDif,
     findParentTag,
     getFirstTextNode,
-    getLastTextNode, getRelCoords,
+    getLastTextNode, modifyContenteditableStatus,
     nextLeafNode, nextSiblingText,
     prevLeafNode, replaceElement,
     tryFixDom, zipTree
@@ -19,16 +18,23 @@ import {insertTextToString} from '../utils/string-utils'
 import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
 import {closeHoverTip, updateHoverTipPosition} from '../utils/hover-tip'
 import {handleHotkeys} from '../hotkeys/main'
+import {currentLink} from './mouse-click-event'
 
 export function registryKeyboardEvent() {
     KRICH_EDITOR.addEventListener('keyup', async event => {
         await waitTime(0)
-        switch (event.code) {
+        const code = event.code
+        switch (code) {
             case 'Enter':   // 将顶层的 div 替换为 p
                 return () => KRICH_EDITOR.querySelectorAll('div:not([class])')
                     .forEach(it => replaceElement(it, document.createElement('p')))
             case 'Backspace': case 'Delete':
                 return markStatusCacheInvalid
+            default:
+                if (currentLink && code.startsWith('Control')) {
+                    modifyContenteditableStatus(currentLink, true)
+                }
+                break
         }
     })
     KRICH_EDITOR.addEventListener('keydown', async event => {
@@ -36,7 +42,8 @@ export function registryKeyboardEvent() {
         if (body) {
             emptyBodyElementKeyEvent(event, body)
         } else {
-            switch (event.code) {
+            const code = event.code
+            switch (code) {
                 case 'Enter': case 'NumpadEnter':
                     enterEvent(event)
                     break
@@ -47,7 +54,11 @@ export function registryKeyboardEvent() {
                     tabEvent(event)
                     break
                 default:
-                    handleHotkeys(event)
+                    if (currentLink && code.startsWith('Control')) {
+                        modifyContenteditableStatus(currentLink, false)
+                    } else {
+                        handleHotkeys(event)
+                    }
                     return
             }
         }

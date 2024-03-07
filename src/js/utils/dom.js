@@ -163,6 +163,16 @@ export function findParentTag(node, checker) {
     }
 }
 
+/**
+ * 设置指定标签的 `contenteditable` 值
+ * @param element {Element}
+ * @param value {boolean}
+ */
+export function modifyContenteditableStatus(element, value) {
+    // noinspection JSCheckFunctionSignatures
+    element.setAttribute('contenteditable', value)
+}
+
 /** 尝试修复 DOM 中的结构错误 */
 export function tryFixDom() {
     // 删除没有内容的列表行
