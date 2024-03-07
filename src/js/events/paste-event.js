@@ -33,10 +33,11 @@ import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
  */
 export let isDragging
 
+const KEY_HTML = 'text/html'
+const KEY_TEXT = 'text/plain'
+
 /** 注册粘贴和拖动事件 */
 export function registryPasteEvent() {
-    const KEY_HTML = 'text/html'
-    const KEY_TEXT = 'text/plain'
     /**
      * 处理粘贴操作
      * @param range {KRange} 操作的区域
@@ -222,8 +223,7 @@ export function registryPasteEvent() {
                     transfer.setData(KEY_TEXT, tmpBox.textContent)
                 } else {
                     removeRuntimeFlag(tmpBox)
-                    // noinspection HtmlRequiredLangAttribute
-                    transfer.setData(KEY_HTML, '<html><body>' + tmpBox.innerHTML + '</body></html>')
+                    writeElementToTransfer(transfer, tmpBox)
                 }
                 return handle()
             })
@@ -235,24 +235,22 @@ export function registryPasteEvent() {
     KRICH_EDITOR.addEventListener('copy', async event => {
         event.preventDefault()
         if (editorRange.collapsed) return
-        const data = event.clipboardData
-        data.types.forEach(it => data.clearData(it))
+        const transfer = event.clipboardData
+        transfer.types.forEach(it => transfer.clearData(it))
         const offline = editorRange.serialization()
         const content = await editorRange.cloneContents(KRICH_EDITOR)
         removeRuntimeFlag(content)
-        data.setData(KEY_HTML, content.innerHTML)
-        data.setData(KEY_TEXT, content.textContent)
+        writeElementToTransfer(transfer, content)
         KRange.deserialized(offline).active()
     })
     KRICH_EDITOR.addEventListener('cut', async event => {
         event.preventDefault()
         if (editorRange.collapsed) return
-        const data = event.clipboardData
-        data.types.forEach(it => data.clearData(it))
+        const transfer = event.clipboardData
+        transfer.types.forEach(it => transfer.clearData(it))
         await editorRange.extractContents(KRICH_EDITOR, true, tmpBox => {
             removeRuntimeFlag(tmpBox)
-            data.setData(KEY_HTML, tmpBox.innerHTML)
-            data.setData(KEY_TEXT, tmpBox.textContent)
+            writeElementToTransfer(transfer, tmpBox)
             const prev = prevLeafNode(tmpBox)
             if (prev) setCursorPositionAfter(prev)
             else {
@@ -266,6 +264,17 @@ export function registryPasteEvent() {
             }
         })
     })
+}
+
+/**
+ * 将 element 写入到 transfer 中
+ * @param transfer {DataTransfer}
+ * @param element {Element}
+ */
+function writeElementToTransfer(transfer, element) {
+    transfer.setData(KEY_TEXT, element.textContent)
+    // noinspection HtmlRequiredLangAttribute
+    transfer.setData(KEY_HTML, '<html><body>' + element.innerHTML + '</body></html>')
 }
 
 /**
