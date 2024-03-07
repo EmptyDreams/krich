@@ -217,7 +217,8 @@ export function openHoverTip(name, target, ...otherArgs) {
 export function closeHoverTip() {
     KRICH_HOVER_TIP.classList.remove('active')
     KRICH_HOVER_TIP.tip = null
-    syncButtonsStatus(editorRange.commonAncestorContainer)
+    if (editorRange)
+        syncButtonsStatus(editorRange.commonAncestorContainer)
 }
 
 /** 更新悬浮窗坐标 */
