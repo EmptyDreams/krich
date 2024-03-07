@@ -33,7 +33,7 @@ export function registryMouseClickEvent() {
         } else currentLink = null
     })
     KRICH_EDITOR.addEventListener('click', event => {
-        const {target, ctrlKey} = event
+        const {target} = event
         if (!isFirstRange && isKrichEditor(target)) {
             closeHoverTip()
         }

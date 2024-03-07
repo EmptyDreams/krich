@@ -65,7 +65,7 @@ import {
     BEHAVIOR_STATE_MES,
     BEHAVIOR_STATE_NO_STATUS,
     BEHAVIOR_STATE_TEXT_AREA,
-    isNoStatus, isTextArea
+    isNoStatus
 } from './types/button-behavior'
 import {openHoverTip} from './utils/hover-tip'
 import {rgbToHex} from './utils/string-utils'
