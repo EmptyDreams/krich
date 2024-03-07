@@ -1,6 +1,13 @@
 // noinspection JSAssignmentUsedAsCondition
 
-import {behaviors, EMPTY_BODY_ACTIVE_FLAG, KRICH_CONTAINER, KRICH_EDITOR, KRICH_TOOL_BAR} from '../vars/global-fileds'
+import {
+    behaviors,
+    DISABLE_FLAG,
+    EMPTY_BODY_ACTIVE_FLAG,
+    KRICH_CONTAINER,
+    KRICH_EDITOR,
+    KRICH_TOOL_BAR
+} from '../vars/global-fileds'
 import {KRange} from '../utils/range'
 import {syncButtonsStatus} from '../utils/btn'
 import {getElementBehavior, isEmptyBodyElement} from '../utils/tools'
@@ -42,7 +49,7 @@ export function modifyEditorRange(range) {
 /** 自动更新 editor range */
 export function updateEditorRange() {
     if (isInputting || isDragging) return
-    const disableToolBar = () => KRICH_TOOL_BAR.classList.add('disable')
+    const disableToolBar = () => KRICH_TOOL_BAR.classList.add(DISABLE_FLAG)
     if (!KRICH_CONTAINER.contains(document.activeElement)) {
         editorRange = null
         isFirstRange = true
@@ -72,7 +79,7 @@ export function updateEditorRange() {
     } else {
         if (range.startContainer !== prev?.startContainer || range.startOffset !== prev.startOffset)
             closeHoverTip()
-        KRICH_TOOL_BAR.classList.remove('disable')
+        KRICH_TOOL_BAR.classList.remove(DISABLE_FLAG)
         for (let element of range.getAllTopElements()) {
             for (let it of [element, ...element.querySelectorAll('*')]) {
                 if (isEmptyBodyElement(it))
@@ -97,6 +104,6 @@ function findIndependent(it) {
  */
 function updateLinkButtonStatus(range) {
     const classList = behaviors.link.button.classList
-    if (range.collapsed) classList.remove('disable')
-    else classList.add('disable')
+    if (range.collapsed) classList.remove(DISABLE_FLAG)
+    else classList.add(DISABLE_FLAG)
 }

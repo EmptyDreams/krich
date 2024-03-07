@@ -47,6 +47,8 @@ export const HASH_NAME = 'data-hash'
 export const EMPTY_BODY_ACTIVE_FLAG = 'eb-active'
 /** 激活标记 */
 export const ACTIVE_FLAG = 'active'
+/** 禁用标记 */
+export const DISABLE_FLAG = 'disable'
 
 export const TITLE_LIST = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6']
 export const TOP_LIST = ['P', 'BLOCKQUOTE', 'UL', 'OL', 'HR', 'DIV', 'PRE', 'IMG', ...TITLE_LIST]

@@ -1,6 +1,6 @@
 import {
     ACTIVE_FLAG,
-    DATA_ID, HOVER_TIP_NAME, KRICH_CONTAINER, KRICH_EDITOR, KRICH_HOVER_TIP,
+    DATA_ID, DISABLE_FLAG, HOVER_TIP_NAME, KRICH_CONTAINER, KRICH_EDITOR, KRICH_HOVER_TIP,
     KRICH_TOOL_BAR,
     SELECT_VALUE
 } from '../vars/global-fileds'
@@ -57,7 +57,7 @@ export function registryMouseClickEvent() {
     KRICH_TOOL_BAR.addEventListener('click', async event => {
         closeHoverTip()
         const range = editorRange
-        if (KRICH_TOOL_BAR.classList.contains('disable')) {
+        if (KRICH_TOOL_BAR.classList.contains(DISABLE_FLAG)) {
             range?.active?.()
             return
         }
@@ -68,7 +68,7 @@ export function registryMouseClickEvent() {
         const target = findParentTag(
             original, it => it.hasAttribute?.(DATA_ID)
         )
-        if (target.classList.contains('disable')) {
+        if (target.classList.contains(DISABLE_FLAG)) {
             range.active()
             return
         }
