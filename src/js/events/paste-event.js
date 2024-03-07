@@ -168,7 +168,7 @@ export function registryPasteEvent() {
             handlePaste(editorRange, event.clipboardData)
         }
     })
-    KRICH_EDITOR.addEventListener('dragstart', event => {
+    KRICH_EDITOR.addEventListener('dragstart', async event => {
         const target = event.target
         if (isEmptyBodyElement(target)) {
             modifyEditorRange(new KRange(target))
@@ -179,6 +179,7 @@ export function registryPasteEvent() {
             event.preventDefault()
         } else {
             isDragging = true
+            await copyContentToTransfer(event.dataTransfer)
         }
     })
     KRICH_EDITOR.addEventListener('dragend', () => isDragging = false)
@@ -211,15 +212,15 @@ export function registryPasteEvent() {
             await handlePaste(range, transfer, isInsideCpy)
         }
         if (isDragging) {  // 如果内容是从编辑区复制过来的，则手动提取内容
-            console.assert(!!editorRange, '此时 editorRange 不可能为空')
-            transfer = new DataTransfer()
+            const range = KRange.activated()
             // 定位鼠标拖动到的位置
             offlineData = clientPos.serialization()
             // 被拖动的内容的最近公共祖先
-            const ancestor = editorRange.commonAncestorContainer
+            const ancestor = range.commonAncestorContainer
             let nearlyTopLine = findParentTag(ancestor, TOP_LIST) ?? KRICH_EDITOR
-            await editorRange.extractContents(nearlyTopLine, true, tmpBox => {
+            await range.extractContents(nearlyTopLine, true, tmpBox => {
                 if (isTextArea(nearlyTopLine)) {    // 如果内容是从 TextArea 中拖动出来的，则当作纯文本处理
+                    transfer.clearData(KEY_HTML)
                     transfer.setData(KEY_TEXT, tmpBox.textContent)
                 } else {
                     removeRuntimeFlag(tmpBox)
@@ -234,14 +235,8 @@ export function registryPasteEvent() {
     })
     KRICH_EDITOR.addEventListener('copy', async event => {
         event.preventDefault()
-        if (editorRange.collapsed) return
-        const transfer = event.clipboardData
-        transfer.types.forEach(it => transfer.clearData(it))
-        const offline = editorRange.serialization()
-        const content = await editorRange.cloneContents(KRICH_EDITOR)
-        removeRuntimeFlag(content)
-        writeElementToTransfer(transfer, content)
-        KRange.deserialized(offline).active()
+        if (!editorRange.collapsed)
+            await copyContentToTransfer(event.clipboardData)
     })
     KRICH_EDITOR.addEventListener('cut', async event => {
         event.preventDefault()
@@ -264,6 +259,20 @@ export function registryPasteEvent() {
             }
         })
     })
+}
+
+/**
+ * 将选区数据拷贝到 transfer
+ * @param transfer {DataTransfer}
+ * @return {Promise<void>}
+ */
+async function copyContentToTransfer(transfer) {
+    transfer.types.forEach(it => transfer.clearData(it))
+    const offline = editorRange.serialization()
+    const content = await editorRange.cloneContents(KRICH_EDITOR)
+    removeRuntimeFlag(content)
+    writeElementToTransfer(transfer, content)
+    KRange.deserialized(offline).active()
 }
 
 /**
