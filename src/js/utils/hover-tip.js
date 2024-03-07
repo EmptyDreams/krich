@@ -19,6 +19,8 @@ import {uploadImage} from './image-handler'
 import {isHttpUrl} from './string-utils'
 import {syncButtonsStatus} from './btn'
 
+const linkHoverNoDescHtml = linkHoverHtml.substring(linkHoverHtml.indexOf('</div>') + 6)
+
 /**
  * @type {{
  *     [p: HoverTipNames]: HoverTipValue
@@ -43,22 +45,28 @@ export const HOVER_TIP_LIST = {
     link: {
         init: target => {
             const topLine = findParentTag(target, TOP_LIST)
-            KRICH_HOVER_TIP.innerHTML = linkHoverHtml
+            const isLink = target.nodeName === 'A'
+            KRICH_HOVER_TIP.innerHTML = isLink ? linkHoverNoDescHtml : linkHoverHtml
             const [
                 descInput, urlInput, submitButton, errorSpan
             ] = ['desc-input', 'url-input', 'submit', 'error']
                 .map(it => KRICH_HOVER_TIP.getElementsByClassName(it)[0])
-            waitTime(0).then(() => descInput.select())
-            if (target.nodeName !== 'A')
-                target = null
-            if (target) {
-                descInput.value = target.textContent
+            if (isLink) {
                 urlInput.value = target.getAttribute('href')
+            } else {
+                target = null
+                waitTime(0).then(() => descInput.select())
+            }
+            urlInput.onkeydown = event => {
+                if (!event.repeat && event.code.endsWith('Enter')) {
+                    event.preventDefault()
+                    submitButton.click()
+                }
             }
             submitButton.onclick = () => {
-                const desc = descInput.value
+                const desc = descInput?.value
                 const url = urlInput.value
-                if (!desc || !isHttpUrl(url)) {
+                if ((descInput && !desc) || !isHttpUrl(url)) {
                     errorSpan.classList.add(ACTIVE_FLAG)
                     return
                 }
@@ -75,9 +83,9 @@ export const HOVER_TIP_LIST = {
                         if (left) left.after(target)
                         else right.before(target)
                     }
+                    target.textContent = desc
                 }
                 target.setAttribute('href', url)
-                target.textContent = desc
                 closeHoverTip()
                 const prev = prevLeafNode(target, true, topLine)
                 const next = nextLeafNode(target, true, topLine)
