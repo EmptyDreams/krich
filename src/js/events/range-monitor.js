@@ -79,12 +79,11 @@ export function updateEditorRange() {
                     it.classList.add(EMPTY_BODY_ACTIVE_FLAG)
             }
         }
-        if (!range.collapsed) {
-            const lca = range.commonAncestorContainer
-            syncButtonsStatus(lca.firstChild ?? lca)
-        } else if (!prev?.collapsed || range.endContainer !== prev?.endContainer) {
-            syncButtonsStatus(range.startContainer)
-        }
+    }
+    if (!range.collapsed) {
+        syncButtonsStatus(range.commonAncestorContainer)
+    } else if (!prev?.collapsed || range.endContainer !== prev?.endContainer) {
+        syncButtonsStatus(range.startContainer)
     }
 }
 
