@@ -21,13 +21,15 @@ export function markClickCycleStart() {
 export function registryMouseClickEvent() {
     KRICH_CONTAINER.addEventListener('click', () => isNewClickCycle = true)
     KRICH_EDITOR.addEventListener('click', event => {
-        const {target} = event
+        const {target, ctrlKey} = event
         if (!isFirstRange && isKrichEditor(target)) {
             closeHoverTip()
         }
         if (isEmptyBodyElement(target)) {
             closeHoverTip()
             new KRange(target).active()
+        } else if (ctrlKey && target.nodeName === 'A') {
+            open(target.getAttribute('href'), '_blank')
         }
     })
     KRICH_HOVER_TIP.addEventListener('click', event => {

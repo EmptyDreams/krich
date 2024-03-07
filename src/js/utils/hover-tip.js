@@ -13,7 +13,7 @@ import {highlightCode} from './highlight'
 import {editorRange} from '../events/range-monitor'
 import {highlightLanguagesGetter, imageHandler, imageStatusChecker} from '../vars/global-exports-funtions'
 import {createElement, isEmptyLine, isTextNode, waitTime} from './tools'
-import {KRange, setCursorAt, setCursorPositionAfter, setCursorPositionBefore} from './range'
+import {KRange, setCursorAt, setCursorPositionAfter} from './range'
 import {uploadImage} from './image-handler'
 import {isHttpUrl} from './string-utils'
 import {syncButtonsStatus} from './btn'
@@ -76,7 +76,6 @@ export const HOVER_TIP_LIST = {
                     }
                 }
                 target.setAttribute('href', url)
-                target.setAttribute('target', location.hostname === new URL(url).hostname ? '_self' : '_blank')
                 target.textContent = desc
                 closeHoverTip()
                 const prev = prevLeafNode(target, true, topLine)
