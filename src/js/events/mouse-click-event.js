@@ -1,4 +1,5 @@
 import {
+    ACTIVE_FLAG,
     DATA_ID, HOVER_TIP_NAME, KRICH_CONTAINER, KRICH_EDITOR, KRICH_HOVER_TIP,
     KRICH_TOOL_BAR,
     SELECT_VALUE
@@ -79,7 +80,7 @@ export function registryMouseClickEvent() {
                 skip = await handleSelectList(target, original)
             } else {
                 if (isNoStatus(behavior)) {
-                    waitTime(333).then(() => classList.remove('active'))
+                    waitTime(333).then(() => classList.remove(ACTIVE_FLAG))
                 }
             }
             if (!skip) {

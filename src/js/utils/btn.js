@@ -2,7 +2,7 @@
     本文件用于放置与操作编辑器工具栏按钮相关的 util 函数
 */
 
-import {behaviors, SELECT_VALUE} from '../vars/global-fileds'
+import {ACTIVE_FLAG, behaviors, SELECT_VALUE} from '../vars/global-fileds'
 import {getElementBehavior, isKrichEditor} from './tools'
 import {isMultiEleStruct, isNoStatus} from '../types/button-behavior'
 
@@ -20,7 +20,7 @@ export function isActive(button) {
     }
     if (selectValue)
         return selectValue !== '0'
-    return classList.contains('active')
+    return classList.contains(ACTIVE_FLAG)
 }
 
 /**
@@ -61,9 +61,9 @@ export function setButtonStatus(button, element) {
         const item = button.querySelector(`.item[${SELECT_VALUE}="${selectValue}"]`)
         value.innerHTML = item.innerHTML
     } else if (element) {
-        buttonClassList.add('active')
+        buttonClassList.add(ACTIVE_FLAG)
     } else {
-        buttonClassList.remove('active')
+        buttonClassList.remove(ACTIVE_FLAG)
     }
 }
 

@@ -38,6 +38,7 @@ import linkHtml from '../resources/html/tools/link.html'
 import hrHtml from '../resources/html/tools/hr.html'
 
 import {
+    ACTIVE_FLAG,
     behaviors, HASH_NAME,
     initBehaviors,
     KRICH_CONTAINER,
@@ -327,7 +328,7 @@ export function clickButton(key, range, force) {
         behavior.button.click()
     } else {
         if (!noStatus) {
-            behavior.button.classList.toggle('active')
+            behavior.button.classList.toggle(ACTIVE_FLAG)
             markStatusCacheInvalid()
         }
         return behavior.onclick(range ?? editorRange, behavior.button)

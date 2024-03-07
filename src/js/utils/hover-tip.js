@@ -3,6 +3,7 @@ import imageHoverHtml from '../../resources/html/hoverTips/imageHover.html'
 /** @type {string} */
 import linkHoverHtml from '../../resources/html/hoverTips/linkHover.html'
 import {
+    ACTIVE_FLAG,
     HOVER_TIP_NAME,
     KRICH_EDITOR,
     KRICH_HOVER_TIP,
@@ -58,7 +59,7 @@ export const HOVER_TIP_LIST = {
                 const desc = descInput.value
                 const url = urlInput.value
                 if (!desc || !isHttpUrl(url)) {
-                    errorSpan.classList.add('active')
+                    errorSpan.classList.add(ACTIVE_FLAG)
                     return
                 }
                 if (!target) {
@@ -156,12 +157,12 @@ export const HOVER_TIP_LIST = {
             } else uploaderInput.disabled = true
             // 为 URL 输入栏添加事件
             linkInput.onchange = async () => {
-                errorSpan.classList.remove('active')
+                errorSpan.classList.remove(ACTIVE_FLAG)
                 const url = linkInput.value.trim()
                 uploaderInput.disabled = !!url
                 if (!url) return
                 if (!isHttpUrl(url)) {
-                    errorSpan.classList.add('active')
+                    errorSpan.classList.add(ACTIVE_FLAG)
                     return
                 }
                 // 检查 URL 是否可用
@@ -177,7 +178,7 @@ export const HOVER_TIP_LIST = {
                     imageElement.setAttribute('src', url)
                     submitButton.disabled = false
                 } else {
-                    errorSpan.classList.add('active')
+                    errorSpan.classList.add(ACTIVE_FLAG)
                 }
             }
             // 为尺寸调整添加事件
@@ -204,17 +205,17 @@ export const HOVER_TIP_LIST = {
 export function openHoverTip(name, target, ...otherArgs) {
     console.assert(target instanceof Element, '只能绑定 Element，不能绑定 Node', target)
     const classList = KRICH_HOVER_TIP.classList
-    if (classList.contains('active')) return
+    if (classList.contains(ACTIVE_FLAG)) return
     KRICH_HOVER_TIP.setAttribute(HOVER_TIP_NAME, name)
     KRICH_HOVER_TIP.tip = target
     HOVER_TIP_LIST[name].init(target, ...otherArgs)
-    classList.add('active')
+    classList.add(ACTIVE_FLAG)
     updateHoverTipPosition()
 }
 
 /** 关闭已打开的悬浮窗，若没有打开悬浮窗则该函数将什么都不处理 */
 export function closeHoverTip() {
-    KRICH_HOVER_TIP.classList.remove('active')
+    KRICH_HOVER_TIP.classList.remove(ACTIVE_FLAG)
     KRICH_HOVER_TIP.tip = null
     if (editorRange)
         syncButtonsStatus(editorRange.commonAncestorContainer)
