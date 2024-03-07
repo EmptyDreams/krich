@@ -11,7 +11,7 @@ import {
     isMarkerNode,
     isTextNode
 } from './tools'
-import {behaviors, KRICH_EDITOR} from '../vars/global-fileds'
+import {behaviors, EMPTY_BODY_ACTIVE_FLAG, HASH_NAME, KRICH_EDITOR} from '../vars/global-fileds'
 import {TODO_MARKER} from '../vars/global-tag'
 import {isTextArea} from '../types/button-behavior'
 
@@ -208,6 +208,26 @@ export function tryFixDom() {
     Array.from(KRICH_EDITOR.getElementsByTagName('br'))
         .filter(it => !findParentTag(it, isTextArea) && (it.previousSibling || it.nextSibling))
         .forEach(it => it.replaceWith(createNewLine()))
+}
+
+/**
+ * 移除指定标签及其子节点中所有的运行时标记
+ * @param root {Element}
+ */
+export function removeRuntimeFlag(root) {
+    // 移除需要移除的类名
+    const removedClassName = [EMPTY_BODY_ACTIVE_FLAG]
+    for (let name of removedClassName) {
+        for (let item of root.getElementsByClassName(name)) {
+            item.classList.remove(name)
+        }
+    }
+    // 移除需要移除的属性
+    const removedAttributeNames = ['contenteditable', HASH_NAME]
+    for (let name of removedAttributeNames) {
+        root.querySelectorAll(`*[${name}]`)
+            .forEach(it => it.removeAttribute(name))
+    }
 }
 
 /**

@@ -6,7 +6,7 @@ import {
     findParentTag,
     getFirstChildNode,
     getLastChildNode,
-    prevLeafNode,
+    prevLeafNode, removeRuntimeFlag,
     tryFixDom,
     zipTree
 } from '../utils/dom'
@@ -241,10 +241,7 @@ export function registryPasteEvent() {
             if (isTextArea(nearlyTopLine)) {    // 如果内容是从 TextArea 中拖动出来的，则当作纯文本处理
                 transfer.setData(KEY_TEXT, tmpBox.textContent)
             } else {
-                // 移除其它的不必要转义的属性
-                for (let item of tmpBox.getElementsByClassName(EMPTY_BODY_ACTIVE_FLAG)) {
-                    item.classList.remove(EMPTY_BODY_ACTIVE_FLAG)
-                }
+                removeRuntimeFlag(tmpBox)
                 // noinspection HtmlRequiredLangAttribute
                 transfer.setData(KEY_HTML, '<html><body>' + tmpBox.innerHTML + '</body></html>')
             }
