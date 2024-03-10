@@ -30,7 +30,7 @@ export function registryBeforeInputEventListener() {
                 updateEditorRange()
             } else if (inputType.startsWith('delete')) {
                 await waitTime(0)
-                tryFixDom()
+                tryFixDom(inputType.endsWith('Forward'))
             }
         }
     })

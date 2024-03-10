@@ -15,7 +15,7 @@ import {EMPTY_BODY_ACTIVE_FLAG, HASH_NAME, KRICH_EDITOR, TOP_LIST} from '../vars
 import {TODO_MARKER} from '../vars/global-tag'
 import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
 import {behaviors} from '../behavior'
-import {setCursorAt, setCursorPositionAfter} from './range'
+import {KRange, setCursorAt, setCursorPositionAfter} from './range'
 
 /**
  * 从起点开始遍历 DOM 树
@@ -175,8 +175,11 @@ export function modifyContenteditableStatus(element, value) {
     element.setAttribute('contenteditable', value)
 }
 
-/** 尝试修复 DOM 中的结构错误 */
-export function tryFixDom() {
+/**
+ * 尝试修复 DOM 中的结构错误
+ * @param keepRange {boolean?} 是否在修复可能会修改指针位置时保持当前指针位置
+ */
+export function tryFixDom(keepRange) {
     // 删除没有内容的列表行
     KRICH_EDITOR.querySelectorAll('li')
         .forEach(it => {
@@ -211,8 +214,16 @@ export function tryFixDom() {
         .filter(it => !findParentTag(it, isTextArea) && (it.previousSibling || it.nextSibling))
         .forEach(it => it.replaceWith(createNewLine()))
     // 为超链接前后添加空格
-    for (let item of KRICH_EDITOR.getElementsByTagName('a')) {
-        insertSpaceBetweenNode(item, false)
+    const linkList = KRICH_EDITOR.getElementsByTagName('a')
+    if (linkList.length) {
+        let offlineData
+        if (keepRange)
+            offlineData = KRange.activated().serialization()
+        for (let item of linkList) {
+            insertSpaceBetweenNode(item, false)
+        }
+        if (offlineData)
+            KRange.deserialized(offlineData).active()
     }
 }
 
