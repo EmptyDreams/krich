@@ -326,7 +326,7 @@ export class KRange extends Range {
         // 给切分位置的标签添加临时的 hash 标记
         [this.realStartContainer(), this.endInclude()]
             .map(it => findParentTag(it, node => node.parentNode === lca))
-            .forEach(it => it.setAttribute?.(TMP_HASH_NAME, createHash()))
+            .forEach(it => it?.setAttribute?.(TMP_HASH_NAME, createHash()))
         this.surroundContents(tmpBox, lca)
         const {firstChild, lastChild, previousSibling, nextSibling} = tmpBox
         /**
