@@ -260,7 +260,7 @@ export function registryPasteEvent() {
 async function copyContentToTransfer(transfer) {
     transfer.types.forEach(it => transfer.clearData(it))
     const offline = editorRange.serialization()
-    const content = await editorRange.cloneContents(KRICH_EDITOR)
+    const content = await editorRange.cloneContents(editorRange.commonAncestorContainer)
     removeRuntimeFlag(content)
     writeElementToTransfer(transfer, content)
     KRange.deserialized(offline).active()
