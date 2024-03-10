@@ -80,8 +80,9 @@ export class KRange extends Range {
     /**
      * 从 Range 或 EmptyBodyElement 构建一个 KRange
      * @param optional {Range|HTMLElement|undefined}
+     * @param cancelEbeOptimize {boolean?} 是否取消对 EBE 元素的优化
      */
-    constructor(optional = undefined) {
+    constructor(optional = undefined, cancelEbeOptimize) {
         super()
         if (!optional) return
         if (optional.nodeName) {
@@ -91,7 +92,7 @@ export class KRange extends Range {
             return
         }
         let {startContainer, startOffset, endContainer, endOffset, collapsed} = optional
-        if (collapsed) {
+        if (collapsed && !cancelEbeOptimize) {
             if (!isTextNode(startContainer)) {
                 if (isEmptyBodyElement(startContainer)) {
                     this.body = startContainer
@@ -870,7 +871,7 @@ export class KRange extends Range {
             result.collapse(true)
         } else {
             // noinspection JSDeprecatedSymbols
-            result = new KRange(document.caretRangeFromPoint(x, y))
+            result = new KRange(document.caretRangeFromPoint(x, y), true)
         }
         return result
     }
