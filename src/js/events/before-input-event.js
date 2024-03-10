@@ -1,6 +1,5 @@
 import {editorRange, updateEditorRange} from './range-monitor'
 import {
-    DATA_ID,
     KRICH_EDITOR,
     markStatusCacheEffect, markStatusCacheInvalid,
     statusCheckCache
@@ -58,6 +57,7 @@ async function handleInput(event) {
         } else if (editorRange.collapsed) {
             event.preventDefault()
             editorRange.insertText(data)
+            return
         }
     }
     await waitTime(0)
