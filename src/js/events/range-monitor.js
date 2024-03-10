@@ -80,12 +80,10 @@ export function updateEditorRange() {
         if (range.startContainer !== prev?.startContainer || range.startOffset !== prev.startOffset)
             closeHoverTip()
         KRICH_TOOL_BAR.classList.remove(DISABLE_FLAG)
-        for (let element of range.getAllTopElements()) {
-            for (let it of [element, ...element.querySelectorAll('*')]) {
-                if (isEmptyBodyElement(it))
-                    it.classList.add(EMPTY_BODY_ACTIVE_FLAG)
-            }
-        }
+        range.eachAllNode(it => {
+            if (isEmptyBodyElement(it))
+                it.classList.add(EMPTY_BODY_ACTIVE_FLAG)
+        })
     }
     if (!range.collapsed) {
         syncButtonsStatus(range.commonAncestorContainer)
