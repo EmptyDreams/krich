@@ -165,9 +165,7 @@ export function registryPasteEvent() {
         if (isEmptyBodyElement(target)) {
             modifyEditorRange(new KRange(target))
         }
-        if ((editorRange.body && isMarkerNode(editorRange.body)) || // 选中代办列表的选择框时禁止拖动
-            (editorRange.only(it => findParentTag(it, isTextArea))) // 当选区跨越文本域和非文本域时禁止拖动
-        ) {
+        if (isForbidDrag(editorRange)) {
             event.preventDefault()
         } else {
             isDragging = true
@@ -288,8 +286,24 @@ function readRangeFromEvent(event) {
 }
 
 /**
+ * 判断指定位置是否禁止拖动
+ * @param range {KRange}
+ */
+function isForbidDrag(range) {
+    const {body, commonAncestorContainer} = range
+    if ((body && isMarkerNode(body)) || // 选中代办列表的选择框时禁止拖动
+        (range.only(it => findParentTag(it, isTextArea)))   // 当选区跨越文本域和非文本域时禁止拖动
+    ) {
+        return true
+    }
+    const link = findParentTag(commonAncestorContainer, ['A'])
+    return link && !range.isCompleteInclude(link)
+}
+
+/**
  * 判断指定位置是否禁止粘贴内容
  * @param range {KRange}
+ * @return {Element|undefined}
  */
 function isForbidPaste(range) {
     return findParentTag(range.startContainer, ['A'])

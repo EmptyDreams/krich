@@ -152,15 +152,17 @@ export class KRange extends Range {
      * @return {Node}
      */
     endInclude() {
+        console.assert(!this.collapsed, '调用 endInclude 时 KRange 应当不是 collapsed 状态')
         const {endContainer, endOffset} = this
-        const {childNodes} = endContainer
-        if (isTextNode(endContainer)) {
-            return endContainer
-        } else if (childNodes) {
-            return endOffset ? childNodes[endOffset - 1] : prevLeafNode(childNodes[endOffset])
-        } else {
+        if (!endOffset) {
             console.assert(this.commonAncestorContainer.contains(prevLeafNode(endContainer)), '终点前的节点不在选区范围内')
             return prevLeafNode(endContainer)
+        }
+        if (isTextNode(endContainer)) {
+            return endContainer
+        } else {
+            console.assert(endContainer.childNodes.length > 0, 'endContainer 应该包含子节点')
+            return endContainer.childNodes[endOffset - 1]
         }
     }
 
@@ -380,12 +382,31 @@ export class KRange extends Range {
     }
 
     /**
+     * 测试 KRange 是否完整的包含了指定节点且只包含指定节点
+     * @param node {Node}
+     * @return {boolean}
+     */
+    isCompleteInclude(node) {
+        const {startContainer, startOffset, endContainer, endOffset, collapsed} = this
+        if (collapsed) return false
+        const nodeStart = getFirstChildNode(node)
+        const nodeEnd = getLastChildNode(node)
+        const rangeStart = this.realStartContainer()
+        const rangeEnd = this.endInclude()
+        return nodeStart === rangeStart && nodeEnd === rangeEnd &&
+            (rangeStart !== startContainer || !startOffset) &&
+            (rangeEnd !== endContainer || (isTextNode(rangeEnd) ? rangeEnd.textContent : rangeEnd.childNodes).length === endOffset)
+    }
+
+    /**
      * 遍历选区包含的所有节点
      * @param consumer {function(Node|Element): any} 同 {@link eachDomTree} 中的 consumer
      * @return {any} consumer 的返回值
      */
     eachAllNode(consumer) {
         const start = this.realStartContainer()
+        if (this.collapsed)
+            return consumer(start)
         const end = this.endInclude()
         let response
         eachDomTree(start, true, true, it => {
