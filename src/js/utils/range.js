@@ -322,6 +322,11 @@ export class KRange extends Range {
      * @return {Promise<void>}
      */
     async extractContents(lca, doIt, cb) {
+        if (isTextNode(lca)) {
+            console.log(lca)
+            lca = findParentTag(lca, ['A']) ?? lca
+            console.log(lca)
+        }
         const tmpBox = createElement('div', ['tmp']);
         // 给切分位置的标签添加临时的 hash 标记
         [this.realStartContainer(), this.endInclude()]
@@ -367,8 +372,10 @@ export class KRange extends Range {
                 mergeSameElement(lastChild, nextSibling)
             if (needMerge(previousSibling))
                 mergeSameElement(previousSibling, firstChild)
-            removeTmpFlag(...lca.children)
-            zipTree(lca)
+            if (!isTextNode(lca) && !isEmptyBodyElement(lca)) {
+                removeTmpFlag(...lca.children)
+                zipTree(lca)
+            }
         }
     }
 

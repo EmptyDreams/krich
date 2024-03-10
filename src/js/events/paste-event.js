@@ -195,7 +195,8 @@ export function registryPasteEvent() {
         if (isIncompatible) return
         const {dataTransfer} = event
         const clientPos = readRangeFromEvent(event)
-        let transfer = dataTransfer, offlineData
+        const transfer = new DataTransfer()
+        let offlineData
         async function handle() {
             const isInsideCpy = isDragging
             const range = offlineData ? KRange.deserialized(offlineData) : clientPos
@@ -210,7 +211,6 @@ export function registryPasteEvent() {
             let nearlyTopLine = findParentTag(ancestor, TOP_LIST) ?? KRICH_EDITOR
             await range.extractContents(nearlyTopLine, true, tmpBox => {
                 if (isTextArea(nearlyTopLine)) {    // 如果内容是从 TextArea 中拖动出来的，则当作纯文本处理
-                    transfer.clearData(KEY_HTML)
                     transfer.setData(KEY_TEXT, tmpBox.textContent)
                 } else {
                     removeRuntimeFlag(tmpBox)
@@ -257,7 +257,6 @@ export function registryPasteEvent() {
  * @return {Promise<void>}
  */
 async function copyContentToTransfer(transfer) {
-    transfer.types.forEach(it => transfer.clearData(it))
     const offline = editorRange.serialization()
     const content = await editorRange.cloneContents(editorRange.commonAncestorContainer)
     removeRuntimeFlag(content)
@@ -271,7 +270,7 @@ async function copyContentToTransfer(transfer) {
  * @param element {Element}
  */
 function writeElementToTransfer(transfer, element) {
-    // noinspection HtmlRequiredLangAttribute
+    transfer.clearData()
     transfer.setData(KEY_HTML, element.innerHTML)
     transfer.setData(KEY_TEXT, element.textContent)
 }
