@@ -323,9 +323,7 @@ export class KRange extends Range {
      */
     async extractContents(lca, doIt, cb) {
         if (isTextNode(lca)) {
-            console.log(lca)
             lca = findParentTag(lca, ['A']) ?? lca
-            console.log(lca)
         }
         const tmpBox = createElement('div', ['tmp']);
         // 给切分位置的标签添加临时的 hash 标记
