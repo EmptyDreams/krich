@@ -9,7 +9,7 @@ import {
     KRICH_HOVER_TIP,
     SELECT_VALUE, TOP_LIST
 } from '../vars/global-fileds'
-import {findParentTag, getRelCoords, nextLeafNode, prevLeafNode} from './dom'
+import {findParentTag, getRelCoords, insertSpaceBetweenNode, nextLeafNode, prevLeafNode} from './dom'
 import {highlightCode} from './highlight'
 import {editorRange} from '../events/range-monitor'
 import {highlightLanguagesGetter, imageHandler, imageStatusChecker} from '../vars/global-exports-funtions'
@@ -87,21 +87,7 @@ export const HOVER_TIP_LIST = {
                 }
                 target.setAttribute('href', url)
                 closeHoverTip()
-                const prev = prevLeafNode(target, true, topLine)
-                const next = nextLeafNode(target, true, topLine)
-                if (prev && isTextNode(prev) && !prev.textContent.endsWith(' ')) {
-                    prev.textContent += ' '
-                }
-                if (next) {
-                    console.assert(isTextNode(next), '当后方有节点时一定是文本节点')
-                    const content = next.textContent
-                    if (!content.startsWith(' '))
-                        next.textContent = ' ' + content
-                    setCursorAt(next, 1)
-                } else {
-                    target.after(' ')
-                    setCursorPositionAfter(target.nextSibling)
-                }
+                insertSpaceBetweenNode(target, true)
             }
         }
     },

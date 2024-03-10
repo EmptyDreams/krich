@@ -11,10 +11,11 @@ import {
     isMarkerNode,
     isTextNode
 } from './tools'
-import {EMPTY_BODY_ACTIVE_FLAG, HASH_NAME, KRICH_EDITOR} from '../vars/global-fileds'
+import {EMPTY_BODY_ACTIVE_FLAG, HASH_NAME, KRICH_EDITOR, TOP_LIST} from '../vars/global-fileds'
 import {TODO_MARKER} from '../vars/global-tag'
 import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
 import {behaviors} from '../behavior'
+import {setCursorAt, setCursorPositionAfter} from './range'
 
 /**
  * 从起点开始遍历 DOM 树
@@ -209,6 +210,37 @@ export function tryFixDom() {
     Array.from(KRICH_EDITOR.getElementsByTagName('br'))
         .filter(it => !findParentTag(it, isTextArea) && (it.previousSibling || it.nextSibling))
         .forEach(it => it.replaceWith(createNewLine()))
+    // 为超链接前后添加空格
+    for (let item of KRICH_EDITOR.getElementsByTagName('a')) {
+        insertSpaceBetweenNode(item, false)
+    }
+}
+
+/**
+ * 在指定节点两侧添加空格（若其两侧是文本节点的话，后方没有节点时会创建一个 text 节点）
+ * @param node {Node} 要被空格包裹的节点
+ * @param focus {boolean} 是否聚焦到插入的最后一个空格后方
+ */
+export function insertSpaceBetweenNode(node, focus) {
+    const line = findParentTag(node, TOP_LIST)
+    const prev = prevLeafNode(node, true, line)
+    const next = nextLeafNode(node, true, line)
+    if (prev && isTextNode(prev) && !prev.textContent.endsWith(' ')) {
+        prev.textContent += ' '
+    }
+    if (next) {
+        console.assert(isTextNode(next), 'next 应当为文本节点')
+        const content = next.textContent
+        if (!content.startsWith(' ')) {
+            next.textContent = ' ' + content
+        }
+        if (focus)
+            setCursorAt(next, 1)
+    } else {
+        node.after(' ')
+        if (focus)
+            setCursorPositionAfter(node.nextSibling)
+    }
 }
 
 /**

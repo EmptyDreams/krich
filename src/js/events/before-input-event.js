@@ -5,7 +5,7 @@ import {
     markStatusCacheEffect, markStatusCacheInvalid,
     statusCheckCache
 } from '../vars/global-fileds'
-import {findParentTag} from '../utils/dom'
+import {findParentTag, tryFixDom} from '../utils/dom'
 import {highlightCode} from '../utils/highlight'
 import {KRange} from '../utils/range'
 import {compareBtnListStatusWith, isActive, setButtonStatus} from '../utils/btn'
@@ -22,11 +22,17 @@ export let isInputting
  */
 export function registryBeforeInputEventListener() {
     KRICH_EDITOR.addEventListener('beforeinput', async event => {
-        if (!event.isComposing && !highlightCodeHelper() && event.inputType.startsWith('insert')) {
-            isInputting = true
-            await handleInput(event)
-            isInputting = false
-            updateEditorRange()
+        const {isComposing, inputType} = event
+        if (!isComposing && !highlightCodeHelper()) {
+            if (inputType.startsWith('insert')) {
+                isInputting = true
+                await handleInput(event)
+                isInputting = false
+                updateEditorRange()
+            } else if (inputType.startsWith('delete')) {
+                await waitTime(0)
+                tryFixDom()
+            }
         }
     })
     KRICH_EDITOR.addEventListener('compositionend', async event => {
