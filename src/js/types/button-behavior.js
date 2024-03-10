@@ -74,7 +74,7 @@ class ButtonBehavior {
      *
      * 转换时如果返回了新的节点，无需复制其子节点
      *
-     * @type {undefined|function(Node|Element): Node|Element}
+     * @type {undefined|function(Node|Element): Node|Element|Promise<Node|Element>}
      */
     translator
 }

@@ -70,6 +70,7 @@ import {
 } from './types/button-behavior'
 import {openHoverTip} from './utils/hover-tip'
 import {rgbToHex} from './utils/string-utils'
+import {highlightCode} from './utils/highlight'
 
 initBehaviors({
     headerSelect: {
@@ -304,10 +305,10 @@ initBehaviors({
             return pre
         },
         hover: pre => openHoverTip('code', pre),
-        translator: item => {
+        translator: async item => {
             const result = behaviors.code.builder()
             item.querySelectorAll('br').forEach(it => it.outerHTML = '\n')
-            result.textContent = item.textContent
+            await highlightCode(null, result)
             return result
         }
     }

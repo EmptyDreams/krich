@@ -59,7 +59,7 @@ export function registryPasteEvent() {
                 return
             }
             if (!isInside) {    // 来自外部的内容先进行转义
-                translate(targetBody)
+                await translate(targetBody)
             }
             const lines = packLine(targetBody)
             if (!isInside) {    // 来自外部的内容先压缩一遍
@@ -132,15 +132,6 @@ export function registryPasteEvent() {
                 }
             }
             if (!offlineData) updateOfflineData()
-            for (let it of lines) {
-                if (it.nodeName === 'PRE') {
-                    await highlightCode(null, it)
-                } else {
-                    for (let value of it.querySelectorAll('pre')) {
-                        await highlightCode(null, value)
-                    }
-                }
-            }
             if (isInside && editorRange.body) new KRange(firstNode).active()
             else KRange.deserialized(offlineData).active()
         } else if (types.includes(KEY_TEXT)) {
@@ -318,7 +309,7 @@ async function insertTextToTextArea(range, textArea, node) {
  * 将 body 中所有内容通过 translator 转义为标准格式
  * @param body {Element}
  */
-function translate(body) {
+async function translate(body) {
     /** @type {Node|Element} */
     let node = body.firstChild
     /** @type {Node|Element|0} */
@@ -339,7 +330,8 @@ function translate(body) {
         }
         let root, leaf
         while (behavior) {
-            const newNode = behavior.translator(node)
+            /** @type {Node|Element} */
+            const newNode = await behavior.translator(node)
             if (newNode === node) break
             if (newNode.firstChild) {
                 next = eachDomTree(node, true, false, _ => true, body) ?? 0
