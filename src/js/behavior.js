@@ -276,7 +276,7 @@ initBehaviors({
         exp: 'img:not(.inline)',
         render: () => imageHtml,
         onclick: range => {
-            const line = findParentTag(range.realStartContainer(), ['IMG'])
+            const line = findParentTag(range.realStartContainer(), TOP_LIST)
             openHoverTip('img', line)
             return true
         },
