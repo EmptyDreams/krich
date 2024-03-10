@@ -1,5 +1,6 @@
 import {editorRange, updateEditorRange} from './range-monitor'
 import {
+    DATA_ID,
     KRICH_EDITOR,
     markStatusCacheEffect, markStatusCacheInvalid,
     statusCheckCache
@@ -43,10 +44,15 @@ export function registryBeforeInputEventListener() {
 async function handleInput(event) {
     const {data, inputType} = event
     const isEnter = inputType === 'insertParagraph'
-    // 屏蔽超链接中的换行操作
-    if (isEnter && findParentTag(editorRange.commonAncestorContainer, ['A'])) {
-        event.preventDefault()
-        return
+    if (findParentTag(editorRange.commonAncestorContainer, ['A'])) {
+        if (isEnter) {
+            // 屏蔽超链接中的换行操作
+            event.preventDefault()
+            return
+        } else if (editorRange.collapsed) {
+            event.preventDefault()
+            editorRange.insertText(data)
+        }
     }
     await waitTime(0)
     let range = KRange.activated()
