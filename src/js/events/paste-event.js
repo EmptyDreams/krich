@@ -172,7 +172,10 @@ export function registryPasteEvent() {
             await copyContentToTransfer(event.dataTransfer)
         }
     })
-    KRICH_EDITOR.addEventListener('dragend', () => isDragging = false)
+    KRICH_EDITOR.addEventListener('dragend', () => {
+        isDragging = false
+        editorRange.active()
+    })
     KRICH_EDITOR.addEventListener('dragover', event => {
         const element = isForbidPaste(readRangeFromEvent(event))
         if (element) {
@@ -202,13 +205,12 @@ export function registryPasteEvent() {
             await handlePaste(range, transfer, isInsideCpy)
         }
         if (isDragging) {  // 如果内容是从编辑区复制过来的，则手动提取内容
-            const range = KRange.activated()
             // 定位鼠标拖动到的位置
             offlineData = clientPos.serialization()
             // 被拖动的内容的最近公共祖先
-            const ancestor = range.commonAncestorContainer
+            const ancestor = editorRange.commonAncestorContainer
             let nearlyTopLine = findParentTag(ancestor, TOP_LIST) ?? KRICH_EDITOR
-            await range.extractContents(nearlyTopLine, true, tmpBox => {
+            await editorRange.extractContents(nearlyTopLine, true, tmpBox => {
                 if (isTextArea(nearlyTopLine)) {    // 如果内容是从 TextArea 中拖动出来的，则当作纯文本处理
                     transfer.setData(KEY_TEXT, tmpBox.textContent)
                 } else {
@@ -224,8 +226,10 @@ export function registryPasteEvent() {
     })
     KRICH_EDITOR.addEventListener('copy', async event => {
         event.preventDefault()
-        if (!editorRange.collapsed)
+        if (!editorRange.collapsed) {
             await copyContentToTransfer(event.clipboardData)
+            editorRange.active()
+        }
     })
     KRICH_EDITOR.addEventListener('cut', async event => {
         event.preventDefault()
@@ -260,7 +264,7 @@ async function copyContentToTransfer(transfer) {
     const content = await editorRange.cloneContents(editorRange.commonAncestorContainer)
     removeRuntimeFlag(content)
     writeElementToTransfer(transfer, content)
-    KRange.deserialized(offline).active()
+    modifyEditorRange(KRange.deserialized(offline))
 }
 
 /**
