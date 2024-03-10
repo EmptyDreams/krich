@@ -51,7 +51,8 @@ export function registryPasteEvent() {
             const content = dataTransfer.getData(KEY_HTML)
                 .replaceAll('\r', '')
                 .replaceAll('\n', '<br>')
-            const targetBody = htmlParser.parseFromString(content, KEY_HTML).querySelector('body')
+            const html = htmlParser.parseFromString(content, KEY_HTML)
+            const targetBody = html.querySelector('body') ?? html
             let realStart = range.realStartContainer()
             const textArea = findParentTag(realStart, isTextArea)
             if (textArea) {
@@ -272,9 +273,9 @@ async function copyContentToTransfer(transfer) {
  * @param element {Element}
  */
 function writeElementToTransfer(transfer, element) {
-    transfer.setData(KEY_TEXT, element.textContent)
     // noinspection HtmlRequiredLangAttribute
-    transfer.setData(KEY_HTML, '<html><body>' + element.innerHTML + '</body></html>')
+    transfer.setData(KEY_HTML, element.innerHTML)
+    transfer.setData(KEY_TEXT, element.textContent)
 }
 
 /**
