@@ -11,9 +11,10 @@ import {
     isMarkerNode,
     isTextNode
 } from './tools'
-import {behaviors, EMPTY_BODY_ACTIVE_FLAG, HASH_NAME, KRICH_EDITOR} from '../vars/global-fileds'
+import {EMPTY_BODY_ACTIVE_FLAG, HASH_NAME, KRICH_EDITOR} from '../vars/global-fileds'
 import {TODO_MARKER} from '../vars/global-tag'
 import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
+import {behaviors} from '../behavior'
 
 /**
  * 从起点开始遍历 DOM 树

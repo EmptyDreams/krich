@@ -3,11 +3,11 @@
  */
 
 import {
-    behaviors,
     DATA_ID, KRICH_EC,
     KRICH_EDITOR,
     KRICH_TOOL_BAR, TITLE_LIST
 } from '../vars/global-fileds'
+import {behaviors} from '../behavior'
 
 /**
  * 构建一个新的元素

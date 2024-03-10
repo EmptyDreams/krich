@@ -1,7 +1,4 @@
-// noinspection JSAssignmentUsedAsCondition
-
 import {
-    behaviors,
     DISABLE_FLAG,
     EMPTY_BODY_ACTIVE_FLAG,
     KRICH_CONTAINER,
@@ -17,6 +14,7 @@ import {closeHoverTip} from '../utils/hover-tip'
 import {isNewClickCycle, markClickCycleStart} from './mouse-click-event'
 import {isDragging} from './paste-event'
 import {isInputting} from './before-input-event'
+import {behaviors} from '../behavior'
 
 /**
  * 编辑区最新的已激活的 KRange 对象

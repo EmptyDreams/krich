@@ -193,7 +193,6 @@ export function registryPasteEvent() {
     KRICH_EDITOR.addEventListener('drop', async event => {
         event.preventDefault()
         if (isIncompatible) return
-        const {dataTransfer} = event
         const clientPos = readRangeFromEvent(event)
         const transfer = new DataTransfer()
         let offlineData

@@ -2,9 +2,10 @@
     本文件用于放置与操作编辑器工具栏按钮相关的 util 函数
 */
 
-import {ACTIVE_FLAG, behaviors, SELECT_VALUE} from '../vars/global-fileds'
+import {ACTIVE_FLAG, SELECT_VALUE} from '../vars/global-fileds'
 import {getElementBehavior, isKrichEditor} from './tools'
 import {isMultiEleStruct, isNoStatus} from '../types/button-behavior'
+import {behaviors} from '../behavior'
 
 /**
  * 判断指定按钮是否激活

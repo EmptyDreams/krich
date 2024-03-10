@@ -3,7 +3,6 @@ import {registryKeyboardEvent} from '../events/keyboard-event'
 import {editorRange, registryRangeMonitor} from '../events/range-monitor'
 import {registryBeforeInputEventListener} from '../events/before-input-event'
 import {
-    behaviors,
     DATA_ID,
     initContainerQuery,
     KRICH_CLASS,
@@ -18,7 +17,7 @@ import {getElementBehavior, readSelectedColor} from './tools'
 import {registryEditorScrollEvent} from '../events/scroll-event'
 import {registryIntersectionObserverEvent} from '../events/intersection-observer-event'
 import {initKeyList} from '../hotkeys/main'
-import {clickButton} from '../behavior'
+import {behaviors, clickButton} from '../behavior'
 import {registryPasteEvent} from '../events/paste-event'
 
 /**

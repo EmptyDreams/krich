@@ -1,8 +1,5 @@
-// noinspection JSAssignmentUsedAsCondition
-
 import {editorRange, updateEditorRange} from './range-monitor'
 import {
-    behaviors,
     KRICH_EDITOR,
     markStatusCacheEffect, markStatusCacheInvalid,
     statusCheckCache
@@ -13,7 +10,7 @@ import {KRange} from '../utils/range'
 import {compareBtnListStatusWith, isActive, setButtonStatus} from '../utils/btn'
 import {getElementBehavior, waitTime} from '../utils/tools'
 import {TODO_MARKER} from '../vars/global-tag'
-import {clickButton} from '../behavior'
+import {behaviors, clickButton} from '../behavior'
 import {isNoStatus, isTextArea} from '../types/button-behavior'
 
 let codeHighlight

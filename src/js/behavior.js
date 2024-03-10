@@ -39,8 +39,7 @@ import hrHtml from '../resources/html/tools/hr.html'
 
 import {
     ACTIVE_FLAG,
-    behaviors, HASH_NAME,
-    initBehaviors,
+    HASH_NAME,
     KRICH_CONTAINER,
     KRICH_EDITOR, markStatusCacheInvalid,
     SELECT_VALUE,
@@ -72,13 +71,18 @@ import {openHoverTip} from './utils/hover-tip'
 import {rgbToHex} from './utils/string-utils'
 import {highlightCode} from './utils/highlight'
 
-initBehaviors({
+// noinspection JSUnusedGlobalSymbols
+/**
+ * 工具栏上的按钮的数据
+ * @type {{[key: string]: ButtonBehavior}}
+ */
+export const behaviors = {
     headerSelect: {
         state: BEHAVIOR_STATE_NO_STATUS,
         exp: ['P', ...TITLE_LIST].join(','),
         render: () => headerSelectHtml,
         onclick: behaviorHeader,
-        translator: removeAllAttributes
+        translator: removeAllAttributes,
     },
     blockquote: {
         state: BEHAVIOR_STATE_MES,
@@ -312,7 +316,7 @@ initBehaviors({
             return result
         }
     }
-})
+}
 
 /**
  * 触发指定按钮的 click 事件

@@ -1,7 +1,7 @@
-import {behaviors} from '../vars/global-fileds'
 import {findParentTag, getFirstChildNode} from '../utils/dom'
 import {isCommonLine, isEmptyLine} from '../utils/tools'
 import {KRange, setCursorPositionBefore} from '../utils/range'
+import {behaviors} from '../behavior'
 
 /**
  * 代码高亮按钮点击

@@ -63,28 +63,10 @@ export const GLOBAL_EVENT_FUN_LIST = {
 }
 
 /**
- * 工具栏上的按钮的样式
- * @type {{[p:string]: ButtonBehavior}}
- */
-export let behaviors
-
-/**
  * 标记是否已经对比过按钮状态和文本状态
  * @type {boolean}
  */
 export let statusCheckCache = true
-/**
- * 标记是否正在输入
- * @type {boolean|undefined}
- */
-
-/**
- * 初始化 behaviors
- * @param value {{[p:string]: ButtonBehavior}}
- */
-export function initBehaviors(value) {
-    behaviors = value
-}
 
 /** 初始化容器 */
 export function initContainerQuery(container) {

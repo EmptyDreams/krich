@@ -15,7 +15,7 @@ class ButtonBehavior {
     state
     /**
      * 判断指定元素是否是当前样式
-     * @type {string & keyof HTMLElementTagNameMap | string | undefined}
+     * @type {string & keyof HTMLElementTagNameMap | string}
      */
     exp
     /**
@@ -74,7 +74,7 @@ class ButtonBehavior {
      *
      * 转换时如果返回了新的节点，无需复制其子节点
      *
-     * @type {undefined|function(Node|Element): Node|Element|Promise<Node|Element>}
+     * @type {function(Node|Element): Node|Element|Promise<Node|Element>}
      */
     translator
 }

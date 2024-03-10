@@ -1,8 +1,9 @@
 import {findParentTag} from '../utils/dom'
-import {behaviors, HASH_NAME, KRICH_TOOL_BAR} from '../vars/global-fileds'
+import {HASH_NAME, KRICH_TOOL_BAR} from '../vars/global-fileds'
 import {KRange} from '../utils/range'
 import {isMultiEleStruct} from '../types/button-behavior'
 import {createHash, isCommonLine} from '../utils/tools'
+import {behaviors} from '../behavior'
 
 /**
  * 多元素结构的点击事件
