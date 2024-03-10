@@ -433,7 +433,7 @@ export class KRange extends Range {
             eachTextNode(leafNode, it => index += it.textContent.length)
             let type = 0
             if (include) {
-                if (isBrNode(leafNode)) {
+                if (isBrNode(leafNode) || isEmptyBodyElement(leafNode)) {
                     type = -1
                 } else if (isText) {
                     index += offset
