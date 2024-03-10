@@ -41,13 +41,19 @@ export function registryBeforeInputEventListener() {
  * @return {Promise<void>}
  */
 async function handleInput(event) {
-    await waitTime(0)
     const {data, inputType} = event
+    const isEnter = inputType === 'insertParagraph'
+    // 屏蔽超链接中的换行操作
+    if (isEnter && findParentTag(editorRange.commonAncestorContainer, ['A'])) {
+        event.preventDefault()
+        return
+    }
+    await waitTime(0)
     let range = KRange.activated()
     const {startContainer, startOffset} = range
     if (findParentTag(range.realStartContainer(), isTextArea)) return
-    /* 在代办列表中换行时自动在 li 中插入 <input> */
-    if (inputType === 'insertParagraph') {
+    if (isEnter) {
+        // 重置样式
         markStatusCacheInvalid()
         for (let key in behaviors) {
             const behavior = behaviors[key]
@@ -56,6 +62,7 @@ async function handleInput(event) {
                 setButtonStatus(button)
             }
         }
+        // 在代办列表中换行时自动在 li 中插入 <input>
         const todoList = findParentTag(startContainer, item => item.classList?.contains?.('todo'))
         if (todoList) {
             const item = todoList.querySelector('&>li>p:first-child')
