@@ -6,12 +6,12 @@ import {
     findParentTag,
     getFirstChildNode,
     getLastChildNode, nextLeafNode,
-    prevLeafNode, removeRuntimeFlag,
+    prevLeafNode,
     tryFixDom,
     zipTree
 } from '../utils/dom'
 import {
-    createElement, createNewLine,
+    createElement, createNewLine, equalsKrichNode,
     getElementBehavior,
     isBrNode,
     isEmptyBodyElement,
@@ -51,8 +51,8 @@ export function registryPasteEvent() {
             const content = dataTransfer.getData(KEY_HTML)
                 .replaceAll('\r', '')
                 .replaceAll('\n', '<br>')
-            const html = htmlParser.parseFromString(content, KEY_HTML)
-            const targetBody = html.querySelector('body') ?? html
+            const targetBody = createElement('div')
+            targetBody.innerHTML = content
             let realStart = range.realStartContainer()
             const textArea = findParentTag(realStart, isTextArea)
             if (textArea) {
@@ -101,8 +101,16 @@ export function registryPasteEvent() {
                  */
                 const isMergeInLine = item => !isEmptyBodyElement(item) && !isMultiEleStruct(item)
                 const first = lines[0]
-                // 当插入内容有多行或插入的内容不可嵌入到行中时执行通用插入方式
-                if (lines.length > 1 || !isMergeInLine(first)) {
+                const topLineParent = topLine.parentElement
+                // 当把列表插入到列表中时，直接提取其中的 li 标签
+                if (lines.length === 1 && isMultiEleStruct(first) && equalsKrichNode(first, topLineParent.parentNode)) {
+                    const childNodes = first.childNodes
+                    if (!range.startOffset && getFirstChildNode(range.startContainer) === getFirstChildNode(topLineParent)) {
+                        topLineParent.before(...childNodes)
+                    } else {
+                        topLineParent.after(...childNodes)
+                    }
+                } else if (lines.length > 1 || !isMergeInLine(first)) { // 当插入内容有多行或插入的内容不可嵌入到行中时执行通用插入方式
                     const last = lines[lines.length - 1]
                     const [left, right] = range.splitNode(topLine)
                     if (right && isMergeInLine(last)) { // 尝试向右侧行前嵌入内容
@@ -152,7 +160,6 @@ export function registryPasteEvent() {
         }
     }
 
-    const htmlParser = new DOMParser()
     KRICH_EDITOR.addEventListener('paste', event => {
         event.preventDefault()
         if (!isForbidPaste(editorRange)) {
@@ -208,11 +215,13 @@ export function registryPasteEvent() {
             // 被拖动的内容的最近公共祖先
             const ancestor = range.commonAncestorContainer
             let nearlyTopLine = findParentTag(ancestor, TOP_LIST) ?? KRICH_EDITOR
+            if (isListLine(nearlyTopLine.firstChild)) {
+                nearlyTopLine = nearlyTopLine.parentElement
+            }
             await range.extractContents(nearlyTopLine, true, tmpBox => {
                 if (isTextArea(nearlyTopLine)) {    // 如果内容是从 TextArea 中拖动出来的，则当作纯文本处理
                     transfer.setData(KEY_TEXT, tmpBox.textContent)
                 } else {
-                    removeRuntimeFlag(tmpBox)
                     writeElementToTransfer(transfer, tmpBox)
                 }
                 return handle()
@@ -233,7 +242,6 @@ export function registryPasteEvent() {
         const transfer = event.clipboardData
         transfer.types.forEach(it => transfer.clearData(it))
         await editorRange.extractContents(KRICH_EDITOR, true, tmpBox => {
-            removeRuntimeFlag(tmpBox)
             writeElementToTransfer(transfer, tmpBox)
             const prev = prevLeafNode(tmpBox)
             if (prev) setCursorPositionAfter(prev)
@@ -258,7 +266,6 @@ export function registryPasteEvent() {
 async function copyContentToTransfer(transfer) {
     const offline = editorRange.serialization()
     const content = await editorRange.cloneContents(editorRange.commonAncestorContainer)
-    removeRuntimeFlag(content)
     writeElementToTransfer(transfer, content)
     KRange.deserialized(offline).active()
 }
@@ -379,7 +386,7 @@ function packLine(body) {
             line = null
         }
     }
-    for (let child of body.childNodes) {
+    for (let child of Array.from(body.childNodes)) {
         if (TOP_LIST.includes(child.nodeName)) {
             submitLine()
             result.push(child)

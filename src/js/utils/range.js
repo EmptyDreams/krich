@@ -352,7 +352,6 @@ export class KRange extends Range {
         if (doIt) {
             if (tmpBox.childNodes.length === 1 && isListLine(firstChild)) {
                 // 对于从列表中拖动出来的内容，移除最外部的 li 标签
-                // noinspection JSCheckFunctionSignatures
                 firstChild.replaceWith(...firstChild.childNodes)
             }
             if (needMerge(previousSibling))
