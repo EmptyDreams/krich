@@ -1,6 +1,6 @@
 import {KRICH_CONTAINER, KRICH_EDITOR, KRICH_HOVER_TIP, markStatusCacheInvalid, TOP_LIST} from '../vars/global-fileds'
 import {
-    findParentTag,
+    findParentTag, getFirstChildNode,
     getFirstTextNode,
     getLastTextNode, modifyContenteditableStatus,
     nextLeafNode, nextSiblingText,
@@ -11,7 +11,7 @@ import {KRange, setCursorAt, setCursorPositionAfter, setCursorPositionBefore} fr
 import {editorRange} from './range-monitor'
 import {
     createNewLine, getElementBehavior, isCommonLine, isEmptyBodyElement,
-    isEmptyLine, isListLine,
+    isEmptyLine, isEmptyListLine, isListLine,
     isMarkerNode, waitTime
 } from '../utils/tools'
 import {insertTextToString} from '../utils/string-utils'
@@ -241,10 +241,8 @@ function enterEvent(event) {
         const structure = findParentTag(startContainer, isMultiEleStruct)
         if (!structure) return
         const lastChild = structure.lastChild
-        const lastChildNodes = lastChild.childNodes
-        const numCheckResult = lastChildNodes.length < 2 || (lastChildNodes.length < 3 && isMarkerNode(lastChildNodes[0]))
         let li
-        if (numCheckResult && !lastChild.textContent && startContainer.contains(getLastTextNode(structure))) {
+        if (isEmptyListLine(lastChild) && !lastChild.textContent && startContainer.contains(getLastTextNode(structure))) {
             /* 在多元素结构最后一个空行按下回车时自动退出 */
             event.preventDefault()
             if (structure.nodeName[0] === 'B') {
@@ -259,14 +257,33 @@ function enterEvent(event) {
             isEmptyLine(startContainer) &&
             startContainer === (li = findParentTag(startContainer, ['LI']))?.lastChild
         ) {
-            /* 在多元素某一个子行的最后一个空白行按回车时将当前行替换为列表的子行 */
             event.preventDefault()
-            element = startContainer
-            const newLine = getElementBehavior(structure).newLine()
-            console.assert(!!newLine, '进入到这里应当必然存在 newLine 的值')
-            newLine.append(element)
-            // noinspection JSCheckFunctionSignatures
-            li.after(newLine)
+            const nextLine = li.nextSibling
+            if (nextLine) {
+                // 如果空行后还有其它行，则将焦点转移到下一行开头
+                element = getFirstChildNode(nextLine, true)
+            } else {
+                // 在多元素某一个子行的最后一个空白行按回车时将当前行替换为列表的子行
+                element = startContainer
+                const newLine = getElementBehavior(structure).newLine()
+                console.assert(!!newLine, '进入到这里应当必然存在 newLine 的值')
+                newLine.append(element)
+                // noinspection JSCheckFunctionSignatures
+                li.after(newLine)
+            }
+        } else if (!startOffset) {
+            if (!li) {
+                li = findParentTag(startContainer, ['LI'])
+                if (!li) return
+            }
+            // 在行开头按下回车且上一行为空行时屏蔽按键
+            if (getFirstChildNode(li, true) === getFirstChildNode(startContainer)) {
+                const prevLine = li.previousSibling
+                if (prevLine && isEmptyListLine(prevLine)) {
+                    event.preventDefault()
+                    element = prevLine.lastChild
+                }
+            }
         }
     }
     if (collapsed && !element) handleMesEnter()

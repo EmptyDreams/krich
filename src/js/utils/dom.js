@@ -117,10 +117,13 @@ export function getLastTextNode(node, limit) {
 /**
  * 获取节点的第一个（间接）子节点，没有子节点返回其本身
  * @param node {Node}
+ * @param skipMarker {boolean?} 是否跳过 marker
  * @return {Node}
  */
-export function getFirstChildNode(node) {
-    return getSideNode(node, 'firstChild')
+export function getFirstChildNode(node, skipMarker) {
+    let result = getSideNode(node, 'firstChild')
+    if (skipMarker && isMarkerNode(result)) result = nextLeafNode(result)
+    return result
 }
 
 /**
