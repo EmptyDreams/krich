@@ -139,6 +139,7 @@ export const HOVER_TIP_LIST = {
                 sizeInput.disabled = true
                 const imageFile = event.target.files[0]
                 readImageToBase64(imageFile).then(src => {
+                    imageElement.setAttribute('src', src)
                     uploaderBackground.style.backgroundImage = `url(${src})`
                     submitButton.disabled = false
                 })
