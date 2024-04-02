@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-1-M/prism/1.27.0/themes/prism.min.css">
     <script defer src="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/prism/1.27.0/components/prism-core.min.js" data-manual></script>
     <script defer src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/prism/1.27.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script defer src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script type="module">
         import KRich from './krich-es.js'
         document.addEventListener('DOMContentLoaded', () => {
@@ -31,15 +32,18 @@
                 ['PlainText', 'txt'],
                 ['JavaScript', 'js']
             ])
-            krich.setImgHandler((element, file) => new Promise(resolve => {
-                const reader = new FileReader()
-                reader.onload = event => {
-                    element.setAttribute('src', event.target.result)
-                    resolve()
-                }
-                reader.readAsDataURL(file)
-            }))
+            krich.setImgMapper(data => CryptoJS.MD5(data).toString())
             krich.setImgStatusChecker(response => !response.url.includes('403'))
+            let id
+            const show = document.querySelector('#show')
+            document.querySelector('#krich .krich-editor').addEventListener('input', async () => {
+                clearTimeout(id)
+                id = setTimeout(async () => {
+                    const value = await krich.exportData()
+                    value.html = value.html.innerHTML
+                    show.innerText = JSON.stringify(value, null, 4)
+                }, 1000)
+            })
         })
     </script>
 </head>
@@ -47,5 +51,6 @@
 <div id="krich">
 
 </div>
+<div id="show"></div>
 </body>
 </html>
