@@ -16,6 +16,7 @@ import {TODO_MARKER} from '../vars/global-tag'
 import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
 import {behaviors} from '../behavior'
 import {KRange, setCursorAt, setCursorPositionAfter} from './range'
+import {imageMapper} from '../vars/global-exports-funtions'
 
 /**
  * 从起点开始遍历 DOM 树
@@ -442,4 +443,34 @@ export function zipTree(container) {
     }
     removeEmptyNode()
     recursionMerge(container)
+}
+
+/**
+ * 导出编辑器数据
+ * @return {Promise<{
+ *     html: Element,
+ *     image?: {[url: string]: string}
+ * }>}
+ */
+export async function exportData() {
+    /** @type {Element} */
+    const root = KRICH_EDITOR.cloneNode(true)
+    removeRuntimeFlag(root)
+    const result = {
+        html: root
+    }
+    if (imageMapper != null) {
+        const imageList = result.image = {}
+        for (let img of root.getElementsByTagName('img')) {
+            const src = img.getAttribute('src')
+            if (src.startsWith('data:')) {
+                const url = await imageMapper(src)
+                imageList[url] = src
+                img.setAttribute('src', url)
+            } else {
+                imageList[src] = ''
+            }
+        }
+    }
+    return result
 }
