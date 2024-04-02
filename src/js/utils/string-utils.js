@@ -42,3 +42,17 @@ export function rgbToHex(rgb) {
 export function isHttpUrl(url) {
     return /^https?:\/\/\S+\.\S+(\S*)$/.test(url)
 }
+
+/**
+ * 从文件中读取图片并转换为 base64 编码
+ * @param file {File}
+ * @return {Promise<string>}
+ */
+export function readImageToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = event => resolve(event.target.result)
+        reader.onerror = event => reject(event)
+        reader.readAsDataURL(file)
+    })
+}

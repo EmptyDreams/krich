@@ -24,8 +24,8 @@ import {
 import {KRange, setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
 import {highlightCode} from '../utils/highlight'
 import {editorRange, modifyEditorRange} from './range-monitor'
-import {uploadImage} from '../utils/image-handler'
 import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
+import {readImageToBase64} from '../utils/string-utils'
 
 /**
  * 是否正在拖动元素
@@ -149,7 +149,10 @@ export function registryPasteEvent() {
             let pos = findParentTag(range.realStartContainer(), TOP_LIST)
             for (let file of dataTransfer.files) {
                 if (!file.type.startsWith('image/')) continue
-                const image = await uploadImage(file)
+                const image = createElement('img', {
+                    style: 'width:30%',
+                    src: await readImageToBase64(file)
+                })
                 if (isEmptyLine(pos))
                     pos.replaceWith(image)
                 else

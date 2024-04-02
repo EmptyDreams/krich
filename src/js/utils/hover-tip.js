@@ -9,14 +9,13 @@ import {
     KRICH_HOVER_TIP,
     SELECT_VALUE, TOP_LIST
 } from '../vars/global-fileds'
-import {findParentTag, getRelCoords, insertSpaceBetweenNode, nextLeafNode, prevLeafNode} from './dom'
+import {findParentTag, getRelCoords, insertSpaceBetweenNode} from './dom'
 import {highlightCode} from './highlight'
 import {editorRange} from '../events/range-monitor'
-import {highlightLanguagesGetter, imageHandler, imageStatusChecker} from '../vars/global-exports-funtions'
-import {createElement, isEmptyLine, isTextNode, waitTime} from './tools'
-import {KRange, setCursorAt, setCursorPositionAfter} from './range'
-import {uploadImage} from './image-handler'
-import {isHttpUrl} from './string-utils'
+import {highlightLanguagesGetter, imageStatusChecker} from '../vars/global-exports-funtions'
+import {createElement, isEmptyLine, waitTime} from './tools'
+import {KRange} from './range'
+import {isHttpUrl, readImageToBase64} from './string-utils'
 import {syncButtonsStatus} from './btn'
 
 const linkHoverNoDescHtml = linkHoverHtml.substring(linkHoverHtml.indexOf('</div>') + 6)
@@ -136,19 +135,15 @@ export const HOVER_TIP_LIST = {
                 }
                 descrInput.disabled = sizeInput.disabled = false
             }
-            // 如果用户设置的图片处理器，则为 uploader 添加相关事件
-            if (imageHandler) {
-                uploaderInput.onchange = event => {
-                    sizeInput.disabled = true
-                    const imageFile = event.target.files[0]
-                    uploadImage(imageFile, imageElement).then(() => {
-                        const url = imageElement.getAttribute('src')
-                        uploaderBackground.style.backgroundImage = `url(${url})`
-                        submitButton.disabled = false
-                    })
-                    linkInput.disabled = true
-                }
-            } else uploaderInput.disabled = true
+            uploaderInput.onchange = event => {
+                sizeInput.disabled = true
+                const imageFile = event.target.files[0]
+                readImageToBase64(imageFile).then(src => {
+                    uploaderBackground.style.backgroundImage = `url(${src})`
+                    submitButton.disabled = false
+                })
+                linkInput.disabled = true
+            }
             // 为 URL 输入栏添加事件
             linkInput.onchange = async () => {
                 errorSpan.classList.remove(ACTIVE_FLAG)

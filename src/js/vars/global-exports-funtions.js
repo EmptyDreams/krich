@@ -42,16 +42,16 @@ export function setHighlight(highlighter, languages) {
 
 /**
  * 图片处理
- * @type {undefined|function(HTMLImageElement, File): Promise<void>}
+ * @type {undefined|function(string): Promise<string>|string}
  */
-export let imageHandler
+export let imageMapper
 
 /**
- * 设置图片处理器，用于将用户选择的图片上传到服务器或内嵌到 DOM 中
- * @param handler {function(HTMLImageElement, File)}
+ * 设置图片映射器，根据图片的 base64 生成一个唯一的 URL
+ * @param handler {function(string): Promise<string>|string}
  */
-export function setImgHandler(handler) {
-    imageHandler = handler
+export function setImgMapper(handler) {
+    imageMapper = handler
 }
 
 /**
