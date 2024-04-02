@@ -465,7 +465,9 @@ export async function exportData() {
             const src = img.getAttribute('src')
             if (src.startsWith('data:')) {
                 const url = await imageMapper(src)
-                imageList[url] = src
+                if (!(url in imageList)) {
+                    imageList[url] = src
+                }
                 img.setAttribute('src', url)
             } else {
                 imageList[src] = ''
