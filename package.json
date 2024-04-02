@@ -1,6 +1,6 @@
 {
   "name": "krich",
-  "version": "0.0.1",
+  "version": "0.0.1-alpha",
   "exports": {
     ".": {
       "import": "./dist/krich-es.js",
