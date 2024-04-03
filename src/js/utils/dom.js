@@ -276,6 +276,10 @@ export function removeRuntimeFlag(root) {
         root.querySelectorAll(`*[${name}]`)
             .forEach(it => it.removeAttribute(name))
     }
+    // 类名为空时移除 class 属性
+    root.querySelectorAll('*[class=""]').forEach(it => {
+        it.removeAttribute('class')
+    })
 }
 
 /**
