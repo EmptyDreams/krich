@@ -10,7 +10,6 @@ import {
     SELECT_VALUE, TOP_LIST
 } from '../vars/global-fileds'
 import {findParentTag, getRelCoords, insertSpaceBetweenNode} from './dom'
-import {highlightCode} from './highlight'
 import {editorRange} from '../events/range-monitor'
 import {highlightLanguagesGetter, imageStatusChecker} from '../vars/global-exports-funtions'
 import {createElement, isEmptyLine, waitTime} from './tools'

@@ -552,6 +552,9 @@ export class KRange extends Range {
             return this
         }
         const [endContainer, endOffset] = findNode(endIndex, endEmptyCount, -1)
+        if (startContainer === endContainer && isEmptyBodyElement(startContainer)) {
+            this.body = startContainer
+        }
         if (endOffset < 0) {
             this.setEndAfter(endContainer)
         } else {

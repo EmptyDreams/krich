@@ -131,7 +131,7 @@ export function isMarkerNode(node) {
 
 /**
  * 判断指定节点是否是 `li`
- * @param node {Node}
+ * @param node {Node?}
  * @return {boolean}
  */
 export function isListLine(node) {

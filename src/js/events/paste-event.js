@@ -216,9 +216,9 @@ export function registryPasteEvent() {
             // 定位鼠标拖动到的位置
             offlineData = clientPos.serialization()
             // 被拖动的内容的最近公共祖先
-            const ancestor = range.commonAncestorContainer
+            const ancestor = range.body ?? range.commonAncestorContainer
             let nearlyTopLine = findParentTag(ancestor, TOP_LIST) ?? KRICH_EDITOR
-            if (isListLine(nearlyTopLine.firstChild)) {
+            if (isEmptyBodyElement(nearlyTopLine) || isListLine(nearlyTopLine.firstChild)) {
                 nearlyTopLine = nearlyTopLine.parentElement
             }
             await range.extractContents(nearlyTopLine, true, tmpBox => {
