@@ -310,12 +310,15 @@ export const behaviors = {
         },
         hover: pre => {
             const code = pre.firstChild
-            const offlineData = editorRange.serialization(prevLeafNode(pre))
-            // noinspection SillyAssignmentJS
-            code.textContent = code.textContent
-            KRange.deserialized(offlineData).active()
-            pre.classList.add(ACTIVE_FLAG)
-            openHoverTip('code', pre)
+            const classList = pre.classList
+            if (!classList.contains(ACTIVE_FLAG)) {
+                const offlineData = editorRange.serialization(prevLeafNode(pre))
+                // noinspection SillyAssignmentJS
+                code.textContent = code.textContent
+                KRange.deserialized(offlineData).active()
+                pre.classList.add(ACTIVE_FLAG)
+                openHoverTip('code', pre)
+            }
         },
         translator: async item => {
             const result = behaviors.code.builder()
