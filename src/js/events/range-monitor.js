@@ -90,7 +90,7 @@ export function updateEditorRange() {
     } else if (!prev?.collapsed || range.endContainer !== prev?.endContainer) {
         syncButtonsStatus(range.startContainer)
     }
-    if (!findParentTag(range.realEndContainer(), ['PRE'])) {
+    if (!findParentTag(range.realStartContainer(), ['PRE'])) {
         KRICH_EDITOR.querySelectorAll(`pre.${ACTIVE_FLAG}`)
             .forEach(it => {
                 it.classList.remove(ACTIVE_FLAG)
