@@ -30,15 +30,24 @@ export const HOVER_TIP_LIST = {
         init: () => {
             const pre = KRICH_HOVER_TIP.tip
             const list = highlightLanguagesGetter()
-            let language = pre.className || 'language-' + list[0][1]
-            pre.className = language
+            const prefix = 'language-'
+            let language
+            for (let name of pre.classList) {
+                if (name.startsWith(prefix)) {
+                    language = name
+                    break
+                }
+            }
+            if (!language) {
+                language = prefix + list[0][1]
+                pre.classList.add(language)
+            }
             KRICH_HOVER_TIP.innerHTML = `<div class="select" data-value="0"><span class="value">${list.find(it => language.endsWith('-' + it[1]))[0]}</span><div class="items">${list.map((it, index) => '<div data-value="' + index + '">' + it[0] + '</div>').join('')}</div></div>`
         },
-        onchange: async (select) => {
+        onchange: select => {
             const pre = KRICH_HOVER_TIP.tip
             const list = highlightLanguagesGetter()
             pre.className = 'language-' + list[parseInt(select.getAttribute(SELECT_VALUE))][1]
-            await highlightCode(editorRange, pre)
         }
     },
     link: {

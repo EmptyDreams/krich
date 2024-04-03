@@ -1,4 +1,5 @@
 import {
+    ACTIVE_FLAG,
     DISABLE_FLAG,
     EMPTY_BODY_ACTIVE_FLAG,
     KRICH_CONTAINER,
@@ -15,6 +16,7 @@ import {isNewClickCycle, markClickCycleStart} from './mouse-click-event'
 import {isDragging} from './paste-event'
 import {isInputting} from './before-input-event'
 import {behaviors} from '../behavior'
+import {highlightCode} from '../utils/highlight'
 
 /**
  * 编辑区最新的已激活的 KRange 对象
@@ -87,6 +89,14 @@ export function updateEditorRange() {
         syncButtonsStatus(range.commonAncestorContainer)
     } else if (!prev?.collapsed || range.endContainer !== prev?.endContainer) {
         syncButtonsStatus(range.startContainer)
+    }
+    if (!findParentTag(range.realEndContainer(), ['PRE'])) {
+        KRICH_EDITOR.querySelectorAll(`pre.${ACTIVE_FLAG}`)
+            .forEach(it => {
+                it.classList.remove(ACTIVE_FLAG)
+                // noinspection JSIgnoredPromiseFromCall
+                highlightCode(null, it)
+            })
     }
 }
 

@@ -5,7 +5,6 @@ import {
     statusCheckCache
 } from '../vars/global-fileds'
 import {findParentTag, tryFixDom} from '../utils/dom'
-import {highlightCode} from '../utils/highlight'
 import {KRange} from '../utils/range'
 import {compareBtnListStatusWith, isActive, setButtonStatus} from '../utils/btn'
 import {getElementBehavior, waitTime} from '../utils/tools'
@@ -13,7 +12,6 @@ import {TODO_MARKER} from '../vars/global-tag'
 import {behaviors, clickButton} from '../behavior'
 import {isNoStatus, isTextArea} from '../types/button-behavior'
 
-let codeHighlight
 export let isInputting
 
 /**
@@ -22,7 +20,7 @@ export let isInputting
 export function registryBeforeInputEventListener() {
     KRICH_EDITOR.addEventListener('beforeinput', async event => {
         const {isComposing, inputType} = event
-        if (!isComposing && !highlightCodeHelper()) {
+        if (!isComposing) {
             if (inputType.startsWith('insert')) {
                 isInputting = true
                 await handleInput(event)
@@ -96,14 +94,5 @@ async function handleInput(event) {
         newRange.deserialized(offline)
         newRange.collapse(false)
         newRange.active()
-    }
-}
-
-function highlightCodeHelper() {
-    const pre = findParentTag(editorRange.realStartContainer(), ['PRE'])
-    if (pre) {
-        clearTimeout(codeHighlight)
-        codeHighlight = setTimeout(() => highlightCode(editorRange, pre), 333)
-        return true
     }
 }

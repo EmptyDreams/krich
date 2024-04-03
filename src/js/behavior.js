@@ -48,7 +48,7 @@ import {
 } from './vars/global-fileds'
 import {behaviorHeader} from './behaviors/header'
 import {KRange} from './utils/range'
-import {findParentTag, zipTree} from './utils/dom'
+import {findParentTag, prevLeafNode, zipTree} from './utils/dom'
 import {
     createElement, createHash,
     isEmptyBodyElement, isListLine, isTextNode,
@@ -308,7 +308,15 @@ export const behaviors = {
             pre.append(code)
             return pre
         },
-        hover: pre => openHoverTip('code', pre),
+        hover: pre => {
+            const code = pre.firstChild
+            const offlineData = editorRange.serialization(prevLeafNode(pre))
+            // noinspection SillyAssignmentJS
+            code.textContent = code.textContent
+            KRange.deserialized(offlineData).active()
+            pre.classList.add(ACTIVE_FLAG)
+            openHoverTip('code', pre)
+        },
         translator: async item => {
             const result = behaviors.code.builder()
             item.querySelectorAll('br').forEach(it => it.outerHTML = '\n')
