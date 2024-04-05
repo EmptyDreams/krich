@@ -69,6 +69,7 @@ export const iifeOutput = {
     entryFileNames: 'krich.js',
     format: 'iife',
     name: 'KRich',
+    assetFileNames: 'assets/[name]-[extname]',
     generatedCode: {
         constBindings: true
     }
