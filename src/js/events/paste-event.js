@@ -33,136 +33,11 @@ import {readImageToBase64} from '../utils/string-utils'
  */
 export let isDragging
 
-const KEY_HTML = 'text/html'
-const KEY_TEXT = 'text/plain'
+export const TRANSFER_KEY_HTML = 'text/html'
+const TRANSFER_KEY_TEXT = 'text/plain'
 
 /** 注册粘贴和拖动事件 */
 export function registryPasteEvent() {
-    /**
-     * 处理粘贴操作
-     * @param range {KRange} 操作的区域
-     * @param dataTransfer {DataTransfer} 粘贴的内容
-     * @param isInside {boolean?} 数据来源是否是内部元素
-     */
-    async function handlePaste(range, dataTransfer, isInside) {
-        isDragging = false  // 取消拖动标记，使得函数能够修改 editorRange
-        const {types} = dataTransfer
-        if (types.includes(KEY_HTML)) {
-            const content = dataTransfer.getData(KEY_HTML)
-                .replaceAll('\r', '')
-                .replaceAll('\n', '<br>')
-            const targetBody = createElement('div')
-            targetBody.innerHTML = content
-            let realStart = range.realStartContainer()
-            const textArea = findParentTag(realStart, isTextArea)
-            if (textArea) {
-                await insertTextToTextArea(range, textArea, targetBody)
-                return
-            }
-            if (!isInside) {    // 来自外部的内容先进行转义
-                await translate(targetBody)
-            }
-            const lines = packLine(targetBody)
-            if (!isInside) {    // 来自外部的内容先压缩一遍
-                lines.forEach(zipTree)
-            }
-            let tmpBox
-            if (!range.collapsed) {
-                // 如果 KRange 不是折叠状态，先移除选中的内容
-                tmpBox = createElement('div', ['tmp'])
-                range.surroundContents(tmpBox)
-                realStart = prevLeafNode(tmpBox) ?? tmpBox.parentNode
-                tmpBox.remove()
-            }
-            // 存储光标最终所在的位置
-            const lastPos = getLastChildNode(lines[lines.length - 1])
-            const firstNode = getFirstChildNode(lines[0])
-            let offlineData
-            /** 更新 `offlineData` 数据 */
-            const updateOfflineData = () => {
-                offlineData = setCursorPositionAfter(lastPos, false).serialization()
-            }
-            if (isKrichEditor(realStart)) { // 如果拖动到了没有标签的地方，说明拖动到了尾部
-                // noinspection JSCheckFunctionSignatures
-                realStart.appendChild(...lines)
-            } else if (isEmptyLine(realStart)) {    // 如果拖动到了空白行则直接替换
-                // noinspection JSCheckFunctionSignatures
-                realStart.replaceWith(...lines)
-            } else if (isEmptyBodyElement(realStart)) { // 如果拖动到了 EBE 则在其后方插入
-                realStart.after(...lines)
-            } else if (isBrNode(realStart)) {   // 如果拖动到了 br 上则替换其父元素
-                realStart.parentElement.replaceWith(...lines)
-            } else {    // 否则在当前位置插入
-                const topLine = findParentTag(realStart, TOP_LIST)
-                /**
-                 * 判断一个节点是否应该嵌入到行中
-                 * @param item {Node}
-                 * @return {boolean}
-                 */
-                const isMergeInLine = item => !isEmptyBodyElement(item) && !isMultiEleStruct(item)
-                const first = lines[0]
-                const topLineParent = topLine.parentElement
-                // 当把列表插入到列表中时，直接提取其中的 li 标签
-                if (lines.length === 1 && isMultiEleStruct(first) && equalsKrichNode(first, topLineParent.parentNode)) {
-                    const childNodes = first.childNodes
-                    if (!range.startOffset && getFirstChildNode(range.startContainer) === getFirstChildNode(topLineParent)) {
-                        topLineParent.before(...childNodes)
-                    } else {
-                        topLineParent.after(...childNodes)
-                    }
-                } else if (lines.length > 1 || !isMergeInLine(first)) { // 当插入内容有多行或插入的内容不可嵌入到行中时执行通用插入方式
-                    const last = lines[lines.length - 1]
-                    const [left, right] = range.splitNode(topLine)
-                    if (right && isMergeInLine(last)) { // 尝试向右侧行前嵌入内容
-                        lines.pop()
-                        right.prepend(...last.childNodes)
-                    }
-                    if (left && isMergeInLine(first)) { // 尝试向左侧行结尾嵌入内容
-                        lines.shift()
-                        left.append(...first.childNodes)
-                    }
-                    // 将剩余的行插入到 left 和 right 之间
-                    if (left) left.after(...lines)
-                    else right.before(...lines)
-                    updateOfflineData()
-                    if (left) zipTree(left)
-                    if (right) zipTree(right)
-                } else {    // 当插入内容只有一行且可嵌入时将内容嵌入到当前行
-                    const [left, right] = range.splitNode(
-                        findParentTag(realStart, it => it.parentNode === topLine)
-                    )
-                    if (left) { // 如果左侧存在则优先将内容插入到左侧
-                        left.after(...first.childNodes)
-                    } else {
-                        right.before(...first.childNodes)
-                    }
-                    updateOfflineData()
-                    zipTree(topLine)
-                }
-            }
-            if (!offlineData) updateOfflineData()
-            if (isInside && editorRange.body) new KRange(firstNode).active()
-            else KRange.deserialized(offlineData).active()
-        } else if (types.includes(KEY_TEXT)) {
-            range.insertText(dataTransfer.getData(KEY_TEXT))
-        } else if (types.includes('Files')) {
-            let pos = findParentTag(range.realStartContainer(), TOP_LIST)
-            for (let file of dataTransfer.files) {
-                if (!file.type.startsWith('image/')) continue
-                const image = createElement('img', {
-                    style: 'width:30%',
-                    src: await readImageToBase64(file)
-                })
-                if (isEmptyLine(pos))
-                    pos.replaceWith(image)
-                else
-                    pos.after(image)
-                pos = image
-            }
-            new KRange(pos).active()
-        }
-    }
-
     KRICH_EDITOR.addEventListener('paste', event => {
         event.preventDefault()
         if (!isForbidPaste(editorRange)) {
@@ -223,7 +98,7 @@ export function registryPasteEvent() {
             }
             await range.extractContents(nearlyTopLine, true, tmpBox => {
                 if (isTextArea(nearlyTopLine)) {    // 如果内容是从 TextArea 中拖动出来的，则当作纯文本处理
-                    transfer.setData(KEY_TEXT, tmpBox.textContent)
+                    transfer.setData(TRANSFER_KEY_TEXT, tmpBox.textContent)
                 } else {
                     writeElementToTransfer(transfer, tmpBox)
                 }
@@ -280,8 +155,8 @@ async function copyContentToTransfer(transfer) {
  */
 function writeElementToTransfer(transfer, element) {
     transfer.clearData()
-    transfer.setData(KEY_HTML, element.innerHTML)
-    transfer.setData(KEY_TEXT, element.textContent)
+    transfer.setData(TRANSFER_KEY_HTML, element.innerHTML)
+    transfer.setData(TRANSFER_KEY_TEXT, element.textContent)
 }
 
 /**
@@ -372,6 +247,131 @@ async function translate(body) {
             // noinspection JSUnusedAssignment
             leaf.append(...node.childNodes)
         }
+    }
+}
+
+/**
+ * 处理粘贴操作
+ * @param range {KRange} 操作的区域
+ * @param dataTransfer {DataTransfer} 粘贴的内容
+ * @param isInside {boolean?} 数据来源是否是内部元素
+ */
+export async function handlePaste(range, dataTransfer, isInside) {
+    isDragging = false  // 取消拖动标记，使得函数能够修改 editorRange
+    const {types} = dataTransfer
+    if (types.includes(TRANSFER_KEY_HTML)) {
+        const content = dataTransfer.getData(TRANSFER_KEY_HTML)
+            .replaceAll('\r', '')
+            .replaceAll('\n', '<br>')
+        const targetBody = createElement('div')
+        targetBody.innerHTML = content
+        let realStart = range.realStartContainer()
+        const textArea = findParentTag(realStart, isTextArea)
+        if (textArea) {
+            await insertTextToTextArea(range, textArea, targetBody)
+            return
+        }
+        if (!isInside) {    // 来自外部的内容先进行转义
+            await translate(targetBody)
+        }
+        const lines = packLine(targetBody)
+        if (!isInside) {    // 来自外部的内容先压缩一遍
+            lines.forEach(zipTree)
+        }
+        let tmpBox
+        if (!range.collapsed) {
+            // 如果 KRange 不是折叠状态，先移除选中的内容
+            tmpBox = createElement('div', ['tmp'])
+            range.surroundContents(tmpBox)
+            realStart = prevLeafNode(tmpBox) ?? tmpBox.parentNode
+            tmpBox.remove()
+        }
+        // 存储光标最终所在的位置
+        const lastPos = getLastChildNode(lines[lines.length - 1])
+        const firstNode = getFirstChildNode(lines[0])
+        let offlineData
+        /** 更新 `offlineData` 数据 */
+        const updateOfflineData = () => {
+            offlineData = setCursorPositionAfter(lastPos, false).serialization()
+        }
+        if (isKrichEditor(realStart)) { // 如果拖动到了没有标签的地方，说明拖动到了尾部
+            // noinspection JSCheckFunctionSignatures
+            realStart.appendChild(...lines)
+        } else if (isEmptyLine(realStart)) {    // 如果拖动到了空白行则直接替换
+            // noinspection JSCheckFunctionSignatures
+            realStart.replaceWith(...lines)
+        } else if (isEmptyBodyElement(realStart)) { // 如果拖动到了 EBE 则在其后方插入
+            realStart.after(...lines)
+        } else if (isBrNode(realStart)) {   // 如果拖动到了 br 上则替换其父元素
+            realStart.parentElement.replaceWith(...lines)
+        } else {    // 否则在当前位置插入
+            const topLine = findParentTag(realStart, TOP_LIST)
+            /**
+             * 判断一个节点是否应该嵌入到行中
+             * @param item {Node}
+             * @return {boolean}
+             */
+            const isMergeInLine = item => !isEmptyBodyElement(item) && !isMultiEleStruct(item)
+            const first = lines[0]
+            const topLineParent = topLine.parentElement
+            // 当把列表插入到列表中时，直接提取其中的 li 标签
+            if (lines.length === 1 && isMultiEleStruct(first) && equalsKrichNode(first, topLineParent.parentNode)) {
+                const childNodes = first.childNodes
+                if (!range.startOffset && getFirstChildNode(range.startContainer) === getFirstChildNode(topLineParent)) {
+                    topLineParent.before(...childNodes)
+                } else {
+                    topLineParent.after(...childNodes)
+                }
+            } else if (lines.length > 1 || !isMergeInLine(first)) { // 当插入内容有多行或插入的内容不可嵌入到行中时执行通用插入方式
+                const last = lines[lines.length - 1]
+                const [left, right] = range.splitNode(topLine)
+                if (right && isMergeInLine(last)) { // 尝试向右侧行前嵌入内容
+                    lines.pop()
+                    right.prepend(...last.childNodes)
+                }
+                if (left && isMergeInLine(first)) { // 尝试向左侧行结尾嵌入内容
+                    lines.shift()
+                    left.append(...first.childNodes)
+                }
+                // 将剩余的行插入到 left 和 right 之间
+                if (left) left.after(...lines)
+                else right.before(...lines)
+                updateOfflineData()
+                if (left) zipTree(left)
+                if (right) zipTree(right)
+            } else {    // 当插入内容只有一行且可嵌入时将内容嵌入到当前行
+                const [left, right] = range.splitNode(
+                    findParentTag(realStart, it => it.parentNode === topLine)
+                )
+                if (left) { // 如果左侧存在则优先将内容插入到左侧
+                    left.after(...first.childNodes)
+                } else {
+                    right.before(...first.childNodes)
+                }
+                updateOfflineData()
+                zipTree(topLine)
+            }
+        }
+        if (!offlineData) updateOfflineData()
+        if (isInside && editorRange.body) new KRange(firstNode).active()
+        else KRange.deserialized(offlineData).active()
+    } else if (types.includes(TRANSFER_KEY_TEXT)) {
+        range.insertText(dataTransfer.getData(TRANSFER_KEY_TEXT))
+    } else if (types.includes('Files')) {
+        let pos = findParentTag(range.realStartContainer(), TOP_LIST)
+        for (let file of dataTransfer.files) {
+            if (!file.type.startsWith('image/')) continue
+            const image = createElement('img', {
+                style: 'width:30%',
+                src: await readImageToBase64(file)
+            })
+            if (isEmptyLine(pos))
+                pos.replaceWith(image)
+            else
+                pos.after(image)
+            pos = image
+        }
+        new KRange(pos).active()
     }
 }
 

@@ -7,6 +7,6 @@ initKrich(_optional)
 
 export {setHighlight, setImgMapper, setImgStatusChecker, disconnect} from './vars/global-exports-funtions'
 
-export {exportData} from './utils/dom'
+export {exportData, importData} from './utils/dom'
 
 // ESM：封装终点

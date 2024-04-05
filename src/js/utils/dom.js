@@ -17,6 +17,7 @@ import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
 import {behaviors} from '../behavior'
 import {KRange, setCursorAt, setCursorPositionAfter} from './range'
 import {imageMapper} from '../vars/global-exports-funtions'
+import {handlePaste, TRANSFER_KEY_HTML} from '../events/paste-event'
 
 /**
  * 从起点开始遍历 DOM 树
@@ -450,13 +451,10 @@ export function zipTree(container) {
 }
 
 /**
- * 导出编辑器数据
+ * 导出编辑器所有数据
  * @return {Promise<{
  *     html: Element,
- *     image?: {
- *         url: Set<string>,
- *         upload: Map<string, string>
- *     }
+ *     image?: ExportImageData
  * }>}
  */
 export async function exportData() {
@@ -483,4 +481,21 @@ export async function exportData() {
         }
     }
     return result
+}
+
+/**
+ * 导入已有数据
+ * @param html {string}
+ * @return {Promise<void>}
+ */
+export async function importData(html) {
+    console.assert(
+        KRICH_EDITOR.childNodes.length === 1 && isCommonLine(KRICH_EDITOR.firstChild) && !KRICH_EDITOR.textContent,
+        "导入数据时编辑器内容应当为空"
+    )
+    const range = new KRange()
+    const transfer = new DataTransfer()
+    range.selectNode(KRICH_EDITOR)
+    transfer.setData(TRANSFER_KEY_HTML, html)
+    await handlePaste(range, transfer, false)
 }
