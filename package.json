@@ -16,7 +16,9 @@
   "license": "AGPL-3.0",
   "files": [
     "dist/krich.js",
-    "dist/krich-es.js"
+    "dist/krich-es.js",
+    "dist/krich.min.js",
+    "dist/krich-es.min.js"
   ],
   "repository": {
     "type": "git",

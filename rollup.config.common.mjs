@@ -1,6 +1,7 @@
 import html from 'rollup-plugin-html'
 import resolve from '@rollup/plugin-node-resolve'
 import { getLogFilter } from 'rollup/getLogFilter'
+import styles from 'rollup-plugin-styler'
 
 const logFilter = getLogFilter(['!code:CIRCULAR_DEPENDENCY'])
 
@@ -56,6 +57,9 @@ export const optional = {
                 minifyCSS: true,                        // 压缩页面 CSS
                 minifyURLs: true                        // 压缩页面 URL
             }
+        }),
+        styles({
+            mode: 'extract'
         })
     ]
 }

@@ -1,13 +1,9 @@
 import serve from 'rollup-plugin-serve'
 import {esmOutput, iifeOutput, optional} from './rollup.config.common.mjs'
-import styles from 'rollup-plugin-styler'
 
 const serverOptional = {...optional}
 
 serverOptional.plugins.push(
-    styles({
-        mode: 'extract'
-    }),
     serve({
         open: false,
         contentBase: 'dist',
