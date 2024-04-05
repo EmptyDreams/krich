@@ -29,6 +29,12 @@ export const KRICH_TOOL_BAR_CLASS = KRICH_CLASS + '-tools'
 export const KRICH_EC_CLASS = KRICH_CLASS + '-ec'
 export const KRICH_HOVER_TIP_CLASS = KRICH_CLASS + '-tip'
 
+/**
+ * 导入数据时已有的图像 URL
+ * @type {Set<string>}
+ */
+export const inputImageList = new Set()
+
 /** 标签类型的 KEY */
 export const DATA_ID = 'data-id'
 /** 多选框的 value 的 KEY */
@@ -54,6 +60,7 @@ export const DISABLE_FLAG = 'disable'
 
 export const TITLE_LIST = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6']
 export const TOP_LIST = ['P', 'BLOCKQUOTE', 'UL', 'OL', 'HR', 'DIV', 'PRE', 'IMG', ...TITLE_LIST]
+
 /**
  * 注册在全局的事件的函数
  * @type {{[key: string]: function}}

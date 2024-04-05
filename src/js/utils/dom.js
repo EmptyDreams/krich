@@ -11,7 +11,7 @@ import {
     isMarkerNode,
     isTextNode
 } from './tools'
-import {EMPTY_BODY_ACTIVE_FLAG, HASH_NAME, KRICH_EDITOR, TOP_LIST} from '../vars/global-fileds'
+import {EMPTY_BODY_ACTIVE_FLAG, HASH_NAME, inputImageList, KRICH_EDITOR, TOP_LIST} from '../vars/global-fileds'
 import {TODO_MARKER} from '../vars/global-tag'
 import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
 import {behaviors} from '../behavior'
@@ -465,18 +465,27 @@ export async function exportData() {
         html: root
     }
     if (imageMapper != null) {
+        const urls = new Set()
         const imageList = result.image = {
-            url: new Set(),
-            upload: new Map()
+            upload: new Map(),
+            remove: new Set()
         }
+        const {upload, remove} = imageList
         for (let img of root.getElementsByTagName('img')) {
             const src = img.getAttribute('src')
             if (src.startsWith('data:')) {
                 const url = await imageMapper(src)
-                imageList.upload.set(url, src)
+                upload.set(url, src)
                 img.setAttribute('src', url)
             } else {
-                imageList.url.add(src)
+                urls.add(src)
+            }
+        }
+        for (let item of inputImageList) {
+            if (upload.has(item)) {
+                upload.delete(item)
+            } else if (!urls.has(item)) {
+                remove.add(item)
             }
         }
     }
@@ -498,4 +507,7 @@ export async function importData(html) {
     range.selectNode(KRICH_EDITOR)
     transfer.setData(TRANSFER_KEY_HTML, html)
     await handlePaste(range, transfer, false)
+    KRICH_EDITOR.querySelectorAll('img:not([src^="data:"])').forEach(image => {
+        inputImageList.add(image.getAttribute('src'))
+    })
 }
