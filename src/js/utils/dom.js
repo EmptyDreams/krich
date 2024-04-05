@@ -453,7 +453,10 @@ export function zipTree(container) {
  * 导出编辑器数据
  * @return {Promise<{
  *     html: Element,
- *     image?: {[url: string]: string}
+ *     image?: {
+ *         url: Set<string>,
+ *         upload: Map<string, string>
+ *     }
  * }>}
  */
 export async function exportData() {
@@ -464,17 +467,18 @@ export async function exportData() {
         html: root
     }
     if (imageMapper != null) {
-        const imageList = result.image = {}
+        const imageList = result.image = {
+            url: new Set(),
+            upload: new Map()
+        }
         for (let img of root.getElementsByTagName('img')) {
             const src = img.getAttribute('src')
             if (src.startsWith('data:')) {
                 const url = await imageMapper(src)
-                if (!(url in imageList)) {
-                    imageList[url] = src
-                }
+                imageList.upload.set(url, src)
                 img.setAttribute('src', url)
             } else {
-                imageList[src] = ''
+                imageList.url.add(src)
             }
         }
     }
