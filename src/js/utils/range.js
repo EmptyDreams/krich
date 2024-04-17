@@ -113,7 +113,8 @@ export class KRange extends Range {
         }
         if (!isTextNode(startContainer) && !isEmptyBodyElement(startContainer)) {
             const node = startContainer.childNodes[startOffset]
-            this.setStartBefore(node)
+            if (node) this.setStartBefore(node)
+            else this.setStartAfter(startContainer)
         } else {
             super.setStart(startContainer, startOffset)
         }
@@ -193,8 +194,11 @@ export class KRange extends Range {
 
     setEndBefore(node) {
         const prevNode = prevLeafNode(node)
-        console.assert(!!prevNode,'使用 SetEndBefore 时当前元素前必须有一个元素')
-        this.setEndAfter(prevNode)
+        if (prevNode) this.setEndAfter(prevNode)
+        else {
+            const firstChild = getFirstChildNode(node)
+            this.setEnd(firstChild, 0)
+        }
     }
 
     setEndAfter(node) {
