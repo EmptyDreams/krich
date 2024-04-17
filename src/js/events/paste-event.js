@@ -358,7 +358,11 @@ export async function handlePaste(range, dataTransfer, isInside) {
         if (isInside && editorRange.body) new KRange(firstNode).active()
         else KRange.deserialized(offlineData).active()
     } else if (types.includes(TRANSFER_KEY_TEXT)) {
-        range.insertText(dataTransfer.getData(TRANSFER_KEY_TEXT))
+        const content = dataTransfer.getData(TRANSFER_KEY_TEXT)
+            .replaceAll(/[\r\n]+/g, '<br>')
+        const transfer = new DataTransfer()
+        transfer.setData(TRANSFER_KEY_HTML, content)
+        await handlePaste(range, transfer, isInside)
     } else if (types.includes('Files')) {
         let pos = findParentTag(range.realStartContainer(), TOP_LIST)
         for (let file of dataTransfer.files) {
