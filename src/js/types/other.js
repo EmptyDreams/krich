@@ -6,4 +6,15 @@
  *     upload: Map<string, string>,
  *     remove: Set<string>
  * }} ExportImageData
+ * @typedef {{
+ *     add?: true,
+ *     oldIndex: number,
+ *     newIndex: number,
+ *     value: string
+ * }} DiffData
+ * @typedef {{
+ *     data: DiffData[],
+ *     oldRange: KRangeData,
+ *     newRange: KRangeData
+ * }} DiffItem
  */
