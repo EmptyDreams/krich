@@ -36,7 +36,7 @@ export const KRICH_HOVER_TIP_CLASS = KRICH_CLASS + '-tip'
 export const inputImageList = new Set()
 
 /** 属性白名单，导出时不在白名单上的属性将被移除 */
-export const attributesWhiteList = ['class', 'style']
+export const attributesWhiteList = ['class', 'style', 'src', 'href']
 
 /** 标签类型的 KEY */
 export const DATA_ID = 'data-id'
