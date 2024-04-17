@@ -20,6 +20,7 @@ import {closeHoverTip, updateHoverTipPosition} from '../utils/hover-tip'
 import {handleHotkeys} from '../hotkeys/main'
 import {currentLink} from './mouse-click-event'
 import {recordInput} from './before-input-event'
+import {recordOperate} from '../utils/record'
 
 /** 记录删除键是否正在使用 */
 export let deleting = false
@@ -324,27 +325,31 @@ function emptyBodyElementKeyEvent(event, body) {
         }
         case 'Backspace': case 'Delete':
             if (!isMarkerNode(body)) {
-                const priority = ['nextSibling', 'previousSibling']
-                if (key[0] === 'B')
-                    priority.reverse()
-                let flag
-                for (let info of priority) {
-                    const sibling = body[info]
-                    if (sibling) {
-                        if (info[0] === 'n')
-                            setCursorPositionBefore(sibling)
-                        else
-                            setCursorPositionAfter(sibling)
-                        body.remove()
-                        flag = true
-                        break
+                recordInput(true)
+                // noinspection JSIgnoredPromiseFromCall
+                recordOperate(() => {
+                    const priority = ['nextSibling', 'previousSibling']
+                    if (key[0] === 'B')
+                        priority.reverse()
+                    let flag
+                    for (let info of priority) {
+                        const sibling = body[info]
+                        if (sibling) {
+                            if (info[0] === 'n')
+                                setCursorPositionBefore(sibling)
+                            else
+                                setCursorPositionAfter(sibling)
+                            body.remove()
+                            flag = true
+                            break
+                        }
                     }
-                }
-                if (!flag) {
-                    const line = createNewLine()
-                    body.replaceWith(line)
-                    setCursorPositionBefore(line)
-                }
+                    if (!flag) {
+                        const line = createNewLine()
+                        body.replaceWith(line)
+                        setCursorPositionBefore(line)
+                    }
+                })
             }
             break
         case 'Enter':
