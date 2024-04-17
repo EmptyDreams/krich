@@ -1,8 +1,10 @@
 import {setPostHeader} from '../behaviors/header'
 import {editorRange} from '../events/range-monitor'
 import {clickButton} from '../behavior'
-import {DISABLE_FLAG, KRICH_TOOL_BAR} from '../vars/global-fileds'
+import {DISABLE_FLAG, KRICH_EDITOR, KRICH_TOOL_BAR} from '../vars/global-fileds'
 import {selectAll} from './select-all'
+import {redo, undo} from '../utils/record'
+import {KRange} from '../utils/range'
 
 const KEY_CTRL  =   0b1
 const KEY_ALT   =   0b10
@@ -71,6 +73,27 @@ const hotkeysList = {
     }, {            // ctrl + shift + u -> 无序列表
         fn: KEY_CTRL | KEY_SHIFT,
         i: 'ul'
+    }],
+    'KeyZ': [{
+        fn: KEY_CTRL,
+        i: () => {
+            const result = undo(KRICH_EDITOR.innerHTML)
+            if (result) {
+                const [content, data] = result
+                KRICH_EDITOR.innerHTML = content
+                KRange.deserialized(data).active()
+            }
+        }
+    }, {
+        fn: KEY_CTRL | KEY_SHIFT,
+        i: () => {
+            const result = redo(KRICH_EDITOR.innerHTML)
+            if (result) {
+                const [content, data] = result
+                KRICH_EDITOR.innerHTML = content
+                KRange.deserialized(data).active()
+            }
+        }
     }],
     'Backquote': [{ // ctrl + ` -> 代码块
         fn: KEY_CTRL,
