@@ -34,16 +34,12 @@
             ])
             krich.setImgMapper(data => CryptoJS.MD5(data).toString())
             krich.setImgStatusChecker(response => !response.url.includes('403'))
-            let id
             const show = document.querySelector('#show')
-            document.querySelector('#krich .krich-editor').addEventListener('input', async () => {
-                clearTimeout(id)
-                id = setTimeout(async () => {
-                    const value = await krich.exportData()
-                    value.html = value.html.innerHTML
-                    show.innerText = JSON.stringify(value, null, 4)
-                }, 1000)
-            })
+            setInterval(async () => {
+                const value = await krich.exportData()
+                value.html = value.html.innerHTML
+                show.innerText = JSON.stringify(value, null, 4)
+            }, 1000)
         })
     </script>
 </head>
