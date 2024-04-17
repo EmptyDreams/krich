@@ -1,5 +1,6 @@
 import {diffChars} from 'diff'
 import {insertTextToString, removeStringByIndex} from './string-utils'
+import {historySize} from '../vars/global-exports-funtions'
 
 /**
  * 记录操作，以支持撤回
@@ -42,6 +43,9 @@ export function pushOperate(oldContent, newContent, oldRangeData, newRangeData) 
             newIndex += count
             oldIndex += count
         }
+    }
+    if (stack.length === historySize) {
+        stack.shift()
     }
     stack.push({
         data: zipped,

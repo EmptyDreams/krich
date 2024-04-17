@@ -70,3 +70,13 @@ export let imageStatusChecker
 export function setImgStatusChecker(checker) {
     imageStatusChecker = checker
 }
+
+export let historySize = 25
+
+/**
+ * 设置历史记录的长度
+ * @param size
+ */
+export function setHistorySize(size) {
+    historySize = size
+}
