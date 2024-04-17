@@ -16,6 +16,7 @@ import {createElement, isEmptyLine, waitTime} from './tools'
 import {KRange} from './range'
 import {isHttpUrl, readImageToBase64} from './string-utils'
 import {syncButtonsStatus} from './btn'
+import {recordOperate} from './record'
 
 const linkHoverNoDescHtml = linkHoverHtml.substring(linkHoverHtml.indexOf('</div>') + 6)
 
@@ -115,18 +116,21 @@ export const HOVER_TIP_LIST = {
             /** 将图片插入到 DOM 中 */
             submitButton.onclick = () => {
                 if (imageElement.hasAttribute('src')) {
-                    descrInput.disabled = sizeInput.disabled = false
-                    imageElement.setAttribute('style', 'width:' + sizeInput.value + '%')
-                    if (oldIsImage || isEmptyLine(target)) {
-                        target.replaceWith(imageElement)
-                    } else {
-                        target.after(imageElement)
-                    }
-                    new KRange(imageElement).active()
-                    target = imageElement
-                    imageElement = imageElement.cloneNode(false)
-                    oldIsImage = true
-                    submitButton.disabled = true
+                    // noinspection JSIgnoredPromiseFromCall
+                    recordOperate(() => {
+                        descrInput.disabled = sizeInput.disabled = false
+                        imageElement.setAttribute('style', 'width:' + sizeInput.value + '%')
+                        if (oldIsImage || isEmptyLine(target)) {
+                            target.replaceWith(imageElement)
+                        } else {
+                            target.after(imageElement)
+                        }
+                        new KRange(imageElement).active()
+                        target = imageElement
+                        imageElement = imageElement.cloneNode(false)
+                        oldIsImage = true
+                        submitButton.disabled = true
+                    })
                 }
             }
             // 如果传入的 target 是 IMG 标签，则同步悬浮窗与图片的数据

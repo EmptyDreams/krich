@@ -1,6 +1,8 @@
 import {diffChars} from 'diff'
 import {insertTextToString, removeStringByIndex} from './string-utils'
 import {historySize} from '../vars/global-exports-funtions'
+import {KRICH_EDITOR} from '../vars/global-fileds'
+import {KRange} from './range'
 
 /**
  * 记录操作，以支持撤回
@@ -14,13 +16,31 @@ const stack = []
 const redoStack = []
 
 /**
+ * 记录对 KRICH_EDITOR 的操作
+ * @template T
+ * @param consumer {function(): Promise<T>|T}
+ * @param notRecord {boolean?} 是否不对操作进行记录
+ * @return {Promise<T>}
+ */
+export async function recordOperate(consumer, notRecord) {
+    if (notRecord) return consumer()
+    const oldContent = KRICH_EDITOR.innerHTML
+    const oldRange = KRange.activated().serialization()
+    const result = await consumer()
+    const newContent = KRICH_EDITOR.innerHTML
+    const newRange = KRange.activated().serialization()
+    pushOperate(oldContent, newContent, oldRange, newRange)
+    return result
+}
+
+/**
  * 记录一次编辑操作
  * @param oldContent 旧内容
  * @param newContent 新内容
  * @param oldRangeData {KRangeData} 在旧内容时的 range 数据
  * @param newRangeData {KRangeData} 在新内容时的 range 数据
  */
-export function pushOperate(oldContent, newContent, oldRangeData, newRangeData) {
+function pushOperate(oldContent, newContent, oldRangeData, newRangeData) {
     redoStack.length = 0
     const diff = diffChars(oldContent, newContent)
     let newIndex = 0, oldIndex = 0

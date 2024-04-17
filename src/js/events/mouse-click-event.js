@@ -11,7 +11,7 @@ import {KRange} from '../utils/range'
 import {isNoRecord, isNoStatus} from '../types/button-behavior'
 import {closeHoverTip, HOVER_TIP_LIST} from '../utils/hover-tip'
 import {clickButton} from '../behavior'
-import {pushOperate} from '../utils/record'
+import {recordOperate} from '../utils/record'
 
 export let isNewClickCycle = true
 /**
@@ -76,30 +76,21 @@ export function registryMouseClickEvent() {
         const behavior = getElementBehavior(target)
         const classList = target.classList
         let skip = classList.contains('color'), correct
-        let oldContent, oldRange
-        const needRecord = !isNoRecord(behavior)
-        if (needRecord) {
-            oldContent = KRICH_EDITOR.innerHTML
-            oldRange = range.serialization()
-        }
-        if (!skip) {
-            if (classList.contains('select')) {
-                skip = await handleSelectList(target, original)
-            } else {
-                if (isNoStatus(behavior)) {
-                    waitTime(333).then(() => classList.remove(ACTIVE_FLAG))
+        await recordOperate(async () => {
+            if (!skip) {
+                if (classList.contains('select')) {
+                    skip = await handleSelectList(target, original)
+                } else {
+                    if (isNoStatus(behavior)) {
+                        waitTime(333).then(() => classList.remove(ACTIVE_FLAG))
+                    }
+                }
+                if (!skip) {
+                    correct = clickButton(behavior, range, true)
                 }
             }
-            if (!skip) {
-                correct = clickButton(behavior, range, true)
-            }
-        }
-        if (skip || correct) range.active()
-        if (needRecord) {
-            const newContent = KRICH_EDITOR.innerHTML
-            const newRange = KRange.activated().serialization()
-            pushOperate(oldContent, newContent, oldRange, newRange)
-        }
+            if (skip || correct) range.active()
+        }, skip || isNoRecord(behavior))
     })
 }
 
