@@ -11,8 +11,13 @@ import {getElementBehavior, waitTime} from '../utils/tools'
 import {TODO_MARKER} from '../vars/global-tag'
 import {behaviors, clickButton} from '../behavior'
 import {isNoStatus, isTextArea} from '../types/button-behavior'
+import {pushOperate} from '../utils/record'
 
 export let isInputting
+
+let oldContent, oldRange
+/** 输入更新历史记录的计时器 */
+let inputTimeoutId
 
 /**
  * 注册 before input 事件
@@ -20,6 +25,10 @@ export let isInputting
 export function registryBeforeInputEventListener() {
     KRICH_EDITOR.addEventListener('beforeinput', async event => {
         const {isComposing, inputType} = event
+        if (!oldContent) {
+            oldContent = KRICH_EDITOR.innerHTML
+            oldRange = KRange.activated().serialization()
+        }
         if (!isComposing) {
             if (inputType.startsWith('insert')) {
                 isInputting = true
@@ -30,13 +39,30 @@ export function registryBeforeInputEventListener() {
                 await waitTime(0)
                 tryFixDom(inputType.endsWith('Forward'))
             }
+            if (!inputTimeoutId) {
+                inputTimeoutId = setTimeout(() => {
+                    recordInput()
+                }, 250)
+            }
         }
     })
     KRICH_EDITOR.addEventListener('compositionend', async event => {
         await handleInput(event)
         isInputting = false
         updateEditorRange()
+        recordInput()
     })
+}
+
+/**
+ * 强制更新输入记录并清除 timeout
+ */
+export function recordInput() {
+    if (oldContent) {
+        clearTimeout(inputTimeoutId)
+        pushOperate(oldContent, KRICH_EDITOR.innerHTML, oldRange, KRange.activated().serialization())
+        inputTimeoutId = oldContent = oldRange = 0
+    }
 }
 
 /**

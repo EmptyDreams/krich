@@ -40,7 +40,7 @@ export async function recordOperate(consumer, notRecord) {
  * @param oldRangeData {KRangeData} 在旧内容时的 range 数据
  * @param newRangeData {KRangeData} 在新内容时的 range 数据
  */
-function pushOperate(oldContent, newContent, oldRangeData, newRangeData) {
+export function pushOperate(oldContent, newContent, oldRangeData, newRangeData) {
     redoStack.length = 0
     const diff = diffChars(oldContent, newContent)
     let newIndex = 0, oldIndex = 0

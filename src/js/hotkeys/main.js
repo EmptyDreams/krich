@@ -5,6 +5,7 @@ import {DISABLE_FLAG, KRICH_EDITOR, KRICH_TOOL_BAR} from '../vars/global-fileds'
 import {selectAll} from './select-all'
 import {redo, undo} from '../utils/record'
 import {KRange} from '../utils/range'
+import {recordInput} from '../events/before-input-event'
 
 const KEY_CTRL  =   0b1
 const KEY_ALT   =   0b10
@@ -77,6 +78,7 @@ const hotkeysList = {
     'KeyZ': [{
         fn: KEY_CTRL,
         i: () => {
+            recordInput()
             const result = undo(KRICH_EDITOR.innerHTML)
             if (result) {
                 const [content, data] = result
@@ -87,6 +89,7 @@ const hotkeysList = {
     }, {
         fn: KEY_CTRL | KEY_SHIFT,
         i: () => {
+            recordInput()
             const result = redo(KRICH_EDITOR.innerHTML)
             if (result) {
                 const [content, data] = result
