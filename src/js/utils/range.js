@@ -611,7 +611,7 @@ export class KRange extends Range {
          * @param offset {number|Node} 偏移量，该点指向的值分配到右侧
          * @param tree {Node?} 已生成的树结构
          * @param isCreated {boolean?} 标记已生成的 tree 是否是新建的
-         * @return {Node|undefined} 生成的树结构的顶层节点
+         * @return {Node|undefined|false} 生成的树结构的顶层节点
          */
         function splitNodeHelper(node, offset, tree, isCreated) {
             let newNode
@@ -640,7 +640,7 @@ export class KRange extends Range {
                 newNode = node
             } else if (isTextNode(node)) {  // 处理文本节点
                 // 如果 offset = 0 并且 node 的左侧节点不在 root 中说明该切割点已经分离无需切割
-                if (!offset && !root.contains(prevLeafNode(node, true))) return
+                if (!offset && !root.contains(prevLeafNode(node, true))) return false
                 const textContent = node.textContent
                 // 如果 offset 指向了不存在的字符，那么尝试将切割点转移到下一个节点开头
                 if (offset === textContent.length) {
@@ -674,7 +674,7 @@ export class KRange extends Range {
                 if (!offset) {
                     const prev = prevLeafNode(node, true)
                     // 上一个节点不在 root 中时表明无需切割
-                    if (!root.contains(prev)) return
+                    if (!root.contains(prev)) return false
                 }
                 if (isEbe) {
                     // 如果指向了 ebe 直接复用
@@ -697,7 +697,7 @@ export class KRange extends Range {
         }
         const {startContainer, startOffset, endContainer, endOffset, collapsed} = this
         const right = splitNodeHelper(endContainer, endOffset)
-        if (collapsed) return [root, right]
+        if (collapsed) return right === false ? [null, root] : [root, right]
         const mid = splitNodeHelper(startContainer, startOffset)
         return [mid ? root : null, mid ?? root, right]
     }
