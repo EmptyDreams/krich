@@ -24,13 +24,17 @@ export function replaceStringByIndex(src, startInclude, endExclude, value) {
 /**
  * 将 `rgb(x, x, x)` 格式的字符串转换为 `#xxxxxx` 格式的字符串
  * @param rgb {string}
+ * @return {string} 返回转换后的 hex 色码，对于不为 rgb 格式的色码返回原始字符串
  */
 export function rgbToHex(rgb) {
     const match = rgb.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(.*?)?\)$/i)
-    console.assert(!!match, '指定字符串不满足 rbg(x, x, x[, x]) 的格式！', rgb)
     let result = '#'
-    for (let i = 1; i < 4; ++i) {
-        result += parseInt(match[i]).toString(16).padStart(2, '0')
+    if (match) {
+        for (let i = 1; i < 4; ++i) {
+            result += parseInt(match[i]).toString(16).padStart(2, '0')
+        }
+    } else {
+        result = rgb
     }
     return result
 }
