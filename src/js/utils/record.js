@@ -58,6 +58,7 @@ export function pushOperate(oldContent, newContent, oldRangeData, newRangeData) 
 export function undo(content) {
     const item = stack.pop()
     if (!item) return
+    redoStack.push(item)
     const {data, oldRange} = item
     for (let i = data.length - 1; i >= 0; i--) {
         const {add, newIndex, value} = data[i]
@@ -80,6 +81,7 @@ export function undo(content) {
 export function redo(content) {
     const item = redoStack.pop()
     if (!item) return
+    stack.push(item)
     const {data, newRange} = item
     for (let i = data.length - 1; i >= 0; i--) {
         const {add, oldIndex, value} = data[i]
