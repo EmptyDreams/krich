@@ -3,13 +3,6 @@ import {getElementBehavior} from '../utils/tools'
 class ButtonBehavior {
     /**
      * 当前结构的各项状态
-     *
-     * 以下描述从最低位依次向最高位排列
-     *
-     * 1. 是否需要保存状态
-     * 2. 是否是使用换行符的多行文本结构
-     * 3. 是否是多元素结构
-     *
      * @type {undefined|number}
      */
     state
@@ -82,24 +75,33 @@ class ButtonBehavior {
 export const BEHAVIOR_STATE_NO_STATUS = 0b1
 export const BEHAVIOR_STATE_TEXT_AREA = 0b10
 export const BEHAVIOR_STATE_MES = 0b100
+export const BEHAVIOR_STATE_NO_RECORD = 0b1000
+
+/**
+ * 读取 state
+ * @param item {ButtonBehavior|Node|Element}
+ */
+function readState(item) {
+    return item.state ?? getElementBehavior(item)?.state ?? 0
+}
 
 /**
  * 判断是否是 NoStatus
- * @param item {ButtonBehavior|Element|undefined}
+ * @param item {ButtonBehavior|Node|Element|undefined}
  */
 export function isNoStatus(item) {
     if (!item) return
-    const state = item.state ?? getElementBehavior(item)?.state ?? 0
+    const state = readState(item)
     return state & BEHAVIOR_STATE_NO_STATUS
 }
 
 /**
  * 判断是否是 TextArea
- * @param item {ButtonBehavior|Element|undefined}
+ * @param item {ButtonBehavior|Node|Element|undefined}
  */
 export function isTextArea(item) {
     if (!item) return
-    const state = item.state ?? getElementBehavior(item)?.state ?? 0
+    const state = readState(item)
     return state & BEHAVIOR_STATE_TEXT_AREA
 }
 
@@ -109,7 +111,7 @@ export function isTextArea(item) {
  */
 export function isMultiEleStruct(item) {
     if (!item) return
-    const state = item.state ?? getElementBehavior(item)?.state ?? 0
+    const state = readState(item)
     return state & BEHAVIOR_STATE_MES
 }
 
@@ -120,4 +122,14 @@ export function isMultiEleStruct(item) {
 export function isIndependent(item) {
     if (!item) return
     return item.hover || getElementBehavior(item)?.hover
+}
+
+/**
+ * 判断按钮点击后是否需要更新历史记录
+ * @param item {ButtonBehavior|Node|Element|undefined}
+ */
+export function isNoRecord(item) {
+    if (!item) return
+    const state = readState(item)
+    return state & BEHAVIOR_STATE_NO_RECORD
 }

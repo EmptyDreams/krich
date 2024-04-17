@@ -8,9 +8,10 @@ import {getElementBehavior, isEmptyBodyElement, isKrichEditor, isKrichToolBar, w
 import {editorRange, isFirstRange} from './range-monitor'
 import {findParentTag, modifyContenteditableStatus} from '../utils/dom'
 import {KRange} from '../utils/range'
-import {isNoStatus} from '../types/button-behavior'
+import {isNoRecord, isNoStatus} from '../types/button-behavior'
 import {closeHoverTip, HOVER_TIP_LIST} from '../utils/hover-tip'
 import {clickButton} from '../behavior'
+import {pushOperate} from '../utils/record'
 
 export let isNewClickCycle = true
 /**
@@ -75,6 +76,12 @@ export function registryMouseClickEvent() {
         const behavior = getElementBehavior(target)
         const classList = target.classList
         let skip = classList.contains('color'), correct
+        let oldContent, oldRange
+        const needRecord = !isNoRecord(behavior)
+        if (needRecord) {
+            oldContent = KRICH_EDITOR.innerHTML
+            oldRange = range.serialization()
+        }
         if (!skip) {
             if (classList.contains('select')) {
                 skip = await handleSelectList(target, original)
@@ -88,6 +95,11 @@ export function registryMouseClickEvent() {
             }
         }
         if (skip || correct) range.active()
+        if (needRecord) {
+            const newContent = KRICH_EDITOR.innerHTML
+            const newRange = KRange.activated().serialization()
+            pushOperate(oldContent, newContent, oldRange, newRange)
+        }
     })
 }
 

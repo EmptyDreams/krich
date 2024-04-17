@@ -62,9 +62,9 @@ import {TODO_MARKER} from './vars/global-tag'
 import {editorRange} from './events/range-monitor'
 import {behaviorHighlight} from './behaviors/highlight'
 import {
-    BEHAVIOR_STATE_MES,
+    BEHAVIOR_STATE_MES, BEHAVIOR_STATE_NO_RECORD,
     BEHAVIOR_STATE_NO_STATUS,
-    BEHAVIOR_STATE_TEXT_AREA,
+    BEHAVIOR_STATE_TEXT_AREA, isNoRecord,
     isNoStatus
 } from './types/button-behavior'
 import {openHoverTip} from './utils/hover-tip'
@@ -276,7 +276,7 @@ export const behaviors = {
         }
     },
     img: {
-        state: BEHAVIOR_STATE_NO_STATUS,
+        state: BEHAVIOR_STATE_NO_STATUS | BEHAVIOR_STATE_NO_RECORD,
         exp: 'img:not(.inline)',
         render: () => imageHtml,
         onclick: range => {
@@ -398,7 +398,7 @@ function execCommonCommand(
 function setStyleInRange(key, ranges, behavior) {
     const rangeArray = Array.isArray(ranges) ? ranges : ranges.splitRangeByLine()
     for (let i = 0; i < rangeArray.length; i++) {
-        const element = behavior.builder(KRICH_CONTAINER.querySelector(`*[data-id="${key}"]`))
+        const element = behavior.builder(behaviors[key].button)
         rangeArray[i].surroundContents(element)
         rangeArray[i].selectNode(element)
     }

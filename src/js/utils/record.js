@@ -1,4 +1,4 @@
-import {createPatch, diffChars} from 'diff'
+import {diffChars} from 'diff'
 import {insertTextToString, removeStringByIndex} from './string-utils'
 
 /**
