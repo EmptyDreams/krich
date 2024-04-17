@@ -220,13 +220,15 @@ export class KRange extends Range {
     /**
      * 将当前区间设定为激活区间
      * @param force {boolean} 是否强制激活
+     * @return {KRange} 返回自身
      */
     active(force = false) {
         KRICH_EDITOR.focus()
         const selection = getSelection()
-        if (!force && selection.rangeCount && selection.getRangeAt(0) === this) return
+        if (!force && selection.rangeCount && selection.getRangeAt(0) === this) return this
         selection.removeAllRanges()
         selection.addRange(this)
+        return this
     }
 
     /**
