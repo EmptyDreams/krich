@@ -250,6 +250,8 @@ async function translate(body) {
     }
 }
 
+const htmlParser = new DOMParser()
+
 /**
  * 处理粘贴操作
  * @param range {KRange} 操作的区域
@@ -261,10 +263,10 @@ export async function handlePaste(range, dataTransfer, isInside) {
     const {types} = dataTransfer
     if (types.includes(TRANSFER_KEY_HTML)) {
         const content = dataTransfer.getData(TRANSFER_KEY_HTML)
-            .replaceAll('\r', '')
-            .replaceAll('\n', '<br>')
-        const targetBody = createElement('div')
-        targetBody.innerHTML = content
+            .replaceAll('<o:p></o:p>', '')
+            .replaceAll(/[\r\n]*/g, '')
+        const html = htmlParser.parseFromString(content, TRANSFER_KEY_HTML)
+        const targetBody = html.body
         let realStart = range.realStartContainer()
         const textArea = findParentTag(realStart, isTextArea)
         if (textArea) {

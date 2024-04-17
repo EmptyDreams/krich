@@ -404,6 +404,28 @@ export function zipTree(container) {
         }
         return
     }
+    for (let span of container.querySelectorAll('span[style]')) {
+        const style = span.style
+        if (span.matches(behaviors.color.exp)) {
+            const color = style.color
+            if (color === 'black' || color === '#000000') {
+                style.color = ''
+            }
+        }
+        if (span.matches(behaviors.background.exp)) {
+            const color = style.backgroundColor
+            if (color === 'white' || color === '#ffffff') {
+                style.backgroundColor = ''
+            }
+        }
+        if (!span.getAttribute('style')) {
+            if (!span.className) {
+                span.outerHTML = span.textContent
+            } else {
+                span.removeAttribute('style')
+            }
+        }
+    }
     /** 移除为空的节点 */
     const removeEmptyNode = () => {
         let item = getFirstTextNode(container)
