@@ -11,7 +11,14 @@ import {
     isMarkerNode,
     isTextNode
 } from './tools'
-import {EMPTY_BODY_ACTIVE_FLAG, HASH_NAME, inputImageList, KRICH_EDITOR, TOP_LIST} from '../vars/global-fileds'
+import {
+    attributesWhiteList,
+    EMPTY_BODY_ACTIVE_FLAG,
+    HASH_NAME,
+    inputImageList,
+    KRICH_EDITOR,
+    TOP_LIST
+} from '../vars/global-fileds'
 import {TODO_MARKER} from '../vars/global-tag'
 import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
 import {behaviors} from '../behavior'
@@ -271,15 +278,19 @@ export function removeRuntimeFlag(root) {
             item.classList.remove(name)
         }
     }
-    // 移除需要移除的属性
-    const removedAttributeNames = ['contenteditable', HASH_NAME]
-    for (let name of removedAttributeNames) {
-        root.querySelectorAll(`*[${name}]`)
-            .forEach(it => it.removeAttribute(name))
-    }
     // 类名为空时移除 class 属性
     root.querySelectorAll('*[class=""]').forEach(it => {
         it.removeAttribute('class')
+    })
+    // 移除需要移除的属性
+    eachDomTree(root, true, true, item => {
+        const attributes = item.attributes
+        if (attributes) {
+            for (let attr of Array.from(attributes)) {
+                if (!attributesWhiteList.includes(attr.name))
+                    item.removeAttribute(attr.name)
+            }
+        }
     })
 }
 
