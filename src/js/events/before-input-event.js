@@ -42,7 +42,7 @@ export function registryBeforeInputEventListener() {
             if (!inputTimeoutId) {
                 inputTimeoutId = setTimeout(() => {
                     recordInput()
-                }, 250)
+                }, 500)
             }
         }
     })
