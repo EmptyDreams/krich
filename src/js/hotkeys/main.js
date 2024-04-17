@@ -78,7 +78,7 @@ const hotkeysList = {
     'KeyZ': [{
         fn: KEY_CTRL,
         i: () => {
-            recordInput()
+            recordInput(true)
             const result = undo(KRICH_EDITOR.innerHTML)
             if (result) {
                 const [content, data] = result
@@ -89,7 +89,7 @@ const hotkeysList = {
     }, {
         fn: KEY_CTRL | KEY_SHIFT,
         i: () => {
-            recordInput()
+            recordInput(true)
             const result = redo(KRICH_EDITOR.innerHTML)
             if (result) {
                 const [content, data] = result

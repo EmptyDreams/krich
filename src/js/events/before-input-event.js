@@ -12,6 +12,7 @@ import {TODO_MARKER} from '../vars/global-tag'
 import {behaviors, clickButton} from '../behavior'
 import {isNoStatus, isTextArea} from '../types/button-behavior'
 import {pushOperate} from '../utils/record'
+import {deleting} from './keyboard-event'
 
 export let isInputting
 
@@ -41,7 +42,8 @@ export function registryBeforeInputEventListener() {
             }
             if (!inputTimeoutId) {
                 inputTimeoutId = setTimeout(() => {
-                    recordInput()
+                    if (!deleting)
+                        recordInput(true)
                 }, 500)
             }
         }
@@ -50,15 +52,16 @@ export function registryBeforeInputEventListener() {
         await handleInput(event)
         isInputting = false
         updateEditorRange()
-        recordInput()
+        recordInput(true)
     })
 }
 
 /**
- * 强制更新输入记录并清除 timeout
+ * 更新输入记录并清除 timeout
+ * @param force {boolean} 是否强制更新，为 false 时若存在 timeoutId 则不进行更新
  */
-export function recordInput() {
-    if (oldContent) {
+export function recordInput(force) {
+    if (oldContent && (force || !inputTimeoutId)) {
         clearTimeout(inputTimeoutId)
         pushOperate(oldContent, KRICH_EDITOR.innerHTML, oldRange, KRange.activated().serialization())
         inputTimeoutId = oldContent = oldRange = 0

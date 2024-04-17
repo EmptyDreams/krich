@@ -19,6 +19,10 @@ import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
 import {closeHoverTip, updateHoverTipPosition} from '../utils/hover-tip'
 import {handleHotkeys} from '../hotkeys/main'
 import {currentLink} from './mouse-click-event'
+import {recordInput} from './before-input-event'
+
+/** 记录删除键是否正在使用 */
+export let deleting = false
 
 export function registryKeyboardEvent() {
     KRICH_EDITOR.addEventListener('keyup', async event => {
@@ -29,6 +33,8 @@ export function registryKeyboardEvent() {
                 return () => KRICH_EDITOR.querySelectorAll('div:not([class])')
                     .forEach(it => replaceElement(it, document.createElement('p')))
             case 'Backspace': case 'Delete':
+                recordInput(false)
+                deleting = false
                 return markStatusCacheInvalid
             default:
                 if (currentLink && code.startsWith('Control')) {
@@ -39,10 +45,14 @@ export function registryKeyboardEvent() {
     })
     KRICH_EDITOR.addEventListener('keydown', async event => {
         const body = editorRange?.body
+        const code = event.code
+        if (!deleting && code === 'Backspace' || code === 'Delete') {
+            deleting = true
+            recordInput(true)
+        }
         if (body) {
             emptyBodyElementKeyEvent(event, body)
         } else {
-            const code = event.code
             switch (code) {
                 case 'Enter': case 'NumpadEnter':
                     enterEvent(event)
