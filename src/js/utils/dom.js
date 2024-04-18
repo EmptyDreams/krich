@@ -406,6 +406,7 @@ export function zipTree(container) {
         }
         return
     }
+    // 当 span 样式为默认值时直接移除 span
     for (let span of container.querySelectorAll('span[style]')) {
         const style = span.style
         if (span.matches(behaviors.color.exp)) {
@@ -422,7 +423,7 @@ export function zipTree(container) {
         }
         if (!span.getAttribute('style')) {
             if (!span.className) {
-                span.outerHTML = span.textContent
+                span.replaceWith(...span.childNodes)
             } else {
                 span.removeAttribute('style')
             }
