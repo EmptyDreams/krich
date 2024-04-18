@@ -411,8 +411,9 @@ export class KRange extends Range {
 
     /**
      * 遍历选区包含的所有节点
-     * @param consumer {function(Node|Element): any} 同 {@link eachDomTree} 中的 consumer
-     * @return {any} consumer 的返回值
+     * @template T
+     * @param consumer {function(Node|Element): T} 同 {@link eachDomTree} 中的 consumer
+     * @return {T} consumer 的返回值
      */
     eachAllNode(consumer) {
         const start = this.realStartContainer()

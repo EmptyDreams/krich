@@ -33,6 +33,7 @@ import {recordOperate} from '../utils/record'
  * @param {boolean|undefined}
  */
 export let isDragging
+let draggingEbe = false
 
 export const TRANSFER_KEY_HTML = 'text/html'
 const TRANSFER_KEY_TEXT = 'text/plain'
@@ -50,14 +51,18 @@ export function registryPasteEvent() {
         const target = event.target
         if (isEmptyBodyElement(target)) {
             modifyEditorRange(new KRange(target))
+            draggingEbe = true
         }
         if (isForbidDrag(editorRange)) {
             event.preventDefault()
         } else {
             isDragging = true
+            if (editorRange.eachAllNode(isEmptyBodyElement)) {
+                draggingEbe = true
+            }
         }
     })
-    KRICH_EDITOR.addEventListener('dragend', () => isDragging = false)
+    KRICH_EDITOR.addEventListener('dragend', () => isDragging = draggingEbe = false)
     KRICH_EDITOR.addEventListener('dragover', event => {
         const element = isForbidPaste(readRangeFromEvent(event))
         if (element) {
@@ -191,7 +196,10 @@ function isForbidDrag(range) {
  * @return {Element|undefined}
  */
 function isForbidPaste(range) {
-    return findParentTag(range.startContainer, ['A'])
+    const item = findParentTag(range.startContainer, it => isTextArea(it) || it.nodeName === 'A')
+    if (item) {
+        if (draggingEbe || item.nodeName === 'A') return item
+    }
 }
 
 /**
