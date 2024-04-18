@@ -545,14 +545,15 @@ export class KRange extends Range {
                         case -1: return [item, -1]
                         case 1: return [item, index - pos]
                         case 2: return [item, -2]
-                        default: return [nextLeafNode(item), -1]
+                        case 0: return [nextLeafNode(item), -1]
                     }
+                    console.error('解序列化时不应当执行该语句 0')
                 } else {
                     pos = nextPos
                 }
                 item = nextLeafNode(item)
             } while (item)
-            console.error('解序列化时不应当执行该语句')
+            console.error('解序列化时不应当执行该语句 1')
         }
         const [startContainer, startOffset] = findNode(startIndex, startEmptyCount, startType)
         if (startOffset === -1) {
