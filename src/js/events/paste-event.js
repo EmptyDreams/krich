@@ -26,6 +26,7 @@ import {highlightCode} from '../utils/highlight'
 import {editorRange, modifyEditorRange} from './range-monitor'
 import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
 import {readImageToBase64} from '../utils/string-utils'
+import {recordOperate} from '../utils/record'
 
 /**
  * 是否正在拖动元素
@@ -85,28 +86,30 @@ export function registryPasteEvent() {
             const range = offlineData ? KRange.deserialized(offlineData) : clientPos
             await handlePaste(range, transfer, isInsideCpy)
         }
-        if (isDragging) {  // 如果内容是从编辑区复制过来的，则手动提取内容
-            const range = KRange.activated()
-            // 定位鼠标拖动到的位置
-            offlineData = clientPos.serialization()
-            // 被拖动的内容的最近公共祖先
-            const ancestor = range.body ?? range.commonAncestorContainer
-            let nearlyTopLine = findParentTag(ancestor, TOP_LIST) ?? KRICH_EDITOR
-            if (isEmptyBodyElement(nearlyTopLine) || isListLine(nearlyTopLine.firstChild)) {
-                nearlyTopLine = nearlyTopLine.parentElement
-            }
-            await range.extractContents(nearlyTopLine, true, tmpBox => {
-                if (isTextArea(nearlyTopLine)) {    // 如果内容是从 TextArea 中拖动出来的，则当作纯文本处理
-                    transfer.setData(TRANSFER_KEY_TEXT, tmpBox.textContent)
-                } else {
-                    writeElementToTransfer(transfer, tmpBox)
+        await recordOperate(async () => {
+            if (isDragging) {  // 如果内容是从编辑区复制过来的，则手动提取内容
+                const range = KRange.activated()
+                // 定位鼠标拖动到的位置
+                offlineData = clientPos.serialization()
+                // 被拖动的内容的最近公共祖先
+                const ancestor = range.body ?? range.commonAncestorContainer
+                let nearlyTopLine = findParentTag(ancestor, TOP_LIST) ?? KRICH_EDITOR
+                if (isEmptyBodyElement(nearlyTopLine) || isListLine(nearlyTopLine.firstChild)) {
+                    nearlyTopLine = nearlyTopLine.parentElement
                 }
-                return handle()
-            })
-        } else {
-            await handle()
-        }
-        tryFixDom()
+                await range.extractContents(nearlyTopLine, true, tmpBox => {
+                    if (isTextArea(nearlyTopLine)) {    // 如果内容是从 TextArea 中拖动出来的，则当作纯文本处理
+                        transfer.setData(TRANSFER_KEY_TEXT, tmpBox.textContent)
+                    } else {
+                        writeElementToTransfer(transfer, tmpBox)
+                    }
+                    return handle()
+                })
+            } else {
+                await handle()
+            }
+            tryFixDom()
+        })
     })
     KRICH_EDITOR.addEventListener('copy', async event => {
         event.preventDefault()
