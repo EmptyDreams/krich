@@ -435,6 +435,7 @@ export class KRange extends Range {
      *
      * 光标位置的值意义如下：
      *
+     * + 2 - 在当前节点后方
      * + 1  - 在内部
      * + 0  - 在下一个节点的开头
      * + -1 - 在当前节点开头
@@ -467,9 +468,11 @@ export class KRange extends Range {
         function locateRange(container, offset, include) {
             const isText = isTextNode(container)
             let leafNode = isText ? container : container.childNodes[offset]
-            if (include && !offset && !leafNode)
-                leafNode = container
-            else if (!include && (!isText || !offset))
+            let isAfterThis = false
+            if (include && !leafNode) {
+                leafNode = container.lastChild ?? container
+                isAfterThis = true
+            } else if (!include && (!isText || !offset))
                 leafNode = leafNode ? prevLeafNode(leafNode) : (container.childNodes[offset - 1] ?? prevLeafNode(container))
             console.assert(!!leafNode, 'leafNode 不应当为空', container, offset, include)
             let emptyCount = 0
@@ -482,7 +485,9 @@ export class KRange extends Range {
             eachTextNode(leafNode, it => index += it.textContent.length)
             let type = 0
             if (include) {
-                if (isBrNode(leafNode) || isEmptyBodyElement(leafNode)) {
+                if (isAfterThis) {
+                    type = 2
+                } else if (isBrNode(leafNode) || isEmptyBodyElement(leafNode)) {
                     type = -1
                 } else if (isText) {
                     index += offset
@@ -536,11 +541,12 @@ export class KRange extends Range {
                         if (!next || (!isBrNode(next) && !isEmptyBodyElement(next))) break
                         item = next
                     }
-                    if (type > 0)
-                        return [item, index - pos]
-                    if (type < 0)
-                        return [item, -1]
-                    return [nextLeafNode(item), -1]
+                    switch (type) {
+                        case -1: return [item, -1]
+                        case 1: return [item, index - pos]
+                        case 2: return [item, -2]
+                        default: return [nextLeafNode(item), -1]
+                    }
                 } else {
                     pos = nextPos
                 }
@@ -549,8 +555,10 @@ export class KRange extends Range {
             console.error('解序列化时不应当执行该语句')
         }
         const [startContainer, startOffset] = findNode(startIndex, startEmptyCount, startType)
-        if (startOffset < 0) {
+        if (startOffset === -1) {
             this.setStartBefore(startContainer)
+        } else if (startOffset === -2) {
+            this.setStartAfter(startContainer)
         } else {
             this.setStart(startContainer, startOffset)
         }
