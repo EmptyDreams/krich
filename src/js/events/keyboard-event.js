@@ -325,7 +325,6 @@ function emptyBodyElementKeyEvent(event, body) {
         }
         case 'Backspace': case 'Delete':
             if (!isMarkerNode(body)) {
-                recordInput(true)
                 // noinspection JSIgnoredPromiseFromCall
                 recordOperate(() => {
                     const priority = ['nextSibling', 'previousSibling']
@@ -364,7 +363,7 @@ function emptyBodyElementKeyEvent(event, body) {
             }
             break
         default:
-            if (key.startsWith('F'))
+            if (key.startsWith('F') || event.ctrlKey || event.altKey)
                 return
     }
     event.preventDefault()

@@ -269,6 +269,7 @@ export function insertSpaceBetweenNode(node, focus) {
 /**
  * 移除指定标签及其子节点中所有的运行时标记
  * @param root {Element}
+ * @return {Element} 返回 root
  */
 export function removeRuntimeFlag(root) {
     // 移除需要移除的类名
@@ -292,6 +293,7 @@ export function removeRuntimeFlag(root) {
             }
         }
     })
+    return root
 }
 
 /**

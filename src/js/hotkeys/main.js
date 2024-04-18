@@ -6,6 +6,7 @@ import {selectAll} from './select-all'
 import {redo, undo} from '../utils/record'
 import {KRange} from '../utils/range'
 import {recordInput} from '../events/before-input-event'
+import {removeRuntimeFlag} from '../utils/dom'
 
 const KEY_CTRL  =   0b1
 const KEY_ALT   =   0b10
@@ -79,7 +80,7 @@ const hotkeysList = {
         fn: KEY_CTRL,
         i: () => {
             recordInput(true)
-            const result = undo(KRICH_EDITOR.innerHTML)
+            const result = undo(removeRuntimeFlag(KRICH_EDITOR.cloneNode(true)).innerHTML)
             if (result) {
                 const [content, data] = result
                 KRICH_EDITOR.innerHTML = content
@@ -90,7 +91,7 @@ const hotkeysList = {
         fn: KEY_CTRL | KEY_SHIFT,
         i: () => {
             recordInput(true)
-            const result = redo(KRICH_EDITOR.innerHTML)
+            const result = redo(removeRuntimeFlag(KRICH_EDITOR.cloneNode(true)).innerHTML)
             if (result) {
                 const [content, data] = result
                 KRICH_EDITOR.innerHTML = content

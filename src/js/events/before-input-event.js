@@ -4,7 +4,7 @@ import {
     markStatusCacheEffect, markStatusCacheInvalid,
     statusCheckCache
 } from '../vars/global-fileds'
-import {findParentTag, tryFixDom} from '../utils/dom'
+import {findParentTag, removeRuntimeFlag, tryFixDom} from '../utils/dom'
 import {KRange} from '../utils/range'
 import {compareBtnListStatusWith, isActive, setButtonStatus} from '../utils/btn'
 import {getElementBehavior, waitTime} from '../utils/tools'
@@ -27,7 +27,7 @@ export function registryBeforeInputEventListener() {
     KRICH_EDITOR.addEventListener('beforeinput', async event => {
         const {isComposing, inputType} = event
         if (!oldContent) {
-            oldContent = KRICH_EDITOR.innerHTML
+            oldContent = removeRuntimeFlag(KRICH_EDITOR.cloneNode(true)).innerHTML
             oldRange = KRange.activated().serialization()
         }
         if (!isComposing) {
@@ -63,7 +63,8 @@ export function registryBeforeInputEventListener() {
 export function recordInput(force) {
     if (oldContent && (force || !inputTimeoutId)) {
         clearTimeout(inputTimeoutId)
-        pushOperate(oldContent, KRICH_EDITOR.innerHTML, oldRange, KRange.activated().serialization())
+        const newContent = removeRuntimeFlag(KRICH_EDITOR.cloneNode(true)).innerHTML
+        pushOperate(oldContent, newContent, oldRange, KRange.activated().serialization())
         inputTimeoutId = oldContent = oldRange = 0
     }
 }
