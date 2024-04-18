@@ -16,20 +16,22 @@
 + 代码块
 + 快捷键
 + 粘贴、节点拖动
++ 历史记录（撤回和重做）
 
 等待实现的功能：
 
 + 表情
 + 表格
-+ 历史记录（撤回和重做）
 
 ### 已实现的快捷键
 
 1. `shift enter`: 在当前行下方创建一个新行并将光标移动到新行中，不会将原始光标后方的内容移动到下一行
 2. `ctrl enter`: 在距离最近的顶层元素的下方添加一个新行，在非代码块中动作与 `shift` 一致
 3. `ctrl shift enter`: 在距离最近的顶层元素的上方添加一个新行并将光标移动到新行中
-4. `列表结尾空行中按 enter`: 删除列表最后一行，在列表下方创建新行并将光标移动到新行
-5. `other`: 具体见按钮悬浮时显示的内容
+4. `ctrl Z`: 撤回
+5. `ctrl shift Z`: 重做
+6. `列表结尾空行中按 enter`: 删除列表最后一行，在列表下方创建新行并将光标移动到新行
+7. `other`: 具体见按钮悬浮时显示的内容
 
 ## 预览
 
@@ -41,6 +43,7 @@
 ### 初始化
 
 1. 使用 git 指令克隆仓库：`git clone git@github.com:EmptyDreams/krich.git`
+    一般使用 ssh 连接会更加稳定，不会被墙，如果 git 没有登录的话只能使用 https 连接克隆：`git clone https://github.com/EmptyDreams/krich.git`
 2. 在仓库根目录下启动命令提示符
 3. 执行 `npm install`
 4. 执行 `npm install rollup -g`
