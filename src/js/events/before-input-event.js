@@ -4,19 +4,22 @@ import {
     markStatusCacheEffect, markStatusCacheInvalid,
     statusCheckCache
 } from '../vars/global-fileds'
-import {findParentTag, readEditorHtml, removeRuntimeFlag, tryFixDom} from '../utils/dom'
+import {findParentTag, tryFixDom} from '../utils/dom'
 import {KRange} from '../utils/range'
 import {compareBtnListStatusWith, isActive, setButtonStatus} from '../utils/btn'
 import {getElementBehavior, waitTime} from '../utils/tools'
 import {TODO_MARKER} from '../vars/global-tag'
 import {behaviors, clickButton} from '../behavior'
 import {isNoStatus, isTextArea} from '../types/button-behavior'
-import {pushOperate} from '../utils/record'
+import {pushUndoStack} from '../utils/record'
 import {deleting} from './keyboard-event'
 
+/** 是否正在处理输入的阶段 */
+export let isInputtingStage
+/** 是否正在输入 */
 export let isInputting
 
-let oldContent, oldRange
+let oldRange
 /** 输入更新历史记录的计时器 */
 let inputTimeoutId
 
@@ -26,15 +29,14 @@ let inputTimeoutId
 export function registryBeforeInputEventListener() {
     KRICH_EDITOR.addEventListener('beforeinput', async event => {
         const {isComposing, inputType} = event
-        if (!oldContent) {
-            oldContent = readEditorHtml()
+        if (!oldRange) {
             oldRange = KRange.activated().serialization()
         }
         if (!isComposing) {
             if (inputType.startsWith('insert')) {
-                isInputting = true
+                isInputtingStage = true
                 await handleInput(event)
-                isInputting = false
+                isInputtingStage = false
                 updateEditorRange()
             } else if (inputType.startsWith('delete')) {
                 await waitTime(0)
@@ -46,11 +48,12 @@ export function registryBeforeInputEventListener() {
                         recordInput(true)
                 }, 500)
             }
-        }
+        } else isInputting = isInputtingStage = true
     })
     KRICH_EDITOR.addEventListener('compositionend', async event => {
-        await handleInput(event)
         isInputting = false
+        await handleInput(event)
+        isInputtingStage = false
         updateEditorRange()
         recordInput(true)
     })
@@ -61,11 +64,10 @@ export function registryBeforeInputEventListener() {
  * @param force {boolean} 是否强制更新，为 false 时若存在 timeoutId 则不进行更新
  */
 export function recordInput(force) {
-    if (oldContent && (force || !inputTimeoutId)) {
+    if (oldRange && (force || !inputTimeoutId)) {
         clearTimeout(inputTimeoutId)
-        const newContent = readEditorHtml()
-        pushOperate(oldContent, newContent, oldRange, KRange.activated().serialization())
-        inputTimeoutId = oldContent = oldRange = 0
+        pushUndoStack(oldRange)
+        inputTimeoutId = oldRange = 0
     }
 }
 

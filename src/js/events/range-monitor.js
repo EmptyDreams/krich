@@ -14,7 +14,7 @@ import {isIndependent} from '../types/button-behavior'
 import {closeHoverTip} from '../utils/hover-tip'
 import {isNewClickCycle, markClickCycleStart} from './mouse-click-event'
 import {isDragging} from './paste-event'
-import {isInputting} from './before-input-event'
+import {isInputtingStage} from './before-input-event'
 import {behaviors} from '../behavior'
 import {highlightCode} from '../utils/highlight'
 
@@ -48,7 +48,7 @@ export function modifyEditorRange(range) {
 
 /** 自动更新 editor range */
 export function updateEditorRange() {
-    if (isInputting || isDragging) return
+    if (isInputtingStage || isDragging) return
     const disableToolBar = () => KRICH_TOOL_BAR.classList.add(DISABLE_FLAG)
     if (!KRICH_CONTAINER.contains(document.activeElement)) {
         editorRange = null

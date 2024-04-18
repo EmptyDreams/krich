@@ -2,7 +2,6 @@ import html from 'rollup-plugin-html'
 import resolve from '@rollup/plugin-node-resolve'
 import { getLogFilter } from 'rollup/getLogFilter'
 import styles from 'rollup-plugin-styler'
-import commonjs from '@rollup/plugin-commonjs'
 
 const logFilter = getLogFilter(['!code:CIRCULAR_DEPENDENCY'])
 
@@ -15,9 +14,6 @@ export const optional = {
         }
     },
     plugins: [
-        commonjs({
-            sourceMap: false
-        }),
         resolve({
             browser: true
         }),

@@ -22,17 +22,6 @@ export function replaceStringByIndex(src, startInclude, endExclude, value) {
 }
 
 /**
- * 将指定区间的字符移除
- * @param src {string} 原始字符串
- * @param index {number} 删除的起点
- * @param length {number} 区间长度
- * @return {string} 修改后的字符串
- */
-export function removeStringByIndex(src, index, length) {
-    return replaceStringByIndex(src, index, index + length, '')
-}
-
-/**
  * 将 `rgb(x, x, x)` 格式的字符串转换为 `#xxxxxx` 格式的字符串
  * @param rgb {string}
  * @return {string} 返回转换后的 hex 色码，对于不为 rgb 格式的色码返回原始字符串

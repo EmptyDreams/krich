@@ -40,7 +40,6 @@ import hrHtml from '../resources/html/tools/hr.html'
 import {
     ACTIVE_FLAG,
     HASH_NAME,
-    KRICH_CONTAINER,
     KRICH_EDITOR, markStatusCacheInvalid,
     SELECT_VALUE,
     TITLE_LIST,
@@ -64,7 +63,7 @@ import {behaviorHighlight} from './behaviors/highlight'
 import {
     BEHAVIOR_STATE_MES, BEHAVIOR_STATE_NO_RECORD,
     BEHAVIOR_STATE_NO_STATUS,
-    BEHAVIOR_STATE_TEXT_AREA, isNoRecord,
+    BEHAVIOR_STATE_TEXT_AREA,
     isNoStatus
 } from './types/button-behavior'
 import {openHoverTip} from './utils/hover-tip'

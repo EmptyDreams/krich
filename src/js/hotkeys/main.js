@@ -1,12 +1,10 @@
 import {setPostHeader} from '../behaviors/header'
 import {editorRange} from '../events/range-monitor'
 import {clickButton} from '../behavior'
-import {DISABLE_FLAG, KRICH_EDITOR, KRICH_TOOL_BAR} from '../vars/global-fileds'
+import {DISABLE_FLAG, KRICH_TOOL_BAR} from '../vars/global-fileds'
 import {selectAll} from './select-all'
 import {redo, undo} from '../utils/record'
-import {KRange} from '../utils/range'
 import {recordInput} from '../events/before-input-event'
-import {readEditorHtml, removeRuntimeFlag} from '../utils/dom'
 
 const KEY_CTRL  =   0b1
 const KEY_ALT   =   0b10
@@ -80,23 +78,13 @@ const hotkeysList = {
         fn: KEY_CTRL,
         i: () => {
             recordInput(true)
-            const result = undo(readEditorHtml())
-            if (result) {
-                const [content, data] = result
-                KRICH_EDITOR.innerHTML = content
-                KRange.deserialized(data).active()
-            }
+            undo()
         }
     }, {
         fn: KEY_CTRL | KEY_SHIFT,
         i: () => {
             recordInput(true)
-            const result = redo(readEditorHtml())
-            if (result) {
-                const [content, data] = result
-                KRICH_EDITOR.innerHTML = content
-                KRange.deserialized(data).active()
-            }
+            redo()
         }
     }],
     'Backquote': [{ // ctrl + ` -> 代码块
