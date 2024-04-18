@@ -54,7 +54,6 @@ export function registryPasteEvent() {
             event.preventDefault()
         } else {
             isDragging = true
-            await copyContentToTransfer(event.dataTransfer)
         }
     })
     KRICH_EDITOR.addEventListener('dragend', () => isDragging = false)
