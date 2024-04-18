@@ -486,6 +486,11 @@ export function zipTree(container) {
     recursionMerge(container)
 }
 
+/** 获取编辑区域的 HTML 副本 */
+export function readEditorHtml() {
+    return removeRuntimeFlag(KRICH_EDITOR.cloneNode(true)).innerHTML
+}
+
 /**
  * 导出编辑器所有数据
  * @return {Promise<{

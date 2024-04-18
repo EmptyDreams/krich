@@ -4,7 +4,7 @@ import {historySize} from '../vars/global-exports-funtions'
 import {KRICH_EDITOR} from '../vars/global-fileds'
 import {KRange} from './range'
 import {recordInput} from '../events/before-input-event'
-import {removeRuntimeFlag} from './dom'
+import {readEditorHtml, removeRuntimeFlag} from './dom'
 
 /**
  * 记录操作，以支持撤回
@@ -27,10 +27,10 @@ const redoStack = []
 export async function recordOperate(consumer, notRecord) {
     if (notRecord) return consumer()
     recordInput(true)
-    const oldContent = removeRuntimeFlag(KRICH_EDITOR.cloneNode(true)).innerHTML
+    const oldContent = readEditorHtml()
     const oldRange = KRange.activated().serialization()
     const result = await consumer()
-    const newContent = removeRuntimeFlag(KRICH_EDITOR.cloneNode(true)).innerHTML
+    const newContent = readEditorHtml()
     const newRange = KRange.activated().serialization()
     pushOperate(oldContent, newContent, oldRange, newRange)
     return result
