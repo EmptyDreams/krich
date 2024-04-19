@@ -16,8 +16,6 @@ import {deleting} from './keyboard-event'
 
 /** 是否正在处理输入的阶段 */
 export let isInputtingStage
-/** 是否正在输入 */
-export let isInputting
 
 let oldRange
 /** 输入更新历史记录的计时器 */
@@ -48,10 +46,9 @@ export function registryBeforeInputEventListener() {
                         recordInput(true)
                 }, 500)
             }
-        } else isInputting = isInputtingStage = true
+        } else isInputtingStage = true
     })
     KRICH_EDITOR.addEventListener('compositionend', async event => {
-        isInputting = false
         await handleInput(event)
         isInputtingStage = false
         updateEditorRange()

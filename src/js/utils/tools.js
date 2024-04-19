@@ -210,3 +210,36 @@ export function removeAllAttributes(item) {
 export function waitTime(timeout) {
     return new Promise(resolve => setTimeout(resolve, timeout))
 }
+
+/**
+ * 判断两个数组是否相等
+ * @param arg0 {*[]}
+ * @param arg1 {*[]}
+ * @return {boolean}
+ */
+export function isEqualsArray(arg0, arg1) {
+    if (arg0.length !== arg1.length) return false
+    for (let i = 0; i < arg0.length; i++) {
+        if (arg0[i] !== arg1[i]) return false
+    }
+    return true
+}
+
+/**
+ * 遍历数组
+ * @template T
+ * @param array {T[]} 要遍历的数组
+ * @param isStartFromLeft {boolean} 是否正序遍历
+ * @param fun {function(index: number, value: T)} 遍历数组
+ */
+export function eachArray(array, isStartFromLeft, fun) {
+    if (isStartFromLeft) {
+        for (let i = 0; i < array.length; ++i) {
+            fun(i, array[i])
+        }
+    } else {
+        for (let i = array.length - 1; i > -1; --i) {
+            fun(i, array[i])
+        }
+    }
+}

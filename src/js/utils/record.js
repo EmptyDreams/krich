@@ -1,7 +1,7 @@
 import {KRange} from './range'
-import {isInputting, recordInput} from '../events/before-input-event'
+import {recordInput} from '../events/before-input-event'
 import {KRICH_EDITOR} from '../vars/global-fileds'
-import {isBrNode, isTextNode} from './tools'
+import {eachArray, isBrNode, isEqualsArray, isTextNode} from './tools'
 import {historySize} from '../vars/global-exports-funtions'
 
 /**
@@ -28,7 +28,6 @@ let nextOperate = []
  */
 export function startupObserveDom() {
     observer = new MutationObserver(list => {
-        if (isInputting) return
         for (let record of list) {
             const {
                 target, type: recordType,
@@ -43,13 +42,19 @@ export function startupObserveDom() {
                         oldAttr: [attributeName, oldValue]
                     })
                     break
-                case 'a':   // characterData
-                    nextOperate.push({
-                        pos: position(KRICH_EDITOR, target),
-                        type: 0,
-                        oldText: oldValue
-                    })
+                case 'a': { // characterData
+                    const pos = position(KRICH_EDITOR, target)
+                    // 查找是否有可以合并的内容
+                    let oldItem = nextOperate.find(
+                        it => !it.type && isEqualsArray(pos, it.pos)
+                    )
+                    if (!oldItem) {
+                        nextOperate.push({
+                            pos, type: 0, oldText: oldValue || '\u200B'
+                        })
+                    }
                     break
+                }
                 case 'i': { // childList
                     let pos, type
                     if (previousSibling) {
@@ -63,10 +68,16 @@ export function startupObserveDom() {
                         pos = position(KRICH_EDITOR, target)
                     }
                     if (addedNodes.length) {    // 插入元素
+                        if (type === 1) {
+                            pos[0] += addedNodes.length
+                        }
                         nextOperate.push({
                             pos, type, nodes: Array.from(addedNodes).map(it => it.cloneNode(true))
                         })
                     } else {    // 删除元素
+                        if (type === 1) {
+                            pos[0] -= removedNodes.length
+                        }
                         nextOperate.push({
                             pos, type: -type, nodes: Array.from(removedNodes).map(it => it.cloneNode(true))
                         })
@@ -135,10 +146,9 @@ export async function recordOperate(consumer, notRecord) {
 export function undo() {
     const item = stack.pop()
     if (!item) return
-    console.log(item)
     interruptObserveDom()
     const {data, oldRange} = item
-    handleStackItem(data)
+    handleStackItem(data, false)
     redoStack.push(item)
     KRange.deserialized(oldRange).active()
     reObserve()
@@ -152,7 +162,7 @@ export function redo() {
     if (!item) return
     interruptObserveDom()
     const {data, newRange} = item
-    handleStackItem(data)
+    handleStackItem(data, true)
     redoStack.push(item)
     KRange.deserialized(newRange).active()
     reObserve()
@@ -161,10 +171,10 @@ export function redo() {
 /**
  * 处理 UndoStackItem
  * @param data {UndoStackItem[]}
+ * @param isRedo {boolean}
  */
-function handleStackItem(data) {
-    for (let i = data.length - 1; i >= 0; i--) {
-        const dataItem = data[i]
+function handleStackItem(data, isRedo) {
+    eachArray(data, isRedo, (i, dataItem) => {
         const {
             pos, type,
             nodes, oldText, oldAttr
@@ -208,7 +218,7 @@ function handleStackItem(data) {
             console.assert(isTextNode(target), "进入此分支时 target 应该为文本节点", target, pos, oldText)
             target.textContent = oldText
         }
-    }
+    })
 }
 
 /**
@@ -220,22 +230,22 @@ function handleStackItem(data) {
 function flipItem(stackItem, target) {
     const {
         type, pos,
-        oldText, oldAttr, nodes
+        oldAttr, nodes
     } = stackItem
     const cpyItem = {
         ...stackItem,
         type: -type
     }
     if (!type) {
-        if (oldText) {
-            cpyItem.oldText = target.textContent
-        } else {
+        if (oldAttr) {
             const key = oldAttr[0]
             cpyItem.oldAttr = [key, target.getAttribute(key)]
+        } else {
+            cpyItem.oldText = target.textContent
         }
     } else if (Math.abs(type) === 1) {
         const cpyPos = cpyItem.pos = [...pos]
-        cpyPos[cpyPos.length - 1] -= nodes.length * type
+        cpyPos[0] -= nodes.length * type
     }
     return cpyItem
 }
