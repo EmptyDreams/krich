@@ -8,7 +8,7 @@ import {historySize} from '../vars/global-exports-funtions'
  * 记录操作，以支持撤回
  * @type {UndoStackFrame[]}
  */
-const stack = []
+const undoStack = []
 /**
  * 记录已经被撤回地操作，以支持重做
  * @type {UndoStackFrame[]}
@@ -115,8 +115,8 @@ function reObserve() {
  */
 export function pushUndoStack(oldRange) {
     if (!nextOperate.length) return
-    if (stack.length === historySize) stack.shift()
-    stack.push({
+    if (undoStack.length === historySize) undoStack.shift()
+    undoStack.push({
         data: nextOperate,
         oldRange, newRange: KRange.activated().serialization()
     })
@@ -144,7 +144,7 @@ export async function recordOperate(consumer, notRecord) {
  * 撤回一次操作
  */
 export function undo() {
-    const item = stack.pop()
+    const item = undoStack.pop()
     if (!item) return
     interruptObserveDom()
     const {data, oldRange} = item
@@ -163,7 +163,7 @@ export function redo() {
     interruptObserveDom()
     const {data, newRange} = item
     handleStackItem(data, true)
-    redoStack.push(item)
+    undoStack.push(item)
     KRange.deserialized(newRange).active()
     reObserve()
 }
