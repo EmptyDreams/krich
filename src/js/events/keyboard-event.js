@@ -52,6 +52,8 @@ export function registryKeyboardEvent() {
             recordInput(true)
         }
         if (body) {
+            handleHotkeys(event)
+            if (event.defaultPrevented) return
             emptyBodyElementKeyEvent(event, body)
         } else {
             switch (code) {
@@ -363,8 +365,7 @@ function emptyBodyElementKeyEvent(event, body) {
             }
             break
         default:
-            if (key.startsWith('F') || event.ctrlKey || event.altKey)
-                return
+            if (key.startsWith('F')) return
     }
     event.preventDefault()
 }
