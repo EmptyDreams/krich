@@ -49,7 +49,6 @@ export function registryKeyboardEvent() {
         const code = event.code
         if (!deleting && code === 'Backspace' || code === 'Delete') {
             deleting = true
-            recordInput(true)
         }
         if (body) {
             handleHotkeys(event)

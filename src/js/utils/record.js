@@ -3,6 +3,7 @@ import {recordInput} from '../events/before-input-event'
 import {KRICH_EDITOR} from '../vars/global-fileds'
 import {eachArray, isBrNode, isEqualsArray, isTextNode} from './tools'
 import {historySize} from '../vars/global-exports-funtions'
+import {editorRange} from '../events/range-monitor'
 
 /**
  * 记录操作，以支持撤回
@@ -27,65 +28,94 @@ let nextOperate = []
  * 开始监听编辑区域的 DOM 变化
  */
 export function startupObserveDom() {
+    /**
+     * 修改属性时触发
+     * @param target {Element}
+     * @param record {MutationRecord}
+     */
+    function onModifyAttributes(target, record) {
+        const {attributeName, oldValue} = record
+        nextOperate.push({
+            pos: position(KRICH_EDITOR, target),
+            type: 0,
+            oldAttr: [attributeName, oldValue]
+        })
+    }
+    /**
+     * 修改节点文本时触发
+     * @param target
+     * @param record
+     */
+    function onModifyCharacterData(target, record) {
+        const {oldValue} = record
+        if (!target.parentNode) {   // 若节点已被从 DOM 中移除
+            console.assert(!target.textContent, '进入此分支时 target 的文本内容应当为空')
+            console.assert(editorRange.collapsed, '进入此分支时 range 应当为 collapsed')
+            target = editorRange.realStartContainer()
+            console.assert(isBrNode(target), '此处可能只可能为 br')
+        }
+        const pos = position(KRICH_EDITOR, target)
+        // 查找是否有可以合并的内容
+        let oldItem = nextOperate.find(
+            it => !it.type && isEqualsArray(pos, it.pos)
+        )
+        if (!oldItem) {
+            nextOperate.push({
+                pos, type: 0, oldText: oldValue || '\u200B'
+            })
+        }
+    }
+    /**
+     * 当修改 ChildList 时
+     * @param target {Element|Node}
+     * @param record {MutationRecord}
+     */
+    function onModifyChildList(target, record) {
+        const {previousSibling, nextSibling, addedNodes, removedNodes} = record
+        let pos, type
+        if (previousSibling) {
+            type = 2
+            pos = position(KRICH_EDITOR, previousSibling)
+        } else if (nextSibling) {
+            type = 1
+            pos = position(KRICH_EDITOR, addedNodes.length && isBrNode(nextSibling) ? addedNodes[0] : nextSibling)
+        } else {
+            type = 3
+            pos = position(KRICH_EDITOR, target)
+        }
+        if (addedNodes.length) {    // 插入元素
+            if (type === 1) {
+                pos[0] += addedNodes.length
+            }
+            nextOperate.push({
+                pos, type, nodes: Array.from(addedNodes).map(it => it.cloneNode(true))
+            })
+        } else {    // 删除元素
+            if (type === 1) {
+                pos[0] -= removedNodes.length
+            }
+            nextOperate.push({
+                pos, type: -type, nodes: Array.from(removedNodes).map(it => it.cloneNode(true))
+            })
+        }
+    }
     observer = new MutationObserver(list => {
         for (let record of list) {
             const {
-                target, type: recordType,
-                attributeName, oldValue,
-                removedNodes, addedNodes, previousSibling, nextSibling
+                target, type
             } = record
-            switch (recordType[2]) {
+            switch (type[2]) {
                 case 't':   // attributes
-                    nextOperate.push({
-                        pos: position(KRICH_EDITOR, target),
-                        type: 0,
-                        oldAttr: [attributeName, oldValue]
-                    })
+                    onModifyAttributes(target, record)
                     break
-                case 'a': { // characterData
-                    const pos = position(KRICH_EDITOR, target)
-                    // 查找是否有可以合并的内容
-                    let oldItem = nextOperate.find(
-                        it => !it.type && isEqualsArray(pos, it.pos)
-                    )
-                    if (!oldItem) {
-                        nextOperate.push({
-                            pos, type: 0, oldText: oldValue || '\u200B'
-                        })
-                    }
+                case 'a':   // characterData
+                    onModifyCharacterData(target, record)
                     break
-                }
-                case 'i': { // childList
-                    let pos, type
-                    if (previousSibling) {
-                        type = 2
-                        pos = position(KRICH_EDITOR, previousSibling)
-                    } else if (nextSibling) {
-                        type = 1
-                        pos = position(KRICH_EDITOR, addedNodes.length && isBrNode(nextSibling) ? addedNodes[0] : nextSibling)
-                    } else {
-                        type = 3
-                        pos = position(KRICH_EDITOR, target)
-                    }
-                    if (addedNodes.length) {    // 插入元素
-                        if (type === 1) {
-                            pos[0] += addedNodes.length
-                        }
-                        nextOperate.push({
-                            pos, type, nodes: Array.from(addedNodes).map(it => it.cloneNode(true))
-                        })
-                    } else {    // 删除元素
-                        if (type === 1) {
-                            pos[0] -= removedNodes.length
-                        }
-                        nextOperate.push({
-                            pos, type: -type, nodes: Array.from(removedNodes).map(it => it.cloneNode(true))
-                        })
-                    }
+                case 'i':   // childList
+                    onModifyChildList(target, record)
                     break
-                }
                 default:
-                    console.error("代码不应该进入此分支", recordType)
+                    console.error("代码不应该进入此分支", type)
             }
         }
     })
