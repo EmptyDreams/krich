@@ -84,8 +84,11 @@ async function handleInput(event) {
             return
         }
     }
-    await waitTime(0)
     let range = KRange.activated()
+    const lca = range.commonAncestorContainer
+    const lcaCpy = range.commonAncestorContainer.cloneNode(true)
+    await waitTime(0)
+    range = KRange.activated()
     const {startContainer, startOffset} = range
     if (findParentTag(range.realStartContainer(), isTextArea)) return
     if (isEnter) {
@@ -115,10 +118,11 @@ async function handleInput(event) {
         newRange.setEnd(startContainer, startOffset)
         const offline = newRange.serialization()
         for (let child of buttonList) {
-            clickButton(getElementBehavior(child), KRange.deserialized(offline))
+            clickButton(getElementBehavior(child), KRange.deserialized(offline), false, true)
         }
         newRange.deserialized(offline)
         newRange.collapse(false)
         newRange.active()
     }
+    GLOBAL_HISTORY.modifyNode(lcaCpy, lca)
 }

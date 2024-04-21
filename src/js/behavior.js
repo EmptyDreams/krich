@@ -333,16 +333,17 @@ export const behaviors = {
  * @param key {string|ButtonBehavior}
  * @param range {KRange?} 选区，留空使用 editorRange
  * @param force {boolean?} 是否强制直接访问 onclick 而不模拟点击
+ * @param notRecord {boolean?} 是否跳过历史记录的记录
  * @return {boolean|void|undefined}
  */
-export function clickButton(key, range, force) {
+export function clickButton(key, range, force, notRecord) {
     const behavior = typeof key === 'string' ?  behaviors[key] : key
     console.assert(!!behavior, 'key 值不存在：' + key)
     const noStatus = isNoStatus(behavior)
     if (!force && noStatus) {
         behavior.button.click()
     } else {
-        const isRecord = !isNoRecord(behavior)
+        const isRecord = !notRecord && !isNoRecord(behavior)
         if (isRecord) {
             GLOBAL_HISTORY.next()
             GLOBAL_HISTORY.initRange(range)
