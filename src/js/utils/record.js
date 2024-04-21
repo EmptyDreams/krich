@@ -1,209 +1,222 @@
 import {KRange} from './range'
 import {recordInput} from '../events/before-input-event'
 import {KRICH_EDITOR} from '../vars/global-fileds'
-import {eachArray, isBrNode, isEqualsArray, isTextNode} from './tools'
+import {eachArray, isTextNode} from './tools'
 import {historySize} from '../vars/global-exports-funtions'
-import {editorRange} from '../events/range-monitor'
 
 /**
- * 记录操作，以支持撤回
- * @type {UndoStackFrame[]}
+ * 管理历史记录
+ * @param root {Element}
+ * @constructor
  */
-const undoStack = []
-/**
- * 记录已经被撤回地操作，以支持重做
- * @type {UndoStackFrame[]}
- */
-const redoStack = []
+export function HistoryManager(root) {
+    /** @type {UndoStackFrame[]} */
+    const undoStack = []
+    /** @type {UndoStackFrame[]} */
+    const redoStack = []
+    /** @type {UndoStackItem[]} */
+    let buffer = []
+    /** @type {KRangeData|undefined} */
+    let oldRange
 
-/** @type {MutationObserver} */
-let observer
-/**
- * 下一组要推入操作栈的操作
- * @type {UndoStackItem[]}
- */
-let nextOperate = []
-
-/**
- * 开始监听编辑区域的 DOM 变化
- */
-export function startupObserveDom() {
     /**
-     * 修改属性时触发
-     * @param target {Element}
-     * @param record {MutationRecord}
+     * 将 buffer 中的内容推送到 undo stack
      */
-    function onModifyAttributes(target, record) {
-        const {attributeName, oldValue} = record
-        nextOperate.push({
-            pos: position(KRICH_EDITOR, target),
+    this.next = function () {
+        console.assert(oldRange, '不存在 oldRange 记录')
+        if (!buffer.length) return
+        redoStack.length = 0
+        if (undoStack.length === historySize)
+            undoStack.shift()
+        const newRange = KRange.activated().serialization()
+        undoStack.push({
+            data: buffer,
+            newRange, oldRange
+        })
+        buffer = []
+        oldRange = null
+    }
+
+    /**
+     * 初始化 oldRange 的值，若已经初始化则不进行任何操作，调用 {@link #next} 前必须调用该函数
+     * @param range {KRange?}
+     */
+    this.initRange = function (range) {
+        if (oldRange) return
+        oldRange = (range ?? KRange.activated()).serialization()
+    }
+
+    /**
+     * 标记某个节点的更新
+     * @param oldNode {Node}
+     * @param newNode {Node}
+     */
+    this.modifyNode = function (oldNode, newNode) {
+        buffer.push({
             type: 0,
-            oldAttr: [attributeName, oldValue]
+            pos: position(root, newNode),
+            nodes: [oldNode]
         })
     }
+
     /**
-     * 修改节点文本时触发
-     * @param target
-     * @param record
+     * 标记某个节点的属性的更新
+     * @param element {Element}
+     * @param name {string}
+     * @param oldValue {string}
      */
-    function onModifyCharacterData(target, record) {
-        const {oldValue} = record
-        if (!target.parentNode) {   // 若节点已被从 DOM 中移除
-            console.assert(!target.textContent, '进入此分支时 target 的文本内容应当为空')
-            console.assert(editorRange.collapsed, '进入此分支时 range 应当为 collapsed')
-            target = editorRange.realStartContainer()
-            console.assert(isBrNode(target), '此处可能只可能为 br')
-        }
-        const pos = position(KRICH_EDITOR, target)
-        // 查找是否有可以合并的内容
-        let oldItem = nextOperate.find(
-            it => !it.type && isEqualsArray(pos, it.pos)
-        )
-        if (!oldItem) {
-            nextOperate.push({
-                pos, type: 0, oldText: oldValue || '\u200B'
-            })
+    this.modifyAttr = function (element, name, oldValue) {
+        buffer.push({
+            type: 0,
+            pos: position(root, element),
+            attr: [name, oldValue]
+        })
+    }
+
+    /** 工具函数，该分类下的函数会修改 DOM */
+    this.utils = {
+        /**
+         * 将一个节点替换为多个子节点
+         * @param oldNode {Node}
+         * @param newNodes {Node[]}
+         */
+        replace: (oldNode, newNodes) => {
+            this.removeAuto([oldNode])
+            oldNode.replaceWith(...newNodes)
+            this.addAuto(newNodes)
         }
     }
+
     /**
-     * 当修改 ChildList 时
-     * @param target {Element|Node}
-     * @param record {MutationRecord}
+     * 推送一个操作
+     * @param type {number}
+     * @param node {Node}
+     * @param nodeList {Node[]}
+     * @param offset {number} 偏移量
      */
-    function onModifyChildList(target, record) {
-        const {previousSibling, nextSibling, addedNodes, removedNodes} = record
-        let pos, type
-        if (previousSibling) {
-            type = 2
-            pos = position(KRICH_EDITOR, previousSibling)
-        } else if (nextSibling) {
-            type = 1
-            pos = position(KRICH_EDITOR, addedNodes.length && isBrNode(nextSibling) ? addedNodes[0] : nextSibling)
+    function pushOperate(type, node, nodeList, offset = 0) {
+        const pos = position(root, node)
+        pos[0] += offset
+        buffer.push({
+            type, pos,
+            nodes: nodeList.map(it => it.cloneNode(true))
+        })
+    }
+
+    /**
+     * 标记从指定节点后方移除节点
+     * @param node {Node} 定位节点
+     * @param removedNodes {Node[]} 被移除的节点列表
+     */
+    this.removeAfter = function (node, removedNodes) {
+        pushOperate(-2, node, removedNodes)
+    }
+
+    /**
+     * 标记从指定节点前方移除节点
+     * @param node {Node} 定位节点
+     * @param removedNodes {Node[]} 被移除的节点列表
+     */
+    this.removeBefore = function (node, removedNodes) {
+        pushOperate(-1, node, removedNodes, -removedNodes.length)
+    }
+
+    /**
+     * 标记移除指定节点的所有子节点
+     * @param node {Node} 定位节点
+     * @param removedNodes {Node[]} 被移除的节点列表
+     */
+    this.removeChild = function (node, removedNodes) {
+        pushOperate(-3, node, removedNodes)
+    }
+
+    /**
+     * 标记移除指定节点
+     * @param removedNodes {Node[]} 被移除的节点列表
+     */
+    this.removeAuto = function (removedNodes) {
+        const first = removedNodes[0], last = removedNodes[removedNodes.length - 1]
+        const prev = first.previousSibling, next = last.nextSibling
+        if (prev) {
+            this.removeAfter(prev, removedNodes)
+        } else if (next) {
+            this.removeBefore(next, removedNodes)
         } else {
-            type = 3
-            pos = position(KRICH_EDITOR, target)
-        }
-        if (addedNodes.length) {    // 插入元素
-            if (type === 1) {
-                pos[0] += addedNodes.length
-            }
-            nextOperate.push({
-                pos, type, nodes: Array.from(addedNodes).map(it => it.cloneNode(true))
-            })
-        } else {    // 删除元素
-            if (type === 1) {
-                pos[0] -= removedNodes.length
-            }
-            nextOperate.push({
-                pos, type: -type, nodes: Array.from(removedNodes).map(it => it.cloneNode(true))
-            })
+            this.removeChild(first.parentNode, removedNodes)
         }
     }
-    observer = new MutationObserver(list => {
-        for (let record of list) {
-            const {
-                target, type
-            } = record
-            switch (type[2]) {
-                case 't':   // attributes
-                    onModifyAttributes(target, record)
-                    break
-                case 'a':   // characterData
-                    onModifyCharacterData(target, record)
-                    break
-                case 'i':   // childList
-                    onModifyChildList(target, record)
-                    break
-                default:
-                    console.error("代码不应该进入此分支", type)
-            }
+
+    /**
+     * 标记在指定节点右侧添加新的节点
+     * @param node {Node} 定位节点
+     * @param addedNodes {Node[]} 被添加的节点列表
+     */
+    this.addAfter = function (node, addedNodes) {
+        pushOperate(2, node, addedNodes)
+    }
+
+    /**
+     * 标记在指定节点左侧添加新的节点
+     * @param node {Node} 定位节点
+     * @param addedNodes {Node[]} 被添加的节点列表
+     */
+    this.addBefore = function (node, addedNodes) {
+        pushOperate(1, node, addedNodes, addedNodes.length)
+    }
+
+    /**
+     * 标记为指定节点添加子节点
+     * @param node {Node}
+     * @param addedNodes {Node[]}
+     */
+    this.addChild = function (node, addedNodes) {
+        pushOperate(3, node, addedNodes)
+    }
+
+    /**
+     * 标记添加指定节点
+     * @param addedNodes {Node[]}
+     */
+    this.addAuto = function (addedNodes) {
+        const first = addedNodes[0], last = addedNodes[addedNodes.length - 1]
+        const prev = first.previousSibling, next = last.nextSibling
+        if (prev) {
+            this.addAfter(prev, addedNodes)
+        } else if (next) {
+            this.addBefore(next, addedNodes)
+        } else {
+            this.addChild(first.parentNode, addedNodes)
         }
-    })
-    reObserve()
-}
+    }
 
-/** 注销监听器 */
-export function interruptObserveDom() {
-    observer.disconnect()
-}
+    /** 撤回 */
+    this.undo = function () {
+        recordInput(true)
+        const item = undoStack.pop()
+        if (!item) return
+        handleStackItem(root, item.data, false)
+        redoStack.push(item)
+        KRange.deserialized(item.oldRange).active()
+    }
 
-function reObserve() {
-    observer.observe(KRICH_EDITOR, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ['style', 'src', 'href'],
-        characterData: true,
-        attributeOldValue: true,
-        characterDataOldValue: true
-    })
-}
-
-/**
- * 推入一个操作
- * @param oldRange {KRangeData}
- */
-export function pushUndoStack(oldRange) {
-    if (!nextOperate.length) return
-    if (undoStack.length === historySize) undoStack.shift()
-    undoStack.push({
-        data: nextOperate,
-        oldRange, newRange: KRange.activated().serialization()
-    })
-    nextOperate = []
-    redoStack.length = 0
-}
-
-/**
- * 记录对 KRICH_EDITOR 的操作
- * @template T
- * @param consumer {function(): Promise<T>|T}
- * @param notRecord {boolean?} 是否不对操作进行记录
- * @return {Promise<T>}
- */
-export async function recordOperate(consumer, notRecord) {
-    if (notRecord) return consumer()
-    recordInput(true)
-    const oldRange = KRange.activated().serialization()
-    const result = await consumer()
-    pushUndoStack(oldRange)
-    return result
-}
-
-/**
- * 撤回一次操作
- */
-export function undo() {
-    const item = undoStack.pop()
-    if (!item) return
-    interruptObserveDom()
-    const {data, oldRange} = item
-    handleStackItem(data, false)
-    redoStack.push(item)
-    KRange.deserialized(oldRange).active()
-    reObserve()
-}
-
-/**
- * 重做一次操作
- */
-export function redo() {
-    const item = redoStack.pop()
-    if (!item) return
-    interruptObserveDom()
-    const {data, newRange} = item
-    handleStackItem(data, true)
-    undoStack.push(item)
-    KRange.deserialized(newRange).active()
-    reObserve()
+    /** 重做 */
+    this.redo = function () {
+        recordInput(true)
+        const item = redoStack.pop()
+        if (!item) return
+        handleStackItem(root, item.data, true)
+        undoStack.push(item)
+        KRange.deserialized(item.newRange).active()
+    }
 }
 
 /**
  * 处理 UndoStackItem
+ * @param root {Element}
  * @param data {UndoStackItem[]}
  * @param isRedo {boolean}
  */
-function handleStackItem(data, isRedo) {
+function handleStackItem(root, data, isRedo) {
     eachArray(data, isRedo, (i, dataItem) => {
         const {
             pos, type,

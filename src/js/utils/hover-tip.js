@@ -3,7 +3,7 @@ import imageHoverHtml from '../../resources/html/hoverTips/imageHover.html'
 /** @type {string} */
 import linkHoverHtml from '../../resources/html/hoverTips/linkHover.html'
 import {
-    ACTIVE_FLAG,
+    ACTIVE_FLAG, GLOBAL_HISTORY,
     HOVER_TIP_NAME,
     KRICH_EDITOR,
     KRICH_HOVER_TIP,
@@ -16,7 +16,6 @@ import {createElement, isEmptyLine, waitTime} from './tools'
 import {KRange} from './range'
 import {isHttpUrl, readImageToBase64} from './string-utils'
 import {syncButtonsStatus} from './btn'
-import {recordOperate} from './record'
 
 const linkHoverNoDescHtml = linkHoverHtml.substring(linkHoverHtml.indexOf('</div>') + 6)
 
@@ -116,21 +115,21 @@ export const HOVER_TIP_LIST = {
             /** 将图片插入到 DOM 中 */
             submitButton.onclick = () => {
                 if (imageElement.hasAttribute('src')) {
-                    // noinspection JSIgnoredPromiseFromCall
-                    recordOperate(() => {
-                        descrInput.disabled = sizeInput.disabled = false
-                        imageElement.setAttribute('style', 'width:' + sizeInput.value + '%')
-                        if (oldIsImage || isEmptyLine(target)) {
-                            target.replaceWith(imageElement)
-                        } else {
-                            target.after(imageElement)
-                        }
-                        new KRange(imageElement).active()
-                        target = imageElement
-                        imageElement = imageElement.cloneNode(false)
-                        oldIsImage = true
-                        submitButton.disabled = true
-                    })
+                    GLOBAL_HISTORY.initRange()
+                    descrInput.disabled = sizeInput.disabled = false
+                    imageElement.setAttribute('style', 'width:' + sizeInput.value + '%')
+                    if (oldIsImage || isEmptyLine(target)) {
+                        GLOBAL_HISTORY.utils.replace(target, [imageElement])
+                    } else {
+                        target.after(imageElement)
+                        GLOBAL_HISTORY.addAfter(target, [imageElement])
+                    }
+                    new KRange(imageElement).active()
+                    target = imageElement
+                    imageElement = imageElement.cloneNode(false)
+                    oldIsImage = true
+                    submitButton.disabled = true
+                    GLOBAL_HISTORY.next()
                 }
             }
             // 如果传入的 target 是 IMG 标签，则同步悬浮窗与图片的数据

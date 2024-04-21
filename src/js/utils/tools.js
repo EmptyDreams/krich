@@ -212,20 +212,6 @@ export function waitTime(timeout) {
 }
 
 /**
- * 判断两个数组是否相等
- * @param arg0 {*[]}
- * @param arg1 {*[]}
- * @return {boolean}
- */
-export function isEqualsArray(arg0, arg1) {
-    if (arg0.length !== arg1.length) return false
-    for (let i = 0; i < arg0.length; i++) {
-        if (arg0[i] !== arg1[i]) return false
-    }
-    return true
-}
-
-/**
  * 遍历数组
  * @template T
  * @param array {T[]} 要遍历的数组

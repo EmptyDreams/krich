@@ -38,7 +38,7 @@ import linkHtml from '../resources/html/tools/link.html'
 import hrHtml from '../resources/html/tools/hr.html'
 
 import {
-    ACTIVE_FLAG,
+    ACTIVE_FLAG, GLOBAL_HISTORY,
     HASH_NAME,
     KRICH_EDITOR, markStatusCacheInvalid,
     SELECT_VALUE,
@@ -365,6 +365,8 @@ function execCommonCommand(
     const offlineData = range === editorRange ? range.serialization() : null
     const behavior = behaviors[key]
     let rangeArray = range.splitRangeByLine()
+    const topArray = rangeArray.map(it => findParentTag(it.realStartContainer(),TOP_LIST))
+    const topCpyArray = topArray.map(it => it.cloneNode(true))
     const lastIndex = rangeArray.length - 1
     if (!removed) {
         if (conflicts)
@@ -378,9 +380,10 @@ function execCommonCommand(
         }
     }
     if (type !== 2 && (removed || type === 1))
-        rangeArray = setStyleInRange(key, rangeArray, behavior)
-    for (let kRange of rangeArray) {
-        zipTree(findParentTag(kRange.realStartContainer(), TOP_LIST))
+        setStyleInRange(key, rangeArray, behavior)
+    topArray.forEach(zipTree)
+    for (let i = 0; i < topCpyArray.length; i++) {
+        GLOBAL_HISTORY.modifyNode(topCpyArray[i], topArray[i])
     }
     if (offlineData) {
         range.deserialized(offlineData).active()

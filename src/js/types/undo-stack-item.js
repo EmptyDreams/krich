@@ -26,11 +26,6 @@ class UndoStackItem {
      * 旧的属性内容
      * @type {[key: string, value: string]|undefined}
      */
-    oldAttr
-    /**
-     * 旧的文本
-     * @type {string|undefined}
-     */
-    oldText
+    attr
 
 }

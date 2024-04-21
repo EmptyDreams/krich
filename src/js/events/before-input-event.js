@@ -1,5 +1,6 @@
 import {editorRange, updateEditorRange} from './range-monitor'
 import {
+    GLOBAL_HISTORY,
     KRICH_EDITOR,
     markStatusCacheEffect, markStatusCacheInvalid,
     statusCheckCache
@@ -11,13 +12,11 @@ import {getElementBehavior, waitTime} from '../utils/tools'
 import {TODO_MARKER} from '../vars/global-tag'
 import {behaviors, clickButton} from '../behavior'
 import {isNoStatus, isTextArea} from '../types/button-behavior'
-import {pushUndoStack} from '../utils/record'
 import {deleting} from './keyboard-event'
 
 /** 是否正在处理输入的阶段 */
 export let isInputtingStage
 
-let oldRange
 /** 输入更新历史记录的计时器 */
 let inputTimeoutId
 
@@ -27,9 +26,7 @@ let inputTimeoutId
 export function registryBeforeInputEventListener() {
     KRICH_EDITOR.addEventListener('beforeinput', async event => {
         const {isComposing, inputType} = event
-        if (!oldRange) {
-            oldRange = KRange.activated().serialization()
-        }
+        GLOBAL_HISTORY.initRange()
         if (!isComposing) {
             if (inputType.startsWith('insert')) {
                 isInputtingStage = true
@@ -61,10 +58,10 @@ export function registryBeforeInputEventListener() {
  * @param force {boolean} 是否强制更新，为 false 时若存在 timeoutId 则不进行更新
  */
 export function recordInput(force) {
-    if (oldRange && (force || !inputTimeoutId)) {
+    if (force || !inputTimeoutId) {
         clearTimeout(inputTimeoutId)
-        pushUndoStack(oldRange)
-        inputTimeoutId = oldRange = 0
+        GLOBAL_HISTORY.next()
+        inputTimeoutId = 0
     }
 }
 

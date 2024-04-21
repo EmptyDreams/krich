@@ -268,10 +268,12 @@ export function insertSpaceBetweenNode(node, focus) {
 
 /**
  * 移除指定标签及其子节点中所有的运行时标记
- * @param root {Element}
- * @return {Element} 返回 root
+ * @template {Element|Node} T
+ * @param root {T}
+ * @return {T} 返回 root
  */
 export function removeRuntimeFlag(root) {
+    if (isTextNode(root)) return root
     // 移除需要移除的类名
     const removedClassName = [EMPTY_BODY_ACTIVE_FLAG]
     for (let name of removedClassName) {

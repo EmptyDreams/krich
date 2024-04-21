@@ -1,4 +1,11 @@
-import {KRICH_CONTAINER, KRICH_EDITOR, KRICH_HOVER_TIP, markStatusCacheInvalid, TOP_LIST} from '../vars/global-fileds'
+import {
+    GLOBAL_HISTORY,
+    KRICH_CONTAINER,
+    KRICH_EDITOR,
+    KRICH_HOVER_TIP,
+    markStatusCacheInvalid,
+    TOP_LIST
+} from '../vars/global-fileds'
 import {
     findParentTag, getFirstChildNode,
     getFirstTextNode,
@@ -20,7 +27,6 @@ import {closeHoverTip, updateHoverTipPosition} from '../utils/hover-tip'
 import {handleHotkeys} from '../hotkeys/main'
 import {currentLink} from './mouse-click-event'
 import {recordInput} from './before-input-event'
-import {recordOperate} from '../utils/record'
 
 /** 记录删除键是否正在使用 */
 export let deleting = false
@@ -326,30 +332,33 @@ function emptyBodyElementKeyEvent(event, body) {
         }
         case 'Backspace': case 'Delete':
             if (!isMarkerNode(body)) {
-                // noinspection JSIgnoredPromiseFromCall
-                recordOperate(() => {
-                    const priority = ['nextSibling', 'previousSibling']
-                    if (key[0] === 'B')
-                        priority.reverse()
-                    let flag
-                    for (let info of priority) {
-                        const sibling = body[info]
-                        if (sibling) {
-                            if (info[0] === 'n')
-                                setCursorPositionBefore(sibling)
-                            else
-                                setCursorPositionAfter(sibling)
-                            body.remove()
-                            flag = true
-                            break
+                GLOBAL_HISTORY.initRange()
+                const priority = ['nextSibling', 'previousSibling']
+                if (key[0] === 'B')
+                    priority.reverse()
+                let flag
+                for (let info of priority) {
+                    const sibling = body[info]
+                    if (sibling) {
+                        flag = true
+                        body.remove()
+                        if (info[0] === 'n') {
+                            setCursorPositionBefore(sibling)
+                            GLOBAL_HISTORY.removeBefore(sibling, [body])
+                        } else {
+                            setCursorPositionAfter(sibling)
+                            GLOBAL_HISTORY.removeAfter(sibling, [body])
                         }
+                        break
                     }
-                    if (!flag) {
-                        const line = createNewLine()
-                        body.replaceWith(line)
-                        setCursorPositionBefore(line)
-                    }
-                })
+                }
+                if (!flag) {
+                    const line = createNewLine()
+                    body.replaceWith(line)
+                    setCursorPositionBefore(line)
+                    GLOBAL_HISTORY.modifyNode(body, line)
+                }
+                GLOBAL_HISTORY.next()
             }
             break
         case 'Enter':

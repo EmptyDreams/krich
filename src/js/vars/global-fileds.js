@@ -1,4 +1,5 @@
 import {updateEditorRange} from '../events/range-monitor'
+import {HistoryManager} from '../utils/record'
 
 /**
  * 编辑器容器
@@ -22,6 +23,11 @@ export let KRICH_TOOL_BAR
 export let KRICH_HOVER_TIP
 /** 编辑区容器 */
 export let KRICH_EC
+/**
+ * 历史记录
+ * @type {HistoryManager}
+ */
+export let GLOBAL_HISTORY
 
 export const KRICH_CLASS = 'krich'
 export const KRICH_EDITOR_CLASS = KRICH_CLASS + '-editor'
@@ -84,6 +90,7 @@ export function initContainerQuery(container) {
     [KRICH_EC, KRICH_EDITOR, KRICH_TOOL_BAR, KRICH_HOVER_TIP] = [
         KRICH_EC_CLASS, KRICH_EDITOR_CLASS, KRICH_TOOL_BAR_CLASS, KRICH_HOVER_TIP_CLASS
     ].map(it => container.getElementsByClassName(it)[0])
+    GLOBAL_HISTORY = new HistoryManager(KRICH_EDITOR)
 }
 
 /** 标记状态检查缓存过时 */

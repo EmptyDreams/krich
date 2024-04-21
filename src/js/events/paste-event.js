@@ -1,6 +1,6 @@
 // noinspection JSDeprecatedSymbols
 
-import {KRICH_EDITOR, TOP_LIST} from '../vars/global-fileds'
+import {GLOBAL_HISTORY, KRICH_EDITOR, TOP_LIST} from '../vars/global-fileds'
 import {
     eachDomTree,
     findParentTag,
@@ -26,7 +26,6 @@ import {highlightCode} from '../utils/highlight'
 import {editorRange, modifyEditorRange} from './range-monitor'
 import {isMultiEleStruct, isTextArea} from '../types/button-behavior'
 import {readImageToBase64} from '../utils/string-utils'
-import {recordOperate} from '../utils/record'
 
 /**
  * 是否正在拖动元素
@@ -91,30 +90,29 @@ export function registryPasteEvent() {
             const range = offlineData ? KRange.deserialized(offlineData) : clientPos
             await handlePaste(range, transfer, isInsideCpy)
         }
-        await recordOperate(async () => {
-            if (isDragging) {  // 如果内容是从编辑区复制过来的，则手动提取内容
-                const range = KRange.activated()
-                // 定位鼠标拖动到的位置
-                offlineData = clientPos.serialization()
-                // 被拖动的内容的最近公共祖先
-                const ancestor = range.body ?? range.commonAncestorContainer
-                let nearlyTopLine = findParentTag(ancestor, TOP_LIST) ?? KRICH_EDITOR
-                if (isEmptyBodyElement(nearlyTopLine) || isListLine(nearlyTopLine.firstChild)) {
-                    nearlyTopLine = nearlyTopLine.parentElement
-                }
-                await range.extractContents(nearlyTopLine, true, tmpBox => {
-                    if (isTextArea(nearlyTopLine)) {    // 如果内容是从 TextArea 中拖动出来的，则当作纯文本处理
-                        transfer.setData(TRANSFER_KEY_TEXT, tmpBox.textContent)
-                    } else {
-                        writeElementToTransfer(transfer, tmpBox)
-                    }
-                    return handle()
-                })
-            } else {
-                await handle()
+        GLOBAL_HISTORY.initRange()
+        if (isDragging) {  // 如果内容是从编辑区拖动过来的，则手动提取内容
+            const range = KRange.activated()
+            // 定位鼠标拖动到的位置
+            offlineData = clientPos.serialization()
+            // 被拖动的内容的最近公共祖先
+            const ancestor = range.body ?? range.commonAncestorContainer
+            let nearlyTopLine = findParentTag(ancestor, TOP_LIST) ?? KRICH_EDITOR
+            if (isEmptyBodyElement(nearlyTopLine) || isListLine(nearlyTopLine.firstChild)) {
+                nearlyTopLine = nearlyTopLine.parentElement
             }
-            tryFixDom()
-        })
+            await range.extractContents(nearlyTopLine, true, tmpBox => {
+                if (isTextArea(nearlyTopLine)) {    // 如果内容是从 TextArea 中拖动出来的，则当作纯文本处理
+                    transfer.setData(TRANSFER_KEY_TEXT, tmpBox.textContent)
+                } else {
+                    writeElementToTransfer(transfer, tmpBox)
+                }
+                return handle()
+            })
+        } else {
+            await handle()
+        }
+        tryFixDom()
     })
     KRICH_EDITOR.addEventListener('copy', async event => {
         event.preventDefault()
@@ -307,15 +305,16 @@ export async function handlePaste(range, dataTransfer, isInside) {
             offlineData = setCursorPositionAfter(lastPos, false).serialization()
         }
         if (isKrichEditor(realStart)) { // 如果拖动到了没有标签的地方，说明拖动到了尾部
-            // noinspection JSCheckFunctionSignatures
-            realStart.appendChild(...lines)
+            const lastChild = realStart.lastChild
+            realStart.append(...lines)
+            GLOBAL_HISTORY.addAfter(lastChild, lines)
         } else if (isEmptyLine(realStart)) {    // 如果拖动到了空白行则直接替换
-            // noinspection JSCheckFunctionSignatures
-            realStart.replaceWith(...lines)
+            GLOBAL_HISTORY.utils.replace(realStart, lines)
         } else if (isEmptyBodyElement(realStart)) { // 如果拖动到了 EBE 则在其后方插入
             realStart.after(...lines)
+            GLOBAL_HISTORY.addAfter(realStart, lines)
         } else if (isBrNode(realStart)) {   // 如果拖动到了 br 上则替换其父元素
-            realStart.parentElement.replaceWith(...lines)
+            GLOBAL_HISTORY.utils.replace(realStart.parentNode, lines)
         } else {    // 否则在当前位置插入
             const topLine = findParentTag(realStart, TOP_LIST)
             /**
@@ -328,13 +327,18 @@ export async function handlePaste(range, dataTransfer, isInside) {
             const topLineParent = topLine.parentElement
             // 当把列表插入到列表中时，直接提取其中的 li 标签
             if (lines.length === 1 && isMultiEleStruct(first) && equalsKrichNode(first, topLineParent.parentNode)) {
-                const childNodes = first.childNodes
+                const childNodes = Array.from(first.childNodes)
                 if (!range.startOffset && getFirstChildNode(range.startContainer) === getFirstChildNode(topLineParent)) {
                     topLineParent.before(...childNodes)
+                    GLOBAL_HISTORY.addBefore(topLineParent, childNodes)
                 } else {
                     topLineParent.after(...childNodes)
+                    GLOBAL_HISTORY.addAfter(topLineParent, childNodes)
                 }
             } else if (lines.length > 1 || !isMergeInLine(first)) { // 当插入内容有多行或插入的内容不可嵌入到行中时执行通用插入方式
+                const topLineCpy = topLine.cloneNode(true)
+                GLOBAL_HISTORY.removeAuto([topLineCpy])
+                const addedNodes = []
                 const last = lines[lines.length - 1]
                 const [left, right] = range.splitNode(topLine)
                 if (right && isMergeInLine(last)) { // 尝试向右侧行前嵌入内容
@@ -345,13 +349,18 @@ export async function handlePaste(range, dataTransfer, isInside) {
                     lines.shift()
                     left.append(...first.childNodes)
                 }
+                if (left) addedNodes.push(left)
                 // 将剩余的行插入到 left 和 right 之间
                 if (left) left.after(...lines)
                 else right.before(...lines)
+                addedNodes.push(...lines)
+                if (right) addedNodes.push(right)
                 updateOfflineData()
                 if (left) zipTree(left)
                 if (right) zipTree(right)
+                GLOBAL_HISTORY.addAuto(addedNodes)
             } else {    // 当插入内容只有一行且可嵌入时将内容嵌入到当前行
+                const topLineCpy = topLine.cloneNode(true)
                 const [left, right] = range.splitNode(
                     findParentTag(realStart, it => it.parentNode === topLine)
                 )
@@ -362,6 +371,7 @@ export async function handlePaste(range, dataTransfer, isInside) {
                 }
                 updateOfflineData()
                 zipTree(topLine)
+                GLOBAL_HISTORY.modifyNode(topLineCpy, topLine)
             }
         }
         if (!offlineData) updateOfflineData()

@@ -1,6 +1,6 @@
 import {
     ACTIVE_FLAG,
-    DATA_ID, DISABLE_FLAG, HOVER_TIP_NAME, KRICH_CONTAINER, KRICH_EDITOR, KRICH_HOVER_TIP,
+    DATA_ID, DISABLE_FLAG, GLOBAL_HISTORY, HOVER_TIP_NAME, KRICH_CONTAINER, KRICH_EDITOR, KRICH_HOVER_TIP,
     KRICH_TOOL_BAR,
     SELECT_VALUE
 } from '../vars/global-fileds'
@@ -11,7 +11,6 @@ import {KRange} from '../utils/range'
 import {isNoRecord, isNoStatus} from '../types/button-behavior'
 import {closeHoverTip, HOVER_TIP_LIST} from '../utils/hover-tip'
 import {clickButton} from '../behavior'
-import {recordOperate} from '../utils/record'
 
 export let isNewClickCycle = true
 /**
@@ -76,21 +75,22 @@ export function registryMouseClickEvent() {
         const behavior = getElementBehavior(target)
         const classList = target.classList
         let skip = classList.contains('color'), correct
-        await recordOperate(async () => {
-            if (!skip) {
-                if (classList.contains('select')) {
-                    skip = await handleSelectList(target, original)
-                } else {
-                    if (isNoStatus(behavior)) {
-                        waitTime(333).then(() => classList.remove(ACTIVE_FLAG))
-                    }
-                }
-                if (!skip) {
-                    correct = clickButton(behavior, range, true)
+        const isRecord = !(skip || isNoRecord(behavior))
+        if (!skip) {
+            if (isRecord) GLOBAL_HISTORY.initRange(range)
+            if (classList.contains('select')) {
+                skip = await handleSelectList(target, original)
+            } else {
+                if (isNoStatus(behavior)) {
+                    waitTime(333).then(() => classList.remove(ACTIVE_FLAG))
                 }
             }
-            if (skip || correct) range.active()
-        }, skip || isNoRecord(behavior))
+            if (!skip) {
+                correct = clickButton(behavior, range, true)
+            }
+        }
+        if (skip || correct) range.active()
+        if (isRecord) GLOBAL_HISTORY.next()
     })
 }
 
