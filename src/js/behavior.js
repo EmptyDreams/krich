@@ -63,7 +63,7 @@ import {behaviorHighlight} from './behaviors/highlight'
 import {
     BEHAVIOR_STATE_MES, BEHAVIOR_STATE_NO_RECORD,
     BEHAVIOR_STATE_NO_STATUS,
-    BEHAVIOR_STATE_TEXT_AREA,
+    BEHAVIOR_STATE_TEXT_AREA, isNoRecord,
     isNoStatus
 } from './types/button-behavior'
 import {openHoverTip} from './utils/hover-tip'
@@ -342,11 +342,18 @@ export function clickButton(key, range, force) {
     if (!force && noStatus) {
         behavior.button.click()
     } else {
+        const isRecord = !isNoRecord(behavior)
+        if (isRecord) {
+            GLOBAL_HISTORY.next()
+            GLOBAL_HISTORY.initRange(range)
+        }
         if (!noStatus) {
             behavior.button.classList.toggle(ACTIVE_FLAG)
             markStatusCacheInvalid()
         }
-        return behavior.onclick(range ?? editorRange, behavior.button)
+        const correct = behavior.onclick(range ?? editorRange, behavior.button)
+        if (correct) range.active()
+        if (isRecord) GLOBAL_HISTORY.next()
     }
 }
 

@@ -72,13 +72,10 @@ export function registryMouseClickEvent() {
             range.active()
             return
         }
-        GLOBAL_HISTORY.next()
         const behavior = getElementBehavior(target)
         const classList = target.classList
         let skip = classList.contains('color'), correct
-        const isRecord = !(skip || isNoRecord(behavior))
         if (!skip) {
-            if (isRecord) GLOBAL_HISTORY.initRange(range)
             if (classList.contains('select')) {
                 skip = await handleSelectList(target, original)
             } else {
@@ -91,7 +88,6 @@ export function registryMouseClickEvent() {
             }
         }
         if (skip || correct) range.active()
-        if (isRecord) GLOBAL_HISTORY.next()
     })
 }
 
