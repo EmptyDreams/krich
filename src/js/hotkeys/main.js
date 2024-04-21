@@ -1,9 +1,8 @@
 import {setPostHeader} from '../behaviors/header'
 import {editorRange} from '../events/range-monitor'
 import {clickButton} from '../behavior'
-import {DISABLE_FLAG, KRICH_TOOL_BAR} from '../vars/global-fileds'
+import {DISABLE_FLAG, GLOBAL_HISTORY, KRICH_TOOL_BAR} from '../vars/global-fileds'
 import {selectAll} from './select-all'
-import {redo, undo} from '../utils/record'
 import {recordInput} from '../events/before-input-event'
 
 const KEY_CTRL  =   0b1
@@ -77,14 +76,12 @@ const hotkeysList = {
     'KeyZ': [{
         fn: KEY_CTRL,
         i: () => {
-            recordInput(true)
-            undo()
+            GLOBAL_HISTORY.undo()
         }
     }, {
         fn: KEY_CTRL | KEY_SHIFT,
         i: () => {
-            recordInput(true)
-            redo()
+            GLOBAL_HISTORY.redo()
         }
     }],
     'Backquote': [{ // ctrl + ` -> 代码块

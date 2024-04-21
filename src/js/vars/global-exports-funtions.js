@@ -1,5 +1,4 @@
 import {GLOBAL_EVENT_FUN_LIST} from './global-fileds'
-import {interruptObserveDom} from '../utils/record'
 
 /**
  * 取消编辑器与 document 的绑定。
@@ -10,7 +9,6 @@ export function disconnect() {
     for (let key in GLOBAL_EVENT_FUN_LIST) {
         document.removeEventListener(key, GLOBAL_EVENT_FUN_LIST[key])
     }
-    interruptObserveDom()
 }
 
 /**
