@@ -72,6 +72,7 @@ export function registryMouseClickEvent() {
             range.active()
             return
         }
+        GLOBAL_HISTORY.next()
         const behavior = getElementBehavior(target)
         const classList = target.classList
         let skip = classList.contains('color'), correct
