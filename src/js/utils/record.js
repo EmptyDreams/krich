@@ -23,8 +23,8 @@ export function HistoryManager(root) {
      * 将 buffer 中的内容推送到 undo stack
      */
     this.next = function () {
-        console.assert(oldRange, '不存在 oldRange 记录')
         if (!buffer.length) return
+        console.assert(oldRange, '不存在 oldRange 记录')
         redoStack.length = 0
         if (undoStack.length === historySize)
             undoStack.shift()
@@ -253,6 +253,9 @@ function handleStackItem(root, data, isRedo) {
                     target.innerHTML = ''
                     break
             }
+        } else if (nodes) {     // 回退节点替换
+            console.assert(nodes.length === 1, 'nodes 长度应当为 1')
+            target.replaceWith(nodes[0])
         } else if (oldAttr) {   // 回退属性修改
             const [key, value] = oldAttr
             if (value) target.setAttribute(key, value)
@@ -280,7 +283,9 @@ function flipItem(stackItem, target) {
         type: -type
     }
     if (!type) {
-        if (oldAttr) {
+        if (nodes) {
+            cpyItem.nodes = [target.cloneNode(true)]
+        } else if (oldAttr) {
             const key = oldAttr[0]
             cpyItem.oldAttr = [key, target.getAttribute(key)]
         } else {
