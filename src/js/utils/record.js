@@ -23,17 +23,18 @@ export function HistoryManager(root) {
      * 将 buffer 中的内容推送到 undo stack
      */
     this.next = function () {
-        if (!buffer.length) return
-        console.assert(oldRange, '不存在 oldRange 记录')
-        redoStack.length = 0
-        if (undoStack.length === historySize)
-            undoStack.shift()
-        const newRange = KRange.activated().serialization()
-        undoStack.push({
-            data: buffer,
-            newRange, oldRange
-        })
-        buffer = []
+        if (buffer.length) {
+            console.assert(oldRange, '不存在 oldRange 记录')
+            redoStack.length = 0
+            if (undoStack.length === historySize)
+                undoStack.shift()
+            const newRange = KRange.activated().serialization()
+            undoStack.push({
+                data: buffer,
+                newRange, oldRange
+            })
+            buffer = []
+        }
         oldRange = null
     }
 
