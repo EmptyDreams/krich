@@ -77,14 +77,14 @@ import {highlightCode} from './utils/highlight'
  */
 export const behaviors = {
     headerSelect: {
-        state: BEHAVIOR_STATE_NO_STATUS,
+        state: BEHAVIOR_STATE_NO_STATUS | BEHAVIOR_STATE_NO_RECORD,
         exp: ['P', ...TITLE_LIST].join(','),
         render: () => headerSelectHtml,
         onclick: behaviorHeader,
         translator: removeAllAttributes,
     },
     blockquote: {
-        state: BEHAVIOR_STATE_MES,
+        state: BEHAVIOR_STATE_MES | BEHAVIOR_STATE_NO_RECORD,
         exp: 'blockquote',
         render: () => blockquoteHtml,
         onclick: range => onclickMultiElementStructure(range, 'blockquote'),
@@ -233,14 +233,14 @@ export const behaviors = {
         }
     },
     hr: {
-        state: BEHAVIOR_STATE_NO_STATUS,
+        state: BEHAVIOR_STATE_NO_STATUS | BEHAVIOR_STATE_NO_RECORD,
         exp: 'hr',
         render: () => hrHtml,
         onclick: onclickHr,
         translator: removeAllAttributes
     },
     ul: {
-        state: BEHAVIOR_STATE_MES,
+        state: BEHAVIOR_STATE_MES | BEHAVIOR_STATE_NO_RECORD,
         exp: 'ul:not(.todo)',
         render: () => ulHtml,
         onclick: range => onclickMultiElementStructure(range, 'ul'),
@@ -249,7 +249,7 @@ export const behaviors = {
         translator: translateList
     },
     ol: {
-        state: BEHAVIOR_STATE_MES,
+        state: BEHAVIOR_STATE_MES | BEHAVIOR_STATE_NO_RECORD,
         exp: 'ol',
         render: () => olHtml,
         onclick: range => onclickMultiElementStructure(range, 'ol'),
@@ -258,7 +258,7 @@ export const behaviors = {
         translator: translateList
     },
     todo: {
-        state: BEHAVIOR_STATE_MES,
+        state: BEHAVIOR_STATE_MES | BEHAVIOR_STATE_NO_RECORD,
         exp: 'ul.todo',
         render: () => todoHtml,
         onclick: range => onclickMultiElementStructure(range, 'todo'),
@@ -294,7 +294,7 @@ export const behaviors = {
         }
     },
     code: {
-        state: BEHAVIOR_STATE_TEXT_AREA,
+        state: BEHAVIOR_STATE_TEXT_AREA | BEHAVIOR_STATE_NO_RECORD,
         exp: 'pre',
         render: () => codeHtml,
         onclick: behaviorHighlight,
