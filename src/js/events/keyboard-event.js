@@ -148,13 +148,18 @@ function deleteEvent(event) {
         if (realStartContainer === getFirstTextNode(topElement)) {
             // 在引用、列表开头使用删除键时直接取消当前行的样式
             event.preventDefault()
+            GLOBAL_HISTORY.initRange(range, true)
             const line = topElement.firstChild
+            const childList = Array.from(line.childNodes)
             if (isMarkerNode(line.firstChild))
-                line.firstChild.remove()
-            topElement.before(...line.childNodes)
-            line.remove()
-            setCursorPositionBefore(topElement.previousSibling)
-            if (!topElement.firstChild) topElement.remove()
+                childList.shift()
+            GLOBAL_HISTORY.utils.replace(line, childList)
+            setCursorPositionBefore(childList[0])
+            if (!topElement.firstChild) {
+                GLOBAL_HISTORY.removeAuto([topElement])
+                topElement.remove()
+            }
+            GLOBAL_HISTORY.next()
         } else {
             const prev = prevLeafNode(startContainer, true)
             if (prev && isMarkerNode(prev)) {
