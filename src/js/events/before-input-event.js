@@ -19,6 +19,16 @@ export let isInputtingStage
 
 /** 输入更新历史记录的计时器 */
 let inputTimeoutId
+/**
+ * 输入时的 lca
+ * @type {Node}
+ */
+let inputLca
+/**
+ * 输入时的 lca 的拷贝
+ * @type {Node}
+ */
+let inputLcaCpy
 
 /**
  * 注册 before input 事件
@@ -26,24 +36,43 @@ let inputTimeoutId
 export function registryBeforeInputEventListener() {
     KRICH_EDITOR.addEventListener('beforeinput', async event => {
         const {isComposing, inputType} = event
+        if (isComposing) {
+            if (isInputtingStage) return
+            isInputtingStage = true
+            recordInput(true)
+        }
         GLOBAL_HISTORY.initRange()
-        if (!isComposing) {
-            if (!inputTimeoutId) {
-                inputTimeoutId = setTimeout(() => {
-                    if (!deleting)
-                        recordInput(true)
-                }, 500)
-            }
-            if (inputType.startsWith('insert')) {
-                isInputtingStage = true
-                await handleInput(event)
-                isInputtingStage = false
-                updateEditorRange()
-            } else if (inputType.startsWith('delete')) {
-                await waitTime(0)
-                tryFixDom(inputType.endsWith('Forward'))
-            }
-        } else isInputtingStage = true
+        const lca = event.getTargetRanges()
+            .map(it => new KRange(it).commonAncestorContainer)
+            .reduce((prev, current) => KRange.lca(prev, current))
+        function init() {
+            inputLca = lca
+            inputLcaCpy = lca.cloneNode(true)
+        }
+        if (isComposing) {
+            init()
+            return
+        }
+        if (inputLca && inputLca !== lca) {
+            recordInput(true)
+            GLOBAL_HISTORY.initRange()
+        }
+        if (!inputTimeoutId) {
+            inputTimeoutId = setTimeout(() => {
+                if (!deleting)
+                    recordInput(true)
+            }, 500)
+            init()
+        }
+        if (inputType.startsWith('insert')) {
+            isInputtingStage = true
+            await handleInput(event)
+            isInputtingStage = false
+            updateEditorRange()
+        } else if (inputType.startsWith('delete')) {
+            await waitTime(0)
+            tryFixDom(inputType.endsWith('Forward'))
+        }
     })
     KRICH_EDITOR.addEventListener('compositionend', async event => {
         await handleInput(event)
@@ -58,10 +87,12 @@ export function registryBeforeInputEventListener() {
  * @param force {boolean} 是否强制更新，为 false 时若存在 timeoutId 则不进行更新
  */
 export function recordInput(force) {
-    if (force || !inputTimeoutId) {
+    if (inputLca && (force || !inputTimeoutId)) {
         clearTimeout(inputTimeoutId)
+        GLOBAL_HISTORY.modifyNode(inputLcaCpy, inputLca)
         GLOBAL_HISTORY.next()
         inputTimeoutId = 0
+        inputLca = inputLcaCpy = null
     }
 }
 
@@ -84,11 +115,8 @@ async function handleInput(event) {
             return
         }
     }
-    let range = KRange.activated()
-    const lca = range.commonAncestorContainer
-    const lcaCpy = range.commonAncestorContainer.cloneNode(true)
     await waitTime(0)
-    range = KRange.activated()
+    const range = KRange.activated()
     const {startContainer, startOffset} = range
     if (findParentTag(range.realStartContainer(), isTextArea)) return
     if (isEnter) {
@@ -124,5 +152,4 @@ async function handleInput(event) {
         newRange.collapse(false)
         newRange.active()
     }
-    GLOBAL_HISTORY.modifyNode(lcaCpy, lca)
 }

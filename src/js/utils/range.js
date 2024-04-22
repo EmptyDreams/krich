@@ -82,7 +82,7 @@ export class KRange extends Range {
 
     /**
      * 从 Range 或 EmptyBodyElement 构建一个 KRange
-     * @param optional {Range|HTMLElement|undefined}
+     * @param optional {Range|StaticRange|HTMLElement|undefined}
      * @param cancelEbeOptimize {boolean?} 是否取消对 EBE 元素的优化
      */
     constructor(optional = undefined, cancelEbeOptimize) {
