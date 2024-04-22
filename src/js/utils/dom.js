@@ -28,13 +28,14 @@ import {handlePaste, TRANSFER_KEY_HTML} from '../events/paste-event'
 
 /**
  * 从起点开始遍历 DOM 树
+ * @template {Exclude<T, boolean>} T
  * @param start {Node} 起点
  * @param forward {boolean} 是否正向遍历
  * @param first {boolean} 首个元素是否触发 consumer
- * @param consumer {function(Node|Element): any} 返回 true 或其它为 true 的值结束遍历
+ * @param consumer {function(Node|Element): T|boolean} 返回 true 或其它为 true 的值结束遍历
  * @param limit {Node|Element?} 遍历范围限制，留空表示 KRICH_EDITOR
  * @param includeMarker {boolean?} 是否遍历 marker
- * @return {any} consumer 的返回值将会从此返回，若 consumer 返回了 true 则返回 consumer 最后一次传入的节点对象
+ * @return {T|Node} consumer 的返回值将会从此返回，若 consumer 返回了 true 则返回 consumer 最后一次传入的节点对象
  */
 export function eachDomTree(start, forward, first, consumer, limit, includeMarker) {
     function calcResult(node, value) {
@@ -88,6 +89,19 @@ export function eachDomTree(start, forward, first, consumer, limit, includeMarke
  */
 export function nextLeafNode(node, includeMarker, limit) {
     return eachDomTree(node, true, false, it => !it.firstChild, limit, includeMarker)
+}
+
+/**
+ * 获取下一个节点并判断两个节点是否在同一行
+ * @param node {Node}
+ * @return {[item: Node, isInline: boolean]|undefined}
+ */
+export function nextLeafNodeInline(node) {
+    let isInline = true
+    return eachDomTree(node, true, false, it => {
+        if (!it.firstChild) return [it, isInline]
+        if (TOP_LIST.includes(it.nodeName)) isInline = false
+    })
 }
 
 /**

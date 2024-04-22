@@ -3,12 +3,12 @@ import {
     GLOBAL_HISTORY,
     KRICH_EDITOR,
     markStatusCacheEffect, markStatusCacheInvalid,
-    statusCheckCache
+    statusCheckCache, TOP_LIST
 } from '../vars/global-fileds'
-import {findParentTag, tryFixDom} from '../utils/dom'
+import {findParentTag, nextLeafNode, nextLeafNodeInline, tryFixDom} from '../utils/dom'
 import {KRange} from '../utils/range'
 import {compareBtnListStatusWith, isActive, setButtonStatus} from '../utils/btn'
-import {getElementBehavior, waitTime} from '../utils/tools'
+import {getElementBehavior, isTextNode, waitTime} from '../utils/tools'
 import {TODO_MARKER} from '../vars/global-tag'
 import {behaviors, clickButton} from '../behavior'
 import {isNoStatus, isTextArea} from '../types/button-behavior'
@@ -70,8 +70,26 @@ export function registryBeforeInputEventListener() {
             isInputtingStage = false
             updateEditorRange()
         } else if (inputType.startsWith('delete')) {
+            // 判断是 Delete 还是 Backspace
+            const isDelete = inputType.endsWith('Forward')
+            const range = KRange.activated()
+            const {startContainer, startOffset} = range
+            const node = KRange.activated().realStartContainer()
+            if (isDelete) {
+                const atLast = (
+                    isTextNode(startContainer) ? startContainer.textContent : startContainer.childNodes
+                ).length === startOffset
+                if (atLast) {
+                    const [next, isInline] = nextLeafNodeInline(node)
+                    if (!isInline) {
+                        const nextParent = findParentTag(next, TOP_LIST)
+                        console.log(nextParent.innerHTML)
+                        GLOBAL_HISTORY.removeAuto([nextParent])
+                    }
+                }
+            }
             await waitTime(0)
-            tryFixDom(inputType.endsWith('Forward'))
+            tryFixDom(isDelete)
         }
     })
     KRICH_EDITOR.addEventListener('compositionend', async event => {
