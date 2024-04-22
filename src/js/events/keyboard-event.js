@@ -195,10 +195,11 @@ function deleteEvent(event) {
             // 在编辑器开头按下删除键时屏蔽此次按键
             event.preventDefault()
             if (!isCommonLine(startContainer)) {
+                GLOBAL_HISTORY.initRange(range, true)
                 const line = createNewLine()
-                // noinspection JSCheckFunctionSignatures
-                startContainer.replaceWith(line)
+                GLOBAL_HISTORY.utils.replace(startContainer, [line])
                 setCursorPositionBefore(line)
+                GLOBAL_HISTORY.next()
             }
         }
     }
