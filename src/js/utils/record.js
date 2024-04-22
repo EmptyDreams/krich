@@ -97,7 +97,8 @@ export function HistoryManager(root) {
      */
     function pushOperate(type, node, nodeList, offset = 0) {
         const pos = position(root, node)
-        pos[0] += offset
+        if (pos.length)
+            pos[0] += offset
         buffer.push({
             type, pos,
             nodes: nodeList.map(it => it.cloneNode(true))
@@ -132,7 +133,7 @@ export function HistoryManager(root) {
     }
 
     /**
-     * 标记移除指定节点
+     * 标记移除指定节点，该函数要求在节点被移除前调用
      * @param removedNodes {Node[]} 被移除的节点列表
      */
     this.removeAuto = function (removedNodes) {
@@ -175,7 +176,7 @@ export function HistoryManager(root) {
     }
 
     /**
-     * 标记添加指定节点
+     * 标记添加指定节点，该函数调用时要求节点已经被添加到 DOM 中
      * @param addedNodes {Node[]}
      */
     this.addAuto = function (addedNodes) {

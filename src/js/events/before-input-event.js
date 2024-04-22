@@ -28,6 +28,12 @@ export function registryBeforeInputEventListener() {
         const {isComposing, inputType} = event
         GLOBAL_HISTORY.initRange()
         if (!isComposing) {
+            if (!inputTimeoutId) {
+                inputTimeoutId = setTimeout(() => {
+                    if (!deleting)
+                        recordInput(true)
+                }, 500)
+            }
             if (inputType.startsWith('insert')) {
                 isInputtingStage = true
                 await handleInput(event)
@@ -36,12 +42,6 @@ export function registryBeforeInputEventListener() {
             } else if (inputType.startsWith('delete')) {
                 await waitTime(0)
                 tryFixDom(inputType.endsWith('Forward'))
-            }
-            if (!inputTimeoutId) {
-                inputTimeoutId = setTimeout(() => {
-                    if (!deleting)
-                        recordInput(true)
-                }, 500)
             }
         } else isInputtingStage = true
     })

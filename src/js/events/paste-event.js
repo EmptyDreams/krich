@@ -336,8 +336,7 @@ export async function handlePaste(range, dataTransfer, isInside) {
                     GLOBAL_HISTORY.addAfter(topLineParent, childNodes)
                 }
             } else if (lines.length > 1 || !isMergeInLine(first)) { // 当插入内容有多行或插入的内容不可嵌入到行中时执行通用插入方式
-                const topLineCpy = topLine.cloneNode(true)
-                GLOBAL_HISTORY.removeAuto([topLineCpy])
+                GLOBAL_HISTORY.removeAuto([topLine])
                 const addedNodes = []
                 const last = lines[lines.length - 1]
                 const [left, right] = range.splitNode(topLine)
