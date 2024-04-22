@@ -66,7 +66,7 @@ export function registryKeyboardEvent() {
                     enterEvent(event)
                     break
                 case 'Backspace':
-                    GLOBAL_HISTORY.initRange()
+                    GLOBAL_HISTORY.initRange(editorRange, true)
                     deleteEvent(event)
                     GLOBAL_HISTORY.next()
                     break

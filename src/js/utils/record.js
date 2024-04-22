@@ -22,7 +22,7 @@ export function HistoryManager(root) {
     /**
      * 将 buffer 中的内容推送到 undo stack
      */
-    this.next = function () {
+    const next = this.next = function () {
         if (buffer.length) {
             console.assert(oldRange, '不存在 oldRange 记录')
             redoStack.length = 0
@@ -40,11 +40,13 @@ export function HistoryManager(root) {
 
     /**
      * 初始化 oldRange 的值，若已经初始化则不进行任何操作，调用 {@link #next} 前必须调用该函数
-     * @param range {KRange?}
+     * @param range {KRange}
+     * @param force {boolean?} 是否强制设置，设置为 true 时会先尝试提交一次历史记录
      */
-    this.initRange = function (range) {
+    this.initRange = function (range = KRange.activated(), force) {
+        if (force) next()
         if (oldRange) return
-        oldRange = (range ?? KRange.activated()).serialization()
+        oldRange = range.serialization()
     }
 
     /**
@@ -82,9 +84,9 @@ export function HistoryManager(root) {
          * @param newNodes {Node[]}
          */
         replace: (oldNode, newNodes) => {
-            this.removeAuto([oldNode])
+            removeAuto([oldNode])
             oldNode.replaceWith(...newNodes)
-            this.addAuto(newNodes)
+            addAuto(newNodes)
         }
     }
 
@@ -110,7 +112,7 @@ export function HistoryManager(root) {
      * @param node {Node} 定位节点
      * @param removedNodes {Node[]} 被移除的节点列表
      */
-    this.removeAfter = function (node, removedNodes) {
+    const removeAfter = this.removeAfter = function (node, removedNodes) {
         pushOperate(-2, node, removedNodes)
     }
 
@@ -119,7 +121,7 @@ export function HistoryManager(root) {
      * @param node {Node} 定位节点
      * @param removedNodes {Node[]} 被移除的节点列表
      */
-    this.removeBefore = function (node, removedNodes) {
+    const removeBefore = this.removeBefore = function (node, removedNodes) {
         pushOperate(-1, node, removedNodes, -removedNodes.length)
     }
 
@@ -128,7 +130,7 @@ export function HistoryManager(root) {
      * @param node {Node} 定位节点
      * @param removedNodes {Node[]} 被移除的节点列表
      */
-    this.removeChild = function (node, removedNodes) {
+    const removeChild = this.removeChild = function (node, removedNodes) {
         pushOperate(-3, node, removedNodes)
     }
 
@@ -136,15 +138,15 @@ export function HistoryManager(root) {
      * 标记移除指定节点，该函数要求在节点被移除前调用
      * @param removedNodes {Node[]} 被移除的节点列表
      */
-    this.removeAuto = function (removedNodes) {
+    const removeAuto = this.removeAuto = function (removedNodes) {
         const first = removedNodes[0], last = removedNodes[removedNodes.length - 1]
         const prev = first.previousSibling, next = last.nextSibling
         if (prev) {
-            this.removeAfter(prev, removedNodes)
+            removeAfter(prev, removedNodes)
         } else if (next) {
-            this.removeBefore(next, removedNodes)
+            removeBefore(next, removedNodes)
         } else {
-            this.removeChild(first.parentNode, removedNodes)
+            removeChild(first.parentNode, removedNodes)
         }
     }
 
@@ -153,7 +155,7 @@ export function HistoryManager(root) {
      * @param node {Node} 定位节点
      * @param addedNodes {Node[]} 被添加的节点列表
      */
-    this.addAfter = function (node, addedNodes) {
+    const addAfter = this.addAfter = function (node, addedNodes) {
         pushOperate(2, node, addedNodes)
     }
 
@@ -162,7 +164,7 @@ export function HistoryManager(root) {
      * @param node {Node} 定位节点
      * @param addedNodes {Node[]} 被添加的节点列表
      */
-    this.addBefore = function (node, addedNodes) {
+    const addBefore = this.addBefore = function (node, addedNodes) {
         pushOperate(1, node, addedNodes, addedNodes.length)
     }
 
@@ -171,7 +173,7 @@ export function HistoryManager(root) {
      * @param node {Node}
      * @param addedNodes {Node[]}
      */
-    this.addChild = function (node, addedNodes) {
+    const addChild = this.addChild = function (node, addedNodes) {
         pushOperate(3, node, addedNodes)
     }
 
@@ -179,15 +181,15 @@ export function HistoryManager(root) {
      * 标记添加指定节点，该函数调用时要求节点已经被添加到 DOM 中
      * @param addedNodes {Node[]}
      */
-    this.addAuto = function (addedNodes) {
+    const addAuto = this.addAuto = function (addedNodes) {
         const first = addedNodes[0], last = addedNodes[addedNodes.length - 1]
         const prev = first.previousSibling, next = last.nextSibling
         if (prev) {
-            this.addAfter(prev, addedNodes)
+            addAfter(prev, addedNodes)
         } else if (next) {
-            this.addBefore(next, addedNodes)
+            addBefore(next, addedNodes)
         } else {
-            this.addChild(first.parentNode, addedNodes)
+            addChild(first.parentNode, addedNodes)
         }
     }
 

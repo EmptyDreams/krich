@@ -345,8 +345,7 @@ export function clickButton(key, range, force, notRecord) {
     } else {
         const isRecord = !notRecord && !isNoRecord(behavior)
         if (isRecord) {
-            GLOBAL_HISTORY.next()
-            GLOBAL_HISTORY.initRange(range)
+            GLOBAL_HISTORY.initRange(range, true)
         }
         if (!noStatus) {
             behavior.button.classList.toggle(ACTIVE_FLAG)
