@@ -114,7 +114,7 @@ export function isEmptyLine(node) {
  * @return {boolean}
  */
 export function isEmptyListLine(node) {
-    console.assert(node.nodeName === 'LI', '调用 isEmptyListLine 时传入的 Node 应当为 LI 标签')
+    if (!isListLine(node)) return false
     const firstChild = node.firstChild
     const amount = node.childNodes.length
     return isBrNode(getFirstChildNode(node, true)) && (amount === 1 || (isMarkerNode(firstChild) && amount === 2))
@@ -131,7 +131,7 @@ export function isMarkerNode(node) {
 
 /**
  * 判断指定节点是否是 `li`
- * @param node {Node?}
+ * @param node {Node}
  * @return {boolean}
  */
 export function isListLine(node) {

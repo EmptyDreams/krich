@@ -286,7 +286,11 @@ function enterEvent(event) {
         if (!structure) return
         const lastChild = structure.lastChild
         let li
-        if (isEmptyListLine(lastChild) && !lastChild.textContent && startContainer.contains(getLastTextNode(structure))) {
+        if (
+            (isEmptyLine(lastChild) || isEmptyListLine(lastChild)) &&
+            !lastChild.textContent &&
+            startContainer.contains(getLastTextNode(structure))
+        ) {
             /* 在多元素结构最后一个空行按下回车时自动退出 */
             event.preventDefault()
             if (structure.nodeName[0] === 'B') {
