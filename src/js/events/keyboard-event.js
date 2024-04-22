@@ -163,12 +163,15 @@ function deleteEvent(event) {
         } else {
             const prev = prevLeafNode(startContainer, true)
             if (prev && isMarkerNode(prev)) {
-                // 修正在代办列表开头按 backspace 的行为
+                // 修正在代办列表每一行开头按 backspace 的行为
                 event.preventDefault()
+                GLOBAL_HISTORY.initRange(range, true)
                 const listLine = findParentTag(startContainer, isListLine)
                 const prevLine = listLine.previousSibling
                 const lastSonLine = prevLine.lastChild
+                const prevLineCpy = prevLine.cloneNode(true)
                 let pos = lastSonLine.lastChild
+                GLOBAL_HISTORY.removeAuto([listLine])
                 if (isMarkerNode(listLine.firstChild))
                     listLine.firstChild.remove()
                 const firstSonLine = listLine.firstChild
@@ -177,12 +180,14 @@ function deleteEvent(event) {
                     firstSonLine.remove()
                 }
                 lastSonLine.after(...listLine.childNodes)
-                const range = setCursorPositionAfter(pos, false)
-                const offlineData = range.serialization()
+                GLOBAL_HISTORY.modifyNode(prevLineCpy, prevLine)
+                const newRange = setCursorPositionAfter(pos, false)
+                const offlineData = newRange.serialization()
                 listLine.remove()
                 // noinspection JSCheckFunctionSignatures
                 zipTree(prevLine)
-                range.deserialized(offlineData).active()
+                newRange.deserialized(offlineData).active()
+                GLOBAL_HISTORY.next()
             }
         }
     } else if (isEmptyLine(startContainer)) {
