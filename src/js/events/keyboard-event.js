@@ -167,8 +167,7 @@ function deleteEvent(event, isBackspace) {
             }
             GLOBAL_HISTORY.next()
         } else {
-            const prev = prevLeafNode(startContainer, true)
-            if (prev && isMarkerNode(prev)) {
+            if (isMultiEleStruct(topElement) && isListLine(topElement.firstChild)) {
                 // 修正在代办列表每一行开头按 backspace 的行为
                 event.preventDefault()
                 GLOBAL_HISTORY.initRange(range, true)
