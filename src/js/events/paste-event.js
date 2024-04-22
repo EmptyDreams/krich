@@ -207,8 +207,8 @@ function isForbidPaste(range) {
  * @param node {Node}
  */
 async function insertTextToTextArea(range, textArea, node) {
-    range.insertText(node.textContent, true)
-    await highlightCode(range, textArea)
+    range.insertText(node.textContent)
+    await highlightCode(KRange.activated(), textArea)
 }
 
 /**

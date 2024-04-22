@@ -115,10 +115,11 @@ function deleteEvent(event) {
         event.preventDefault()
         const lines = editorRange.getAllTopElements()
         GLOBAL_HISTORY.removeAuto(lines)
-        editorRange.insertText('', true)
+        editorRange.insertText('')
         tryFixDom()
-        editorRange.active(true)
-        GLOBAL_HISTORY.addAuto(editorRange.getAllTopElements())
+        const range = KRange.activated()
+        range.active(true)
+        GLOBAL_HISTORY.addAuto(range.getAllTopElements())
         return
     }
     const realStartContainer = editorRange.realStartContainer()

@@ -26,7 +26,10 @@ import {isMultiEleStruct} from '../types/button-behavior'
  * @param index {number}
  */
 export function setCursorAt(node, index) {
-    getSelection().collapse(node, index)
+    const range = new KRange()
+    range.setStart(node, index)
+    range.collapse(true)
+    range.active()
 }
 
 /**
@@ -767,10 +770,9 @@ export class KRange extends Range {
     /**
      * 插入文本，如果选区选择了一部分文字，将会替换选择的文字
      * @param text {string} 要插入的文本
-     * @param inPlace {boolean?} 是否修改当前 KRange 对象
      * @return {boolean} 是否插入成功
      */
-    insertText(text, inPlace) {
+    insertText(text) {
         const {startContainer, startOffset, collapsed} = this
         const realStartContainer = this.realStartContainer()
         const fixed = startContainer !== realStartContainer
@@ -812,12 +814,7 @@ export class KRange extends Range {
             insertedNode.textContent = insertTextToString(insertedNode.textContent, index, text)
         }
         const pos = index + text.length
-        if (inPlace) {
-            this.setStart(insertedNode, pos)
-            this.collapse(true)
-        } else {
-            setCursorAt(insertedNode, pos)
-        }
+        setCursorAt(insertedNode, pos)
         return true
     }
 
