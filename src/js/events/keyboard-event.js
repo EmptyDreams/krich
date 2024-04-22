@@ -110,7 +110,7 @@ function tabEvent(event) {
 function deleteEvent(event) {
     let range = editorRange
     const {startContainer, startOffset, collapsed} = range
-    if (!collapsed) {
+    if (!collapsed) {   // 如果选择的是一个区域，则使用 `insertText` 函数进行删除
         event.preventDefault()
         GLOBAL_HISTORY.initRange(range, true)
         const lines = range.getAllTopElements()
@@ -127,7 +127,9 @@ function deleteEvent(event) {
     const textArea = findParentTag(realStartContainer, isTextArea)
     if (textArea) {
         if (startContainer === realStartContainer && startOffset) return
+        // 如果是在文本域的开头按删除键则直接拆分文本域
         event.preventDefault()
+        GLOBAL_HISTORY.initRange(range, true)
         let list = textArea.textContent.split('\n')
         if (list.length > 1 && !list[list.length - 1]) list.pop()
         list = list.map(it => {
@@ -135,9 +137,9 @@ function deleteEvent(event) {
             if (it) line.textContent = it
             return line
         })
-        list.forEach(it => textArea.before(it))
-        textArea.remove()
+        GLOBAL_HISTORY.utils.replace(textArea, list)
         setCursorPositionBefore(list[0])
+        GLOBAL_HISTORY.next()
         return
     }
     if (startOffset) return
