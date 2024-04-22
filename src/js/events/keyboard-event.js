@@ -52,7 +52,8 @@ export function registryKeyboardEvent() {
     })
     KRICH_EDITOR.addEventListener('keydown', async event => {
         const body = editorRange?.body
-        const code = event.code
+        let {code, key} = event
+        if (key === 'Delete') code = key
         if (!deleting && code === 'Backspace' || code === 'Delete') {
             deleting = true
         }
@@ -66,7 +67,10 @@ export function registryKeyboardEvent() {
                     enterEvent(event)
                     break
                 case 'Backspace':
-                    deleteEvent(event)
+                    deleteEvent(event, true)
+                    break
+                case 'Delete':
+                    deleteEvent(event, false)
                     break
                 case 'Tab':
                     tabEvent(event)
@@ -106,8 +110,9 @@ function tabEvent(event) {
 /**
  * 删除事件
  * @param event {KeyboardEvent}
+ * @param isBackspace {boolean} 是否是 backspace 按键引发的操作
  */
-function deleteEvent(event) {
+function deleteEvent(event, isBackspace) {
     let range = editorRange
     const {startContainer, startOffset, collapsed} = range
     if (!collapsed) {   // 如果选择的是一个区域，则使用 `insertText` 函数进行删除
@@ -123,6 +128,7 @@ function deleteEvent(event) {
         GLOBAL_HISTORY.next()
         return
     }
+    if (!isBackspace) return
     const realStartContainer = range.realStartContainer()
     const textArea = findParentTag(realStartContainer, isTextArea)
     if (textArea) {
