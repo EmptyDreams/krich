@@ -66,9 +66,7 @@ export function registryKeyboardEvent() {
                     enterEvent(event)
                     break
                 case 'Backspace':
-                    GLOBAL_HISTORY.initRange(editorRange, true)
                     deleteEvent(event)
-                    GLOBAL_HISTORY.next()
                     break
                 case 'Tab':
                     tabEvent(event)
@@ -110,19 +108,22 @@ function tabEvent(event) {
  * @param event {KeyboardEvent}
  */
 function deleteEvent(event) {
-    const {startContainer, startOffset, collapsed} = editorRange
+    let range = editorRange
+    const {startContainer, startOffset, collapsed} = range
     if (!collapsed) {
         event.preventDefault()
-        const lines = editorRange.getAllTopElements()
+        GLOBAL_HISTORY.initRange(range, true)
+        const lines = range.getAllTopElements()
         GLOBAL_HISTORY.removeAuto(lines)
-        editorRange.insertText('')
+        range.insertText('')
         tryFixDom()
-        const range = KRange.activated()
+        range = KRange.activated()
         range.active(true)
         GLOBAL_HISTORY.addAuto(range.getAllTopElements())
+        GLOBAL_HISTORY.next()
         return
     }
-    const realStartContainer = editorRange.realStartContainer()
+    const realStartContainer = range.realStartContainer()
     const textArea = findParentTag(realStartContainer, isTextArea)
     if (textArea) {
         if (startContainer === realStartContainer && startOffset) return
