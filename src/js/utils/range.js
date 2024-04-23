@@ -773,7 +773,7 @@ export class KRange extends Range {
      * @return {boolean} 是否插入成功
      */
     insertText(text) {
-        const {startContainer, startOffset, collapsed} = this
+        const {startContainer, startOffset, endContainer, collapsed} = this
         const realStartContainer = this.realStartContainer()
         const fixed = startContainer !== realStartContainer
         let index = fixed ? 0 : startOffset
@@ -783,24 +783,32 @@ export class KRange extends Range {
             if (!text || !isTextNode(realStartContainer)) return false
             insertedNode = realStartContainer
         } else {
+            const startTopLine = findParentTag(startContainer, TOP_LIST)
+            const endTopLine = findParentTag(endContainer, TOP_LIST)
+            // 判断修改文本后是否需要合并前后行
+            const merge = startTopLine !== endTopLine && !this.isCompleteInclude(startTopLine) && !this.isCompleteInclude(endTopLine)
             const tmpBox = createElement('div', ['tmp'])
             this.surroundContents(tmpBox)
+            const left = tmpBox.previousSibling
+            const right = tmpBox.nextSibling
+            tmpBox.remove()
             index = 0
             if (text) {
                 insertedNode = createElement('br')
-                tmpBox.replaceWith(insertedNode)
-            } else {
-                const list = [[nextLeafNode, setCursorPositionBefore], [prevLeafNode, setCursorPositionAfter]]
-                for (let value of list) {
-                    insertedNode = value[0](tmpBox)
-                    if (insertedNode) {
-                        tmpBox.remove()
-                        value[1](insertedNode)
-                        return true
-                    }
+                if (merge) {
+                    left.append(insertedNode, ...right.childNodes)
                 }
-                KRICH_EDITOR.innerHTML = '<p><br></p>'
-                setCursorPositionBefore(KRICH_EDITOR)
+            } else {
+                if (left) {
+                    const pos = getLastChildNode(left)
+                    if (merge) left.append(...right.childNodes)
+                    setCursorPositionAfter(pos)
+                } else if (right) {
+                    setCursorPositionBefore(right)
+                } else {
+                    KRICH_EDITOR.innerHTML = '<p><br></p>'
+                    setCursorPositionBefore(KRICH_EDITOR)
+                }
                 return true
             }
         }
