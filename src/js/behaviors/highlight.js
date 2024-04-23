@@ -1,6 +1,6 @@
 import {findParentTag, getFirstChildNode} from '../utils/dom'
 import {isCommonLine, isEmptyLine} from '../utils/tools'
-import {KRange, setCursorPositionBefore} from '../utils/range'
+import {KRange, setCursorPositionAfter, setCursorPositionBefore} from '../utils/range'
 import {behaviors} from '../behavior'
 import {GLOBAL_HISTORY} from '../vars/global-fileds'
 
@@ -9,7 +9,7 @@ import {GLOBAL_HISTORY} from '../vars/global-fileds'
  * @param range {KRange}
  */
 export function behaviorHighlight(range) {
-    const offlineData = GLOBAL_HISTORY.initRange(range, true)
+    GLOBAL_HISTORY.initRange(range, true)
     const behavior = behaviors.code
     const pre = behavior.builder()
     const code = pre.firstChild
@@ -33,7 +33,7 @@ export function behaviorHighlight(range) {
         }
         code.textContent = codeContent
         GLOBAL_HISTORY.addAuto([pre])
-        range.deserialized(offlineData).active(true)
+        setCursorPositionAfter(pre)
     }
     GLOBAL_HISTORY.next()
 }
