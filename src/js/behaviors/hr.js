@@ -1,5 +1,5 @@
 import {findParentTag} from '../utils/dom'
-import {TOP_LIST} from '../vars/global-fileds'
+import {GLOBAL_HISTORY, TOP_LIST} from '../vars/global-fileds'
 import {createElement, isEmptyLine} from '../utils/tools'
 import {KRange} from '../utils/range'
 
@@ -8,12 +8,15 @@ import {KRange} from '../utils/range'
  * @param range {KRange}
  */
 export function onclickHr(range) {
+    GLOBAL_HISTORY.initRange(range, true)
     const posLine = findParentTag(range.realEndContainer(), TOP_LIST)
     const hr = createElement('hr')
     if (isEmptyLine(posLine)) {
-        posLine.replaceWith(hr)
+        GLOBAL_HISTORY.utils.replace(posLine, [hr])
     } else {
         posLine.after(hr)
+        GLOBAL_HISTORY.addAfter(posLine, [hr])
     }
     new KRange(hr).active()
+    GLOBAL_HISTORY.next()
 }
