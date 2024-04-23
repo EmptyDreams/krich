@@ -1,5 +1,5 @@
 import {findParentTag} from '../utils/dom'
-import {HASH_NAME, KRICH_TOOL_BAR} from '../vars/global-fileds'
+import {GLOBAL_HISTORY, HASH_NAME, KRICH_TOOL_BAR} from '../vars/global-fileds'
 import {KRange} from '../utils/range'
 import {isMultiEleStruct} from '../types/button-behavior'
 import {createHash, isCommonLine} from '../utils/tools'
@@ -11,9 +11,10 @@ import {behaviors} from '../behavior'
  * @param key {string} 在 behaviors 中的 key
  */
 export function onclickMultiElementStructure(range, key) {
-    const offlineData = range.serialization()
+    const offlineData = GLOBAL_HISTORY.initRange(range, true)
     helper(range, key)
     KRange.deserialized(offlineData).active()
+    GLOBAL_HISTORY.next()
 }
 
 /**
@@ -57,8 +58,7 @@ function helper(range, key) {
         }
         /** 清除整个结构 */
         const removeAll = () => {
-            startTopContainer.after(...selectLines(startTopContainer.firstChild))
-            startTopContainer.remove()
+            GLOBAL_HISTORY.utils.replace(startTopContainer, selectLines(startTopContainer.firstChild))
         }
         // 如果没有范围选中则判定为选中了全部
         if (range.collapsed) return removeAll()
@@ -73,9 +73,13 @@ function helper(range, key) {
         if (isStart && isEnd) {   // 如果选中了所有行
             removeAll()
         } else if (isStart) {   // 如果选区包含第一行
-            startTopContainer.before(...selectLines(start, end))
+            const lines = selectLines(start, end)
+            startTopContainer.before(...lines)
+            GLOBAL_HISTORY.addBefore(startTopContainer, lines)
         } else if (isEnd) {   // 如果选区包含最后一行
-            startTopContainer.after(...selectLines(start))
+            const lines = selectLines(start)
+            startTopContainer.after(...lines)
+            GLOBAL_HISTORY.addAfter(startTopContainer, lines)
         } else {    // 如果选区夹在中间
             const middle = selectLines(start, end)
             const bottom = selectLines(end.nextSibling)
@@ -83,6 +87,7 @@ function helper(range, key) {
             bottomStructure.append(...bottom)
             startTopContainer.after(bottomStructure)
             startTopContainer.after(...middle)
+            GLOBAL_HISTORY.addAfter(startTopContainer, [...middle, bottomStructure])
         }
         return
     }
@@ -100,17 +105,23 @@ function helper(range, key) {
         return packing
     }
     let structure = existing
+    const packLines = lines.map(pack)
     if (existing) { // 如果顶层元素中包含一个同样的多元素结构，那么就将内容合并到其中
-        let i = 0
-        for (; i < lines.length && lines[i] !== existing; ++i) {
-            existing.prepend(pack(lines[i]))
-        }
-        for (++i; i < lines.length; ++i) {
-            existing.append(pack(lines[i]))
-        }
+        let index = lines.indexOf(existing)
+        if (index < 0) index = lines.length
+        const left = packLines.slice(0, index).reverse()
+        const right = packLines.splice(index + 1)
+        existing.prepend(...left)
+        GLOBAL_HISTORY.addAuto(left)
+        const rightPos = existing.lastChild
+        existing.append(...right)
+        GLOBAL_HISTORY.addAfter(rightPos, right)
     } else {    // 否则新建一个结构容纳所有内容
         structure = buildStructure()
         lines[0].before(structure)
-        structure.append(...lines.map(pack))
+        GLOBAL_HISTORY.addBefore(lines[0], [structure])
+        structure.append(...packLines)
+        GLOBAL_HISTORY.removeAfter(structure, lines)
+        GLOBAL_HISTORY.addChild(structure, packLines)
     }
 }

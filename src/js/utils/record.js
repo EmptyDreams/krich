@@ -166,7 +166,7 @@ export function HistoryManager(root) {
      * @param addedNodes {Node[]} 被添加的节点列表
      */
     const addBefore = this.addBefore = function (node, addedNodes) {
-        pushOperate(1, node, addedNodes, addedNodes.length)
+        pushOperate(1, node, addedNodes)
     }
 
     /**
