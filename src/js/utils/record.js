@@ -42,11 +42,12 @@ export function HistoryManager(root) {
      * 初始化 oldRange 的值，若已经初始化则不进行任何操作，调用 {@link #next} 前必须调用该函数
      * @param range {KRange}
      * @param force {boolean?} 是否强制设置，设置为 true 时会先尝试提交一次历史记录
+     * @return {KRangeData|undefined}
      */
     this.initRange = function (range = KRange.activated(), force) {
         if (force) next()
         if (oldRange) return
-        oldRange = range.serialization()
+        return oldRange = range.serialization()
     }
 
     /**

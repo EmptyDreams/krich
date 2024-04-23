@@ -1,4 +1,4 @@
-import {SELECT_VALUE} from '../vars/global-fileds'
+import {GLOBAL_HISTORY, SELECT_VALUE} from '../vars/global-fileds'
 import {KRange} from '../utils/range'
 import {createElement} from '../utils/tools'
 
@@ -19,11 +19,12 @@ export function behaviorHeader(range, target) {
  * @param level {'0'|'1'|'2'|'3'|'4'|'5'|'6'}
  */
 export function setPostHeader(range, level) {
-    const data = range.serialization()
+    const data = GLOBAL_HISTORY.initRange(range, true)
     range.getAllTopElements().forEach(item => {
         const novel = createElement(level === '0' ? 'p' : 'h' + level)
         novel.innerHTML = item.textContent || '<br>'
-        item.replaceWith(novel)
+        GLOBAL_HISTORY.utils.replace(item, [novel])
     })
     KRange.deserialized(data).active()
+    GLOBAL_HISTORY.next()
 }

@@ -5,7 +5,7 @@ import {
     markStatusCacheEffect, markStatusCacheInvalid,
     statusCheckCache, TOP_LIST
 } from '../vars/global-fileds'
-import {findParentTag, nextLeafNode, nextLeafNodeInline, prevLeafNodeInline, tryFixDom} from '../utils/dom'
+import {findParentTag, nextLeafNodeInline, prevLeafNodeInline, tryFixDom} from '../utils/dom'
 import {KRange} from '../utils/range'
 import {compareBtnListStatusWith, isActive, setButtonStatus} from '../utils/btn'
 import {getElementBehavior, isTextNode, waitTime} from '../utils/tools'
