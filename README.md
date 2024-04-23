@@ -78,6 +78,8 @@
     <script type="module" (defer/async) src="https://<YourCdnDomain>/npm/krich@<version>/dist/krich-es(.min).js"></script>
     ```
    
+建议在本地开发、调试时使用未压缩的版本，压缩版本中删除了所有的 `console.assert` 语句。
+
 ## 获取对象
 
 导入脚本并执行后，krich 将会声明一个名为 `KRich` 的全局函数，使用 `window.KRich` 或 `KRich` 即可获取到对象。
@@ -90,14 +92,20 @@ import KRich from './krich-es.js'
 
 ## 文档
 
-### 构造函数
+### KRich
 
-构造函数接收一个 `string` 类型或 `Element` 类型的参数。
+用于构造 krich 对象，在调用该函数时，`krich` 会自动向容器对象中写入 html 并完成初始化，参数中指定的容器对象必须为空。
+
+参数类型：`string|Element`
 
 1. `string`：一个 CSS 选择表达式，用于从 `document` 中选择容器对象
 2. `Element`：手动指定容器对象
 
-容器对象内容必须为空，在调用构造函数的同时，`krich` 会自动向容器对象中写入 html 并完成 `krich` 的初始化。
+示例代码：
+
+```javascript
+const krich = KRich('#krich')
+```
 
 ### disconnect
 
