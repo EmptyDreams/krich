@@ -518,9 +518,8 @@ export function zipTree(container) {
 export async function exportData() {
     /** @type {Element} */
     const root = KRICH_EDITOR.cloneNode(true)
-    removeRuntimeFlag(root)
     const result = {
-        html: root
+        html: removeRuntimeFlag(root)
     }
     if (imageMapper != null) {
         const urls = new Set()
