@@ -5,7 +5,7 @@ import {
     markStatusCacheEffect, markStatusCacheInvalid,
     statusCheckCache, TOP_LIST
 } from '../vars/global-fileds'
-import {findParentTag, nextLeafNode, nextLeafNodeInline, tryFixDom} from '../utils/dom'
+import {findParentTag, nextLeafNode, nextLeafNodeInline, prevLeafNodeInline, tryFixDom} from '../utils/dom'
 import {KRange} from '../utils/range'
 import {compareBtnListStatusWith, isActive, setButtonStatus} from '../utils/btn'
 import {getElementBehavior, isTextNode, waitTime} from '../utils/tools'
@@ -83,9 +83,15 @@ export function registryBeforeInputEventListener() {
                     const [next, isInline] = nextLeafNodeInline(node)
                     if (!isInline) {
                         const nextParent = findParentTag(next, TOP_LIST)
-                        console.log(nextParent.innerHTML)
                         GLOBAL_HISTORY.removeAuto([nextParent])
                     }
+                }
+            } else if (!startOffset) {
+                const [_, isInline] = prevLeafNodeInline(node)
+                if (!isInline) {
+                    recordInput(true, () => {
+                        GLOBAL_HISTORY.removeAuto([findParentTag(node, TOP_LIST)])
+                    })
                 }
             }
             await waitTime(0)
@@ -103,10 +109,12 @@ export function registryBeforeInputEventListener() {
 /**
  * 更新输入记录并清除 timeout
  * @param force {boolean} 是否强制更新，为 false 时若存在 timeoutId 则不进行更新
+ * @param operate {VoidFunction?}
  */
-export function recordInput(force) {
+export function recordInput(force, operate) {
     if (inputLca && (force || !inputTimeoutId)) {
         clearTimeout(inputTimeoutId)
+        operate?.()
         GLOBAL_HISTORY.modifyNode(inputLcaCpy, inputLca)
         GLOBAL_HISTORY.next()
         inputTimeoutId = 0

@@ -48,20 +48,13 @@ export function eachDomTree(start, forward, first, consumer, limit, includeMarke
      */
     function dfs(item) {
         if (!includeMarker && isMarkerNode(item)) return
-        let result
         const childNodes = Array.from(item.childNodes ?? [])
-        if (forward) {
-            result = consumer(item)
-            if (result) return calcResult(item, result)
-        }
+        let result = consumer(item)
+        if (result) return calcResult(item, result)
         if (!forward) childNodes.reverse()
         for (let item of childNodes) {
             result = dfs(item)
             if (result) return result
-        }
-        if (!forward) {
-            result = consumer(item)
-            if (result) return calcResult(item, result)
         }
     }
     const parentNode = start.parentNode
@@ -113,6 +106,19 @@ export function nextLeafNodeInline(node) {
  */
 export function prevLeafNode(node, includeMarker, limit) {
     return eachDomTree(node, false, false, it => !it.firstChild, limit, includeMarker)
+}
+
+/**
+ * 获取上一个节点并判断两个节点是否在同一行
+ * @param node {Node}
+ * @return {[item: Node, isInline: boolean]|undefined}
+ */
+export function prevLeafNodeInline(node) {
+    let isInline = true
+    return eachDomTree(node, false, false, it => {
+        if (!it.firstChild) return [it, isInline]
+        if (TOP_LIST.includes(it.nodeName)) isInline = false
+    })
 }
 
 /**
