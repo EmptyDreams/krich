@@ -105,14 +105,17 @@ function helper(range, key) {
         return packing
     }
     let structure = existing
-    const packLines = lines.map(pack)
     if (existing) { // 如果顶层元素中包含一个同样的多元素结构，那么就将内容合并到其中
         let index = lines.indexOf(existing)
         if (index < 0) index = lines.length
-        const left = packLines.slice(0, index).reverse()
-        const right = packLines.splice(index + 1)
+        let left = lines.slice(0, index).reverse()
+        let right = lines.splice(index + 1)
+        GLOBAL_HISTORY.removeAuto(left)
+        left = left.map(pack)
         existing.prepend(...left)
         GLOBAL_HISTORY.addAuto(left)
+        GLOBAL_HISTORY.removeAuto(right)
+        right = right.map(pack)
         const rightPos = existing.lastChild
         existing.append(...right)
         GLOBAL_HISTORY.addAfter(rightPos, right)
@@ -120,8 +123,9 @@ function helper(range, key) {
         structure = buildStructure()
         lines[0].before(structure)
         GLOBAL_HISTORY.addBefore(lines[0], [structure])
-        structure.append(...packLines)
+        const packLines = lines.map(pack)
         GLOBAL_HISTORY.removeAfter(structure, lines)
+        structure.append(...packLines)
         GLOBAL_HISTORY.addChild(structure, packLines)
     }
 }
