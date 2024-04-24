@@ -72,7 +72,7 @@ export function updateEditorRange() {
             rangeBody.classList.add(EMPTY_BODY_ACTIVE_FLAG)
             range.active()
         }
-        if (findIndependent(range.commonAncestorContainer)) {
+        if (findIndependent(rangeBody ?? range.commonAncestorContainer)) {
             const target = rangeBody ?? independent
             getElementBehavior(target)?.hover?.(target)
         }
