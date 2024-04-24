@@ -2,13 +2,13 @@ import {editorRange, updateEditorRange} from './range-monitor'
 import {
     GLOBAL_HISTORY,
     KRICH_EDITOR,
-    markStatusCacheEffect, markStatusCacheInvalid,
+    markStatusCacheEffect,
     statusCheckCache, TOP_LIST
 } from '../vars/global-fileds'
 import {findParentTag, nextLeafNodeInline, prevLeafNodeInline, tryFixDom} from '../utils/dom'
-import {KRange} from '../utils/range'
+import {KRange, setCursorPositionBefore} from '../utils/range'
 import {compareBtnListStatusWith, isActive, setButtonStatus} from '../utils/btn'
-import {getElementBehavior, isTextNode, waitTime} from '../utils/tools'
+import {getElementBehavior, isBrNode, isTextNode, waitTime} from '../utils/tools'
 import {TODO_MARKER} from '../vars/global-tag'
 import {behaviors, clickButton} from '../behavior'
 import {isNoStatus, isTextArea} from '../types/button-behavior'
@@ -42,9 +42,10 @@ export function registryBeforeInputEventListener() {
             recordInput(true)
         }
         GLOBAL_HISTORY.initRange()
-        const lca = event.getTargetRanges()
+        let lca = event.getTargetRanges()
             .map(it => new KRange(it).commonAncestorContainer)
             .reduce((prev, current) => KRange.lca(prev, current))
+        if (isBrNode(lca)) lca = lca.parentNode
         function init() {
             inputLca = lca
             inputLcaCpy = lca.cloneNode(true)
@@ -115,7 +116,8 @@ export function recordInput(force, operate) {
     if (inputLca && (force || !inputTimeoutId)) {
         clearTimeout(inputTimeoutId)
         operate?.()
-        GLOBAL_HISTORY.modifyNode(inputLcaCpy, inputLca)
+        if (inputLca.textContent !== inputLcaCpy.textContent)
+            GLOBAL_HISTORY.modifyNode(inputLcaCpy, inputLca)
         GLOBAL_HISTORY.next()
         inputTimeoutId = 0
         inputLca = inputLcaCpy = null
@@ -125,57 +127,70 @@ export function recordInput(force, operate) {
 /**
  * 处理字符输入事件
  * @param event {InputEvent|CompositionEvent}
- * @return {Promise<void>}
+ * @return {Promise<void>|void}
  */
-async function handleInput(event) {
+function handleInput(event) {
     const {data, inputType} = event
+    const {collapsed, commonAncestorContainer} = editorRange
     const isEnter = inputType === 'insertParagraph'
-    if (findParentTag(editorRange.commonAncestorContainer, ['A'])) {
+    if (findParentTag(commonAncestorContainer, ['A'])) {
         if (isEnter) {
             // 屏蔽超链接中的换行操作
             event.preventDefault()
             return
-        } else if (editorRange.collapsed) {
+        } else if (collapsed) {
             event.preventDefault()
             editorRange.insertText(data)
             return
         }
     }
-    await waitTime(0)
-    const range = KRange.activated()
-    const {startContainer, startOffset} = range
-    if (findParentTag(range.realStartContainer(), isTextArea)) return
-    if (isEnter) {
-        // 重置样式
-        markStatusCacheInvalid()
-        for (let key in behaviors) {
-            const behavior = behaviors[key]
-            const button = behavior.button
-            if (!isNoStatus(behavior) && isActive(button)) {
-                setButtonStatus(button)
+    if (isTextArea(findParentTag(commonAncestorContainer, TOP_LIST))) return
+    const needEditStyle = data && !statusCheckCache && collapsed
+    if (needEditStyle) {
+        recordInput(true)
+        GLOBAL_HISTORY.initRange(editorRange)
+        inputLca = commonAncestorContainer
+        inputLcaCpy = inputLca.cloneNode(true)
+    }
+    return waitTime(0).then(() => {
+        const range = KRange.activated()
+        const {startContainer, startOffset} = range
+        if (isEnter) {
+            // 在代办列表中换行时自动在 li 中插入 <input>
+            const todoList = findParentTag(startContainer, item => item.classList?.contains?.('todo'))
+            if (todoList) {
+                const item = todoList.querySelector('&>li>p:first-child')
+                if (item) item.before(TODO_MARKER.cloneNode(true))
+            }
+            // 重置样式
+            const topLine = findParentTag(startContainer, ['P'])
+            console.assert(!topLine.textContent && topLine.childNodes.length === 1, 'topLine 应当为空')
+            topLine.innerHTML = '<br>'
+            GLOBAL_HISTORY.addAuto([topLine])
+            setCursorPositionBefore(topLine)
+            for (let key in behaviors) {
+                const behavior = behaviors[key]
+                const button = behavior.button
+                if (!isNoStatus(behavior) && isActive(button)) {
+                    setButtonStatus(button)
+                }
             }
         }
-        // 在代办列表中换行时自动在 li 中插入 <input>
-        const todoList = findParentTag(startContainer, item => item.classList?.contains?.('todo'))
-        if (todoList) {
-            const item = todoList.querySelector('&>li>p:first-child')
-            if (item) item.before(TODO_MARKER.cloneNode(true))
+        /* 当用户输入位置所在文本与按钮列表不同时，将新输入的文本样式与按钮状态同步 */
+        if (needEditStyle) {
+            markStatusCacheEffect()
+            const buttonList = compareBtnListStatusWith(startContainer)
+            if (!buttonList) return
+            const newRange = new KRange()
+            newRange.setStart(startContainer, startOffset - data.length)
+            newRange.setEnd(startContainer, startOffset)
+            const offline = newRange.serialization()
+            for (let child of buttonList) {
+                clickButton(getElementBehavior(child), newRange, false, true)
+                newRange.deserialized(offline)
+            }
+            newRange.collapse(false)
+            newRange.active()
         }
-    }
-    /* 当用户输入位置所在文本与按钮列表不同时，将新输入的文本样式与按钮状态同步 */
-    if (data && !statusCheckCache && range.collapsed) {
-        markStatusCacheEffect()
-        const buttonList = compareBtnListStatusWith(startContainer)
-        if (!buttonList) return
-        const newRange = new KRange()
-        newRange.setStart(startContainer, startOffset - data.length)
-        newRange.setEnd(startContainer, startOffset)
-        const offline = newRange.serialization()
-        for (let child of buttonList) {
-            clickButton(getElementBehavior(child), KRange.deserialized(offline), false, true)
-        }
-        newRange.deserialized(offline)
-        newRange.collapse(false)
-        newRange.active()
-    }
+    })
 }

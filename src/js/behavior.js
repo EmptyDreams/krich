@@ -69,6 +69,7 @@ import {
 import {openHoverTip} from './utils/hover-tip'
 import {rgbToHex} from './utils/string-utils'
 import {highlightCode} from './utils/highlight'
+import {handleToolBarClickEvent} from './events/mouse-click-event'
 
 // noinspection JSUnusedGlobalSymbols
 /**
@@ -341,7 +342,7 @@ export function clickButton(key, range, force, notRecord) {
     console.assert(!!behavior, 'key 值不存在：' + key)
     const noStatus = isNoStatus(behavior)
     if (!force && noStatus) {
-        behavior.button.click()
+        handleToolBarClickEvent(range, behavior.button, notRecord)
     } else {
         const isRecord = !notRecord && !isNoRecord(behavior)
         if (isRecord) {
@@ -364,16 +365,17 @@ export function clickButton(key, range, force, notRecord) {
  * @param removed {boolean} 是否已经移除过元素
  * @param conflicts {string[]?} 相互冲突的样式的 ID
  * @param type {0|1|2} 任务模式，0-默认，1-强制添加，2-仅删除
+ * @param noRecord {boolean?} 是否跳过记录历史记录
  */
 function execCommonCommand(
-    key, range, removed = false, conflicts, type = 0
+    key, range, removed = false, conflicts, type = 0, noRecord
 ) {
     if (range.collapsed) return true
     const offlineData = range === editorRange ? range.serialization() : null
     const behavior = behaviors[key]
     let rangeArray = range.splitRangeByLine()
     const topArray = rangeArray.map(it => findParentTag(it.realStartContainer(),TOP_LIST))
-    const topCpyArray = topArray.map(it => it.cloneNode(true))
+    const topCpyArray = noRecord && topArray.map(it => it.cloneNode(true))
     const lastIndex = rangeArray.length - 1
     if (!removed) {
         if (conflicts)
@@ -389,8 +391,10 @@ function execCommonCommand(
     if (type !== 2 && (removed || type === 1))
         setStyleInRange(key, rangeArray, behavior)
     topArray.forEach(zipTree)
-    for (let i = 0; i < topCpyArray.length; i++) {
-        GLOBAL_HISTORY.modifyNode(topCpyArray[i], topArray[i])
+    if (topCpyArray) {
+        for (let i = 0; i < topCpyArray.length; i++) {
+            GLOBAL_HISTORY.modifyNode(topCpyArray[i], topArray[i])
+        }
     }
     if (offlineData) {
         range.deserialized(offlineData).active()
