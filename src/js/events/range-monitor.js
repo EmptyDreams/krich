@@ -62,6 +62,7 @@ export function updateEditorRange() {
     const prev = editorRange
     const range = KRange.activated()
     const rangeBody = range.body
+    if (rangeBody && prev?.body === rangeBody) return
     modifyEditorRange(range)
     KRICH_EDITOR.querySelectorAll(`.${EMPTY_BODY_ACTIVE_FLAG}`)
         .forEach(it => it.classList.remove(EMPTY_BODY_ACTIVE_FLAG))
