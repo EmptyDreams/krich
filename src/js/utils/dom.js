@@ -530,11 +530,13 @@ export async function exportData() {
         const {upload, remove} = imageList
         for (let img of root.getElementsByTagName('img')) {
             const src = img.getAttribute('src')
+            img.removeAttribute('src')
             if (src.startsWith('data:')) {
                 const url = await imageMapper(src)
                 upload.set(url, src)
-                img.setAttribute('src', url)
+                img.setAttribute('data-src', url)
             } else {
+                img.setAttribute('data-src', src)
                 urls.add(src)
             }
         }
@@ -564,6 +566,11 @@ export async function importData(html) {
     range.selectNode(KRICH_EDITOR)
     transfer.setData(TRANSFER_KEY_HTML, html)
     await handlePaste(range, transfer, false)
+    KRICH_EDITOR.querySelectorAll('img[data-src]').forEach(it => {
+        it.setAttribute('src', it.getAttribute('data-src'))
+        it.removeAttribute('data-src')
+        it.setAttribute('loading', 'lazy')
+    })
     KRICH_EDITOR.querySelectorAll('img:not([src^="data:"])').forEach(image => {
         inputImageList.add(image.getAttribute('src'))
     })

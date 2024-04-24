@@ -111,7 +111,9 @@ export const HOVER_TIP_LIST = {
             const uploaderBackground = uploaderInput.parentElement
             let oldIsImage = target.nodeName === 'IMG'
             let imageElement = oldIsImage ? target.cloneNode(false) :
-                createElement('img')
+                createElement('img', {
+                    loading: 'lazy'
+                })
             /** 将图片插入到 DOM 中 */
             submitButton.onclick = () => {
                 if (imageElement.hasAttribute('src')) {
