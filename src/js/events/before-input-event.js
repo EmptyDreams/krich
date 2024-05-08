@@ -5,10 +5,16 @@ import {
     markStatusCacheEffect,
     statusCheckCache, TOP_LIST
 } from '../vars/global-fileds'
-import {findParentTag, nextLeafNodeInline, prevLeafNodeInline, tryFixDom} from '../utils/dom'
+import {
+    findParentTag, getFirstChildNode,
+    getLastChildNode,
+    nextLeafNodeInline,
+    prevLeafNodeInline,
+    tryFixDom
+} from '../utils/dom'
 import {KRange, setCursorPositionBefore} from '../utils/range'
 import {compareBtnListStatusWith, isActive, setButtonStatus} from '../utils/btn'
-import {getElementBehavior, isBrNode, isTextNode, waitTime} from '../utils/tools'
+import {getElementBehavior, isBrNode, isEmptyLine, isTextNode, waitTime} from '../utils/tools'
 import {TODO_MARKER} from '../vars/global-tag'
 import {behaviors, clickButton} from '../behavior'
 import {isNoStatus, isTextArea} from '../types/button-behavior'
@@ -76,7 +82,9 @@ export function registryBeforeInputEventListener() {
             const range = KRange.activated()
             const {startContainer, startOffset} = range
             const node = KRange.activated().realStartContainer()
+            let wait
             if (isDelete) {
+                // 判断 delete 操作是否会将下一行的内容移动到当前行
                 const atLast = (
                     isTextNode(startContainer) ? startContainer.textContent : startContainer.childNodes
                 ).length === startOffset
@@ -87,7 +95,38 @@ export function registryBeforeInputEventListener() {
                         GLOBAL_HISTORY.removeAuto([nextParent])
                     }
                 }
-            } else if (!startOffset) {
+            } else if (startOffset) {
+                // 判断 backspace 操作是否会删除 lca
+                if (
+                    isTextNode(startContainer) && startContainer.textContent.length === 1 &&
+                    getFirstChildNode(inputLca, true) === startContainer && getLastChildNode(inputLca) === startContainer
+                ) {
+                    const lca = isTextNode(inputLca) ? inputLca.parentNode : inputLca
+                    const {previousSibling, nextSibling, parentNode} = lca
+                    await waitTime(0)
+                    wait = true
+                    if (inputLca === lca) recordInput(true)
+                    else {
+                        const range = KRange.activated()
+                        GLOBAL_HISTORY.initRange(range)
+                        if (lca.isConnected) {  // 如果 lca 还在 DOM 中，则在其内部进行编辑
+                            recordInput(true, null, () => {
+                                GLOBAL_HISTORY.removeChild(lca, [inputLcaCpy])
+                                if (isEmptyLine(lca)) GLOBAL_HISTORY.addChild(lca, [lca.firstChild])
+                            })
+                        } else {
+                            if (previousSibling) {
+                                GLOBAL_HISTORY.removeAfter(previousSibling, [lca])
+                            } else if (nextSibling) {
+                                GLOBAL_HISTORY.removeBefore(nextSibling, [lca])
+                            } else {
+                                GLOBAL_HISTORY.removeChild(parentNode, [lca])
+                            }
+                        }
+                    }
+                }
+            } else {
+                // 判断 backspace 操作是否会将当前行移动到上一行
                 const [_, isInline] = prevLeafNodeInline(node)
                 if (!isInline) {
                     recordInput(true, () => {
@@ -95,7 +134,7 @@ export function registryBeforeInputEventListener() {
                     })
                 }
             }
-            await waitTime(0)
+            if (!wait) await waitTime(0)
             tryFixDom(isDelete)
         }
     })
@@ -110,14 +149,17 @@ export function registryBeforeInputEventListener() {
 /**
  * 更新输入记录并清除 timeout
  * @param force {boolean} 是否强制更新，为 false 时若存在 timeoutId 则不进行更新
- * @param operate {VoidFunction?}
+ * @param before {VoidFunction?} 在记录历史记录前触发的操作
+ * @param after {VoidFunction?} 在记录历史记录后触发的操作
  */
-export function recordInput(force, operate) {
+export function recordInput(force, before, after) {
     if (inputLca && (force || !inputTimeoutId)) {
         clearTimeout(inputTimeoutId)
-        operate?.()
-        if (inputLca.textContent !== inputLcaCpy.textContent)
+        before?.()
+        if (inputLca.textContent && inputLca.textContent !== inputLcaCpy.textContent) {
             GLOBAL_HISTORY.modifyNode(inputLcaCpy, inputLca)
+        }
+        after?.()
         GLOBAL_HISTORY.next()
         inputTimeoutId = 0
         inputLca = inputLcaCpy = null
